@@ -1,0 +1,8 @@
+@media print {
+    .report-page {
+        width: 210mm;
+        height: 297mm;
+        padding: 20mm;
+        page-break-after: always;
+    }
+}

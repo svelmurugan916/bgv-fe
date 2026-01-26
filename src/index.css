@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/* 2. Standard Tailwind directives */
+@tailwind utilities;
+/* In v4, you can still use @layer base for global resets */
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        /* @apply still works in v4 */
+        @apply transition-colors duration-200;
+        @apply font-sans antialiased text-slate-900;
+    }
+
+    input[type="range"] {
+        @apply h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+    }
+
+    /* Note: In v4, you can often use standard CSS variables or @apply */
+    input[type="range"]::-webkit-slider-thumb {
+        @apply appearance-none w-5 h-5 bg-[#F9F7FF] rounded-full cursor-pointer hover:bg-[#5D4591] transition-colors;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+        @apply w-5 h-5 bg-[#F9F7FF] rounded-full cursor-pointer hover:bg-[#5D4591] transition-colors border-0;
+    }
+}
+
+/* If you have dark mode specific styles, v4 handles them via standard CSS media queries or the 'dark' class */
+@layer base {
+    .dark input[type="range"] {
+        @apply bg-gray-700;
+    }
+}
+
+
+body {
+    font-family: 'Inter', sans-serif;
+
+}
+
+button {
+    cursor: pointer;
+}
+
+/* Custom smooth scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #E2E8F0;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #CBD5E1;
+}
