@@ -5,10 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { ACTIVATE_ROLE } from "../../constant/Endpoint.tsx";
 
 const RoleSelectionPage = () => {
-    const { setAuthData, unAuthenticatedRequest } = useAuthApi();
+    const { setAuthData, unAuthenticatedRequest, loggedInRole } = useAuthApi();
 
     // 1. Store the ID string (e.g., "ROLE_ADMIN") rather than the whole object
-    const [selectedRoleId, setSelectedRoleId] = useState(null);
+    const [selectedRoleId, setSelectedRoleId] = useState(loggedInRole || null);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Fingerprint, CheckCircle2, Eye, ShieldCheck, AlertCircle } from 'lucide-react';
-import FeedbackPanel from "./FeedbackPanel.jsx";
+import FeedbackForm from "./FeedbackForm.jsx";
 
 const CheckIdentity = () => {
     return (
@@ -41,7 +41,7 @@ const CheckIdentity = () => {
                     </div>
                 </div>
             </div>
-            <FeedbackPanel />
+            <FeedbackForm />
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import { InfoIcon, Camera, Trash2, Crop, RefreshCw, X, Check, AlertCircle } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import InputComponent from "./InputComponent.jsx";
@@ -7,8 +7,9 @@ import { useForm } from "../../provider/FormProvider.jsx";
 import {getCroppedImg} from "./form-utils.js";
 import FormSingleDropdownSelect from "./FormSingleDropdownSelect.jsx";
 import {EMAIL_REGEX, PHONE_NUMBER_REGEX} from "../../constant/ApplicationConstant.js";
+import CustomDatePicker from "../../component/common/CustomDatePicker.jsx";
 
-const BasicInfo = () => {
+const BasicInfo = ({ checks }) => {
     const { formData, updateFormData, errors, clearError } = useForm();
     const data = formData.basic;
 
@@ -42,9 +43,14 @@ const BasicInfo = () => {
     };
 
     const handleInputChange = (field, value) => {
+        console.log('handleInputChange', field, value);
         updateFormData('basic', { ...data, [field]: value });
         validateField(field, value);
     };
+
+    useEffect(() => {
+        console.log('formData -- ', formData);
+    }, [formData])
 
     // --- Image Handling Logic ---
     const onFileChange = (e) => {
@@ -221,6 +227,15 @@ const BasicInfo = () => {
                         value={data.fatherName}
                         error={errors.fatherName}
                         onChange={(v) => handleInputChange('fatherName', v)}
+                    />
+                </div>
+                <div id={"emailAddress"}>
+                    <CustomDatePicker
+                        label="Date Of Birth"
+                        isMandatory={true}
+                        value={data.dateOfBirth}
+                        error={errors.dateOfBirth}
+                        onChange={(v) => handleInputChange('dateOfBirth', v)}
                     />
                 </div>
 

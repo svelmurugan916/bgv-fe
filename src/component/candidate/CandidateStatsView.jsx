@@ -37,7 +37,7 @@ const CandidateStatsView = ({candidates, parentDivClass = "max-w-7xl"}) => {
                 </div>
                 <div>
                     <p className="text-sm font-medium text-slate-500">Insufficiency</p>
-                    <p className="text-2xl font-black text-slate-900">{candidates?.filter(c => c?.caseDetails?.status === 'INSUFFICIENCY_RAISED')?.length || 0}</p>
+                    <p className="text-2xl font-black text-slate-900">{candidates?.filter(c => c?.caseDetails?.status === 'INSUFFICIENCY')?.length || 0}</p>
                 </div>
             </div>
         </div>

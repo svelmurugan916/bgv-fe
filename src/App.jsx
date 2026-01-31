@@ -6,8 +6,6 @@ import TopBarLoader from "./component/common/TopBarLoader.jsx";
 import {VERIFY_ADDRESS_TOKEN, VERIFY_CANDIDATE_TOKEN} from "./constant/Endpoint.tsx";
 
 
-
-
 // --- LAZY IMPORTS ---
 const BGVForm = lazy(() => import("./page/bgv-form/BGVForm.jsx"));
 const DashboardContent = lazy(() => import("./component/dashboard/DashboardContent.jsx"));
@@ -91,7 +89,7 @@ function App() {
                                                 <Route path="/ops-dashboard" element={<OperationsDashboard />} />
                                                 <Route path="/admin-dashboard" element={<AdminDashboard />} />
                                                 <Route path="/candidate-list" element={<Candidates />} />
-                                                <Route path="/add-candidate" element={<BulkCreateCandidates />} />
+                                                <Route path="/add-candidate/:id?" element={<BulkCreateCandidates />} />
                                                 <Route path="/candidate-details/:id?" element={<CandidateDetails />} />
                                                 <Route path="/dddd" element={<DashboardContent />} />
                                                 <Route path="/report" element={<ReportGenerator />} />

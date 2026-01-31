@@ -185,12 +185,6 @@ const SuccessView = () => (
         <p className="text-slate-600 max-w-md leading-relaxed mb-10">
             Thank you. Your digital address verification has been successfully captured and sent for review. You can now close this window.
         </p>
-        <button
-            onClick={() => window.location.href = "/"}
-            className="flex items-center gap-2 px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all"
-        >
-            <Home size={18} /> Return Home
-        </button>
     </div>
 );
 

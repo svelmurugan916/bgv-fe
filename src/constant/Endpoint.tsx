@@ -14,6 +14,7 @@ export const CREATE_ORGANIZATION = "/organizations/new-organization";
 export const SAVE_ORGANIZATION = "/organizations/save-organization";
 export const GET_ALL_ORGANIZATION = "/organizations/get-all";
 export const GET_ORGANIZATION = "/organizations";
+export const GET_ORGANIZATION_MINIMAL_DETAILS = "/organizations/get-organization-details";
 export const FILE_GET = "/files"
 export const GET_ALL_CHECK_TYPE = "/check-type/get-all"
 export const SAVE_CHECK_PACKAGE = "/check-type/save-package"
@@ -31,6 +32,8 @@ export const REMOVE_DOCUMENT = "/files/candidate/document"
 
 export const EXTRACT_EDUCATION_DOCUMENT = "/ocr/extract-marksheet-data"
 export const UPLOAD_EMPLOYMENT_DOCUMENT = "/files/candidate/{candidateId}/upload-multiple";
+export const UPLOAD_INTERNAL_PROOF = "/files/task/{taskId}/upload-proof"
+export const REMOVE_INTERNAL_PROOF = "/files/task/{artifactId}/delete-file"
 
 export const INVITED_CANDIDATE_LIST = "/candidate/invited-candidate";
 export const FORM_NOT_SUBMITTED_COUNT = "/candidate/form-non-submitted-stop-case-count"
@@ -44,3 +47,12 @@ export const GET_CANDIDATE_DETAILS = "/tasks/get-candidate-details"
 
 export const ADDRESS_CHECK_DETAILS = "/address-check/get-details"
 export const SUBMIT_ADDRESS_VERIFICATION = "/address-check/submit-verification"
+
+export const UPDATE_ADDRESS_ENDPOINT = "/address-check/update-address"
+export const SAVE_NEW_ADDRESS_ENDPOINT = "/address-check/save-address"
+
+export const ASSIGN_CHECK_TO_ME = "/task-assignments/assign"
+
+export const GET_TASK_AUDIT_DETAILS = "/tasks/audit-details"
+export const SUBMIT_TASK_FEEDBACK_DETAILS = "/tasks/submit-feedback"
+export const UPDATE_TASK_STAUS = "/tasks/update-task"

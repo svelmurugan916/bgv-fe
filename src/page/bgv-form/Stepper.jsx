@@ -65,7 +65,7 @@ const Stepper = ({ activeStep, steps }) => {
                             <div className="mt-2 lg:mt-0 lg:ml-6 text-center lg:text-left">
                                 {/* Hide "Step X" text on mobile entirely */}
                                 <p className="hidden lg:block text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                    Step {step.id}
+                                    Step {index + 1}
                                 </p>
                                 {/* Smaller font on mobile (text-[10px]) */}
                                 <p className={`text-[10px] lg:text-sm font-bold whitespace-nowrap transition-colors duration-300 

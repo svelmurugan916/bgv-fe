@@ -1,6 +1,6 @@
 import React from 'react';
 import { Database, Search, ShieldCheck, AlertCircle, Globe } from 'lucide-react';
-import FeedbackPanel from "./FeedbackPanel.jsx";
+import FeedbackForm from "./FeedbackForm.jsx";
 
 const CheckDatabase = () => {
     return (
@@ -24,7 +24,7 @@ const CheckDatabase = () => {
                     ))}
                 </div>
             </div>
-            <FeedbackPanel />
+            <FeedbackForm />
         </div>
     );
 };

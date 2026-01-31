@@ -9,11 +9,16 @@ const GeoLocationStep = ({candidateDataResponse}) => {
     const addressInfo = formData.addressVerification.addressInfo || {};
 
     useEffect(() => {
+        const address = candidateDataResponse?.candidateAddress;
         updateFormData('addressVerification', {
             ...avData,
                 addressInfo: {
-                    city: 'Bangalore',
-                    state: 'Karnataka',
+                    addressLine1: address?.addressLine1,
+                    addressLine2: address?.addressLine2,
+                    city: address?.city,
+                    state: address?.state,
+                    pincode: address?.pincode,
+                    country: address?.country,
                 }
         })
     }, [])

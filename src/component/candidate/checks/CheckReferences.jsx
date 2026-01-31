@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, Mail, Phone, Send, CheckCircle2, Clock } from 'lucide-react';
-import FeedbackPanel from "./FeedbackPanel.jsx";
+import FeedbackForm from "./FeedbackForm.jsx";
 
 const CheckReferences = () => {
     const references = [
@@ -41,7 +41,7 @@ const CheckReferences = () => {
                     </div>
                 ))}
             </div>
-            <FeedbackPanel />
+            <FeedbackForm />
         </div>
     );
 };

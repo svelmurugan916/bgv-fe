@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Phone, Clock, AlertCircle, Send, Calendar, RotateCcw, Ban, Loader2, X as CloseIcon, Check, Package } from 'lucide-react';
+import {
+    Mail, Phone, Clock, AlertCircle, Send, Calendar, RotateCcw, Ban, Loader2, X as CloseIcon, Check, Package,
+    SearchIcon
+} from 'lucide-react';
 import TableSkeleton from "./TableSkeleton.jsx";
 
 const InvitationTable = ({ invitations, loading, selectedIds, onSelect, onSelectAll, onStopCase, onSendInvitation }) => {
@@ -77,6 +80,7 @@ const InvitationTable = ({ invitations, loading, selectedIds, onSelect, onSelect
                 <tbody className="divide-y divide-slate-50">
                 {
                     loading ? <TableSkeleton /> : (
+                        invitations.length > 0 ? (
                         invitations.map((item) => {
                             const rowState = rowStates[item.id] || { status: 'idle', inviteStatus: 'idle' };
 
@@ -221,6 +225,21 @@ const InvitationTable = ({ invitations, loading, selectedIds, onSelect, onSelect
                                 </tr>
                             );
                         })
+                        ): (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-24 text-center">
+                                    <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500">
+                                        <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-200 mb-6 border border-slate-100">
+                                            <SearchIcon size={40} />
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-800 mb-1">No candidates found</h3>
+                                        <p className="text-sm text-slate-400 font-medium max-w-xs mx-auto">
+                                            We couldn't find any pending invitations matching your current filters or search criteria.
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                        )
                     )
                 }
                 </tbody>

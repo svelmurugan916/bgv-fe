@@ -15,6 +15,7 @@ export const FormProvider = ({ children }) => {
             gender: '',
             profilePic: null,
             fatherName: '',
+            dateOfBirth: '',
             addresses: [{
                 addressType: '',
                 addressLine1: '',

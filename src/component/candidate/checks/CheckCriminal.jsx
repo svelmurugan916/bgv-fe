@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShieldAlert, Gavel, Search, CheckCircle2, FileText } from 'lucide-react';
-import FeedbackPanel from "./FeedbackPanel.jsx";
+import FeedbackForm from "./FeedbackForm.jsx";
 
 const CheckCriminal = () => {
     return (
@@ -28,7 +28,7 @@ const CheckCriminal = () => {
                     <FindingItem label="Civil Litigation" status="No Match" date="14 Oct 2023" />
                 </div>
             </div>
-            <FeedbackPanel />
+            <FeedbackForm />
         </div>
     );
 };

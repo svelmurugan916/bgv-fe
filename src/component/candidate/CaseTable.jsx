@@ -14,7 +14,7 @@ const CaseTable = ({ cases }) => {
         switch(status) {
             case 'Completed': return 'bg-green-50 text-green-700 border-green-100';
             case 'WIP': return 'bg-blue-50 text-blue-700 border-blue-100';
-            case 'Insufficiency': return 'bg-red-50 text-red-700 border-red-100';
+            case 'Insufficiency': return 'bg-orange-50 text-orange-700 border-orange-100';
             case 'Invited': return 'bg-purple-50 text-[#5D4591] border-purple-100';
             case 'Stop-Case': return 'bg-slate-100 text-slate-700 border-slate-200';
             default: return 'bg-slate-50 text-slate-600';

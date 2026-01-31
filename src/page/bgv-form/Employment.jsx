@@ -70,6 +70,12 @@ const Employment = () => {
         setLastAddedId(newEntry.id);
     };
 
+    useEffect(() => {
+        if (!isFresher && details.length === 0) {
+            addEmployment();
+        }
+    }, [isFresher, details.length]);
+
     const removeEmployment = (id) => {
         if (details.length > 1) {
             updateFormData('employment', {

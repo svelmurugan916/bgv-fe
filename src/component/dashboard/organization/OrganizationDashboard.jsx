@@ -35,7 +35,7 @@ const OrganizationDashboard = () => {
                     setOrganizations(data?.organizations);
                     setAllOrganizationStatistics({
                         insufficientCases: data.insufficientCases,
-                        inProgressCases: data?.pendingCases,
+                        inProgressCases: data?.inProgressCases,
                         totalCasesAcrossAll: data.totalCasesAcrossAll,
                         totalCompleted: data.totalCompleted,
                         totalOrganizations: data.totalOrganizations,

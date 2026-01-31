@@ -67,14 +67,11 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
             // 2. Determine final status for each group based on weightage
             const processedChecks = grouped ? Object.keys(grouped).map(taskName => {
                 const checks = grouped[taskName];
-
                 const hasFailed = checks.some(c => c.status.toLowerCase().includes('failed'));
                 const hasInsufficiency = checks.some(c => c.status.toLowerCase().includes('insufficiency'));
-                const hasUnable = checks.some(c => c.status.toLowerCase().includes('unable'));
+                const hasUnable = checks.some(c => c.status.toLowerCase().includes('unable_to_verify'));
                 const hasInProgress = checks.some(c =>
-                    c.status.toLowerCase() === 'in progress' ||
-                    c.status.toLowerCase() === 'pending' ||
-                    c.status.toLowerCase() === 'created'
+                    c.status.toLowerCase() === 'in_progress' || c.status.toLowerCase() === 'needs_review'
                 );
                 const allUnassigned = checks.every(c => !c.assignedToUserId);
 
@@ -259,18 +256,14 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
                                         <div className="flex items-center gap-2 min-w-max">
                                             {item.checks.map((check, idx) => (
                                                 <div key={idx} className="relative group/icon">
-                                                    <CheckIcon
-                                                        icon={getTaskIcon(check.taskName)}
-                                                        status={check.status}
-                                                        label={check.taskName}
-                                                    />
+                                                    <CheckIcon key={idx} status={check.status} label={check.taskName} />
                                                 </div>
                                             ))}
                                         </div>
                                     </td>
 
                                     <td className="px-6 py-4">
-                                        <StatusPill status={item.taskStatus} />
+                                        <StatusPill status={item.status} />
                                     </td>
 
                                     <td className="px-6 py-4 text-right">
@@ -318,17 +311,11 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
 const StatusPill = ({ status, showDot = false }) => {
     // Map API status strings to the UI Styles
     const styles = {
-        'COMPLETED': 'bg-emerald-50 text-emerald-600 border-emerald-100 dot-emerald-500',
-        'Completed': 'bg-emerald-50 text-emerald-600 border-emerald-100 dot-emerald-500',
-        'IN_PROGRESS': 'bg-[#F9F7FF] text-[#5D4591] border-[#5D4591]/10 dot-indigo-500',
-        'In Progress': 'bg-[#F9F7FF] text-[#5D4591] border-[#5D4591]/10 dot-indigo-500',
-        'ACTION_REQUIRED': 'bg-red-50 text-red-600 border-red-100 dot-red-500',
-        'Action Required': 'bg-red-50 text-red-600 border-red-100 dot-red-500',
-        'CLEARED': 'bg-emerald-50 text-emerald-600 border-emerald-100 dot-emerald-500',
-        'Cleared': 'bg-emerald-50 text-emerald-600 border-emerald-100 dot-emerald-500',
-        'FAILED': 'bg-red-50 text-red-600 border-red-100 dot-red-500',
-        'Failed': 'bg-red-50 text-red-600 border-red-100 dot-red-500',
-        'Unable to verify': 'bg-amber-50 text-amber-600 border-amber-100 dot-amber-500',
+        'GREEN': 'bg-emerald-50 text-emerald-600 border-emerald-100 dot-emerald-500',
+        'IN_PROGRESS': 'bg-yellow-50 text-yellow-600 border-yellow-100 dot-yellow-500',
+        'RED': 'bg-red-50 text-red-600 border-red-100 dot-red-500',
+        'AMBER': 'bg-amber-50 text-amber-600 border-amber-100 dot-amber-500',
+        'INSUFFICIENCY': 'bg-orange-50 text-orange-600 border-orange-100 dot-orange-500'
     };
 
     const currentStyle = styles[status] || 'bg-slate-50 text-slate-500 border-slate-200 dot-slate-400';

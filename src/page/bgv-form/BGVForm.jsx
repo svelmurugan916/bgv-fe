@@ -50,7 +50,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
 
     const handleNext = async () => {
         setSubmitError(null); // Clear previous errors
-        const isNewError = validateStep(activeStep, formData, setErrors, candidateDataResponse?.checkConfigs);
+        const isNewError = validateStep(activeStep, formData, setErrors, candidateDataResponse?.checkConfigs, candidateDataResponse?.checks);
 
         if (Object.entries(isNewError).length === 0) {
             setIsSaving(true);
@@ -93,16 +93,18 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
                     const nextStepObj = filteredSteps.find(s => s.id > activeStep);
                     if (nextStepObj) {
                         setActiveStep(nextStepObj.id);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        requestAnimationFrame(() => {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        });
                     }
                 } else {
                     // Handle API level error (e.g. 400, 500)
-                    setSubmitError(response.data?.message || "Something went wrong while saving. Please try again.");
+                    setSubmitError( "Something went wrong while saving. Please try again. If the issue still persist, Please contact your HR Representative");
                 }
             } catch (error) {
                 // Handle Network error
                 console.error(error);
-                setSubmitError(error?.response?.data || "Network connection error. Please check your internet and try again.");
+                setSubmitError( "Something went wrong while saving. Please try again. If the issue still persist, Please contact your HR Representative");
             } finally {
                 setIsSaving(false);
             }
@@ -164,7 +166,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
 
     const renderStep = () => {
         switch (activeStep) {
-            case 1: return <BasicInfo />;
+            case 1: return <BasicInfo checks={candidateDataResponse?.checks || []} />;
             case 2: return <AddressDetails />;
             case 3: return <IDVerification />;
             case 4: return <Education />;
@@ -178,7 +180,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
     if (activeStep === null) return null;
 
     return (
-        <div className="flex flex-col min-h-screen bg-white">
+        <div className="flex flex-col min-h-screen bg-white transform-gpu isolation-isolate">
             <GlobalHeader candidateName={`${formData.basic.firstName} ${formData.basic.lastName}`} appId="CF-99281-2024" />
             <div className="flex flex-col lg:flex-row flex-1">
                 <Stepper activeStep={activeStep} steps={filteredSteps} />

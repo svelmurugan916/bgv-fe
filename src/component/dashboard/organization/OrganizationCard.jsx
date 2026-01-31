@@ -71,7 +71,7 @@ const OrganizationCard = ({ org, isOpen, onToggle }) => {
                 </div>
                 <div>
                     <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">WIP</p>
-                    <p className="text-base font-bold text-amber-500">{org.pendingCases}</p>
+                    <p className="text-base font-bold text-amber-500">{org.inProgressCases}</p>
                 </div>
                 <div>
                     <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Insuff.</p>

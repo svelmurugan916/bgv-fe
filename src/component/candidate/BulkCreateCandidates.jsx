@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     Plus, Trash2, User, Mail, Phone,
     AlertCircle, Info, CheckCircle2, ArrowLeft, Send,
@@ -10,9 +10,11 @@ import { GET_ALL_ORGANIZATIONS, GET_PACKAGES_BY_ORG, INITIATE_BULK_VERIFICATION 
 import SingleSelectDropdown from "../dropdown/SingleSelectDropdown.jsx";
 import ShowError from "../common/ShowError.jsx";
 import SingleDropdownSearch from "../dropdown/SingleDropdownSearch.jsx";
+import {useParams} from "react-router-dom";
 
 const BulkCreateCandidates = () => {
     const { authenticatedRequest } = useAuthApi();
+    const {id} = useParams();
 
     const [organizations, setOrganizations] = useState([]);
     const [selectedOrg, setSelectedOrg] = useState(null);
@@ -20,7 +22,9 @@ const BulkCreateCandidates = () => {
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null); // Success state
+    const [loading, setLoading] = useState(true);
     const [isPackageLoading, setIsPackageLoading] = useState(false);
+    const componentInitRef = useRef(false);
 
     const [fieldErrors, setFieldErrors] = useState({
         org: false,
@@ -36,7 +40,6 @@ const BulkCreateCandidates = () => {
     const [rows, setRows] = useState(initialRows);
 
 
-
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -49,10 +52,19 @@ const BulkCreateCandidates = () => {
                         value: org.name,
                     }));
                     setOrganizations(orgDataJson);
+                    if(id) {
+                        setSelectedOrg(orgDataJson.find(o => o.key === id));
+                    }
                 }
             } catch (err) { console.error("Failed to fetch orgs", err); }
+            finally {
+                setLoading(false);
+            }
         };
-        fetchOrgs();
+        if(!componentInitRef.current) {
+            componentInitRef.current = true;
+            fetchOrgs();
+        }
     }, []);
 
     useEffect(() => {
@@ -250,8 +262,9 @@ const BulkCreateCandidates = () => {
                                 <div className="flex items-center gap-2 shrink-0">
                                     <Building2 size={16} className="text-[#5D4591]" />
                                     <label className="text-[11px] font-black uppercase text-slate-400 tracking-[0.12em]">Org</label>
+                                    {loading && <Loader2 size={14} className="animate-spin text-[#5D4591] ml-1" />}
                                 </div>
-                                <div className="w-64"><SingleDropdownSearch label="Choose Organization" options={organizations} selectedKey={selectedOrg?.key} onSelect={(orgObj) => { setSelectedOrg(organizations.find(o => o.key === orgObj.key)); setFieldErrors(prev => ({ ...prev, org: false })); }} /></div>
+                                <div className="w-64"><SingleDropdownSearch label={loading ? "Loading..." : "Choose Organization"} options={organizations} selectedKey={selectedOrg?.key} onSelect={(orgObj) => { setSelectedOrg(organizations.find(o => o.key === orgObj.key)); setFieldErrors(prev => ({ ...prev, org: false })); }} /></div>
                             </div>
 
                             <div className={`flex items-center gap-4 bg-slate-50 p-1.5 pl-4 rounded-xl border ${fieldErrors.package ? 'border-red-400' : 'border-slate-100'}`}>

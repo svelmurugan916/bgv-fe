@@ -182,8 +182,7 @@ export const AuthApiProvider = ({ children }) => {
 
     const logout = useCallback(async () => {
         try {
-            const config = new RequestConfig().setUrl(LOGOUT).setMethod(METHOD.POST);
-            await authenticatedRequest(config);
+            await authenticatedRequest(undefined, LOGOUT, METHOD.POST);
         } finally {
             clearAuthStates();
         }

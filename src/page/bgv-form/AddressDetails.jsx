@@ -189,7 +189,7 @@ const AddressDetails = () => {
                                     selected={addr.addressType}
                                     onSelect={(option) => handleAddressChange(index, 'addressType', option)}
                                     isOccupyFullWidth={true}
-                                    options={[{ text: "Current Address", value: "CURRENT" }, { text: "Permanent Address", value: "PERMANENT" }, { text: "Past Address", value: "PAST" }]}
+                                    options={[{ text: "Current Address", value: "CURRENT" }, { text: "Permanent Address", value: "PERMANENT" }, { text: "Past Address", value: "INTERMEDIATE" }]}
                                 />
                             </div>
 

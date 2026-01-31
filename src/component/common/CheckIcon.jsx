@@ -16,16 +16,13 @@ const CheckIcon = ({ status, label }) => {
         // Standard States
         cleared: 'bg-emerald-50 text-emerald-500 border-emerald-100',
         inprogress: 'bg-yellow-50 text-yellow-600 border-yellow-200',
-        pending: 'bg-slate-50 text-slate-300 border-slate-100',
-        created: 'bg-slate-50 text-slate-300 border-slate-100',
         unassigned: 'bg-red-50/50 text-red-400 border-red-200 border-dashed animate-[pulse_3s_infinite]',
 
         // Actionable States (The New Ones)
-        onhold: 'bg-amber-100 text-amber-700 border-amber-300',
-        unableto_verify: 'bg-rose-50 text-rose-500 border-rose-200',
+        unableto_verify: 'bg-amber-50 text-amber-500 border-amber-200',
+        insufficiency: 'bg-orange-50 text-orange-500 border-orange-200',
         failed: 'bg-red-100 text-red-600 border-red-200',
-        needsreview: 'bg-violet-50 text-violet-600 border-violet-200',
-        waitingfor_candidate: 'bg-sky-50 text-sky-500 border-sky-200'
+        needsreview: 'bg-violet-50 text-violet-600 border-violet-200'
     };
 
     const getTaskIcon = (taskName) => {

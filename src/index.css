@@ -46,6 +46,16 @@ button {
     cursor: pointer;
 }
 
+@supports (-webkit-hyphens:none) {
+    /* Targeted Safari Fix */
+    .animate-in {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        perspective: 1000;
+        will-change: transform, opacity;
+    }
+}
+
 /* Custom smooth scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
