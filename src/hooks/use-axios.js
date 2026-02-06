@@ -26,7 +26,7 @@ export const useAxios = () => {
     const apiCallHit = (requestConfig) => {
         const metaData = {
             // Recommendation: Use an environment variable or constant for the Base URL
-            url: 'http://164.52.221.221:8080/api/v1' + requestConfig.url,
+            url: '/api/v1' + requestConfig.url,
             method: requestConfig.method,
             data: requestConfig.data,
             type: requestConfig.type,
