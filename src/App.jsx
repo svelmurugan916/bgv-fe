@@ -4,6 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import TopBarLoader from "./component/common/TopBarLoader.jsx";
 import {VERIFY_ADDRESS_TOKEN, VERIFY_CANDIDATE_TOKEN} from "./constant/Endpoint.tsx";
+import SimpleLoader from "./component/common/SimpleLoader.jsx";
+import {useAuthApi} from "./provider/AuthApiProvider.jsx";
 
 
 // --- LAZY IMPORTS ---
@@ -16,6 +18,7 @@ const AddressVerificationForm = lazy(() => import("./page/address-verification/A
 const BulkCreateCandidates = lazy(() => import("./component/candidate/BulkCreateCandidates.jsx"));
 const CandidateDetails = lazy(() => import("./component/candidate/CandidateDetails.jsx"));
 const LoginPage = lazy(() => import("./page/login/LoginPage.jsx"));
+const RootRedirect = lazy(() => import("./RootRedirect.jsx"));
 const AdminDashboard = lazy(() => import("./component/dashboard/AdminDashboard.jsx"));
 const DashboardPage = lazy(() => import("./component/dashboard/DashboardPage.jsx"));
 const ProtectedRoute = lazy(() => import("./component/routes/ProtectedRoute.jsx"));
@@ -43,6 +46,7 @@ function App() {
                             <div className={`flex-grow`}>
                                 <Suspense fallback={<TopBarLoader />}>
                                     <Routes>
+                                        <Route path="/" element={<RootRedirect />} />
                                         <Route path="/login" element={<LoginPage />} />
                                         {/*<Route path="/fill-candidate-form/:token?" element={<TokenVerifier />} />*/}
                                         <Route

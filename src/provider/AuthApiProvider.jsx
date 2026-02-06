@@ -16,6 +16,7 @@ export const AuthApiProvider = ({ children }) => {
     const { apiCallHit } = useAxios();
     const gettingToken = useRef(false);
     const initialized = useRef(false);
+    const isAuthenticated = !!accessToken;
 
     // Helper to identify if current user is a candidate on the form
     const isCandidatePath = window.location.pathname.includes('/fill-candidate-form') || window.location.pathname.includes('/address-verification-form');
@@ -217,11 +218,11 @@ export const AuthApiProvider = ({ children }) => {
     }, [refreshAccessToken, isCandidatePath]);
 
     const value = useMemo(() => ({
-        accessToken, user, loading, login, logout,
+        accessToken, user, loading, login, logout, isAuthenticated,
         authenticatedRequest, unAuthenticatedRequest,
         setAuthData: handleTokenUpdate,
         loggedInRole, userType, tokenType, setUser, setLoading
-    }), [accessToken, user, loading, login, logout, authenticatedRequest, unAuthenticatedRequest, handleTokenUpdate, loggedInRole, userType, tokenType]);
+    }), [accessToken, user, loading, login, logout, isAuthenticated, authenticatedRequest, unAuthenticatedRequest, handleTokenUpdate, loggedInRole, userType, tokenType]);
 
     return <AuthApiContext.Provider value={value}>{children}</AuthApiContext.Provider>;
 };
