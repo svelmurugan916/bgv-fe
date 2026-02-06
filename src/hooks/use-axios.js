@@ -9,6 +9,7 @@ export class RequestConfig {
         this.data = {};
         this.headers = {};
         this.timeout = 20000;
+        this.params = {};
         this.responseType = 'json';
     }
 
@@ -16,6 +17,7 @@ export class RequestConfig {
     setType(type) { this.type = type; return this; }
     setMethod(method) { this.method = method; return this; }
     setData(data) { this.data = data; return this; }
+    setParams(params) { this.params = params; return this; }
     setHeaders(headers) { this.headers = { ...this.headers, ...headers }; return this; }
     setResponseType(type) { this.responseType = type; return this; }
 }
@@ -24,10 +26,11 @@ export const useAxios = () => {
     const apiCallHit = (requestConfig) => {
         const metaData = {
             // Recommendation: Use an environment variable or constant for the Base URL
-            url: 'http://localhost:8080/api/v1' + requestConfig.url,
+            url: 'http://164.52.221.221:8080/api/v1' + requestConfig.url,
             method: requestConfig.method,
             data: requestConfig.data,
             type: requestConfig.type,
+            params: requestConfig.params,
             headers: requestConfig.headers,
             credentials: 'same-origin',
             responseType: requestConfig.responseType,

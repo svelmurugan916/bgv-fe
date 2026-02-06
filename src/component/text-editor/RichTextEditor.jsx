@@ -21,23 +21,6 @@ import {TableActionMenu} from "./TableActionMenu.jsx";
 import {ColorPicker} from "./ColorPicker.jsx";
 import {MoreMenu} from "./MoreMenu.jsx";
 
-const COLORS = [
-    { name: 'Default', color: '#475569' },
-    { name: 'Blue', color: '#2563eb' },
-    { name: 'Teal', color: '#0d9488' },
-    { name: 'Green', color: '#16a34a' },
-    { name: 'Orange', color: '#ea580c' },
-    { name: 'Red', color: '#dc2626' },
-    { name: 'Purple', color: '#9333ea' },
-    { name: 'Gray', color: '#64748b' },
-    { name: 'Light Blue', color: '#60a5fa' },
-    { name: 'Light Teal', color: '#2dd4bf' },
-    { name: 'Light Green', color: '#4ade80' },
-    { name: 'Yellow', color: '#facc15' },
-    { name: 'Soft Red', color: '#f87171' },
-    { name: 'Soft Purple', color: '#c084fc' },
-];
-
 const MenuBar = ({ editor }) => {
     if (!editor) return null;
 

@@ -41,7 +41,7 @@ const OrganizationCases = () => {
     const { id } = useParams();
     const componentInitRef = useRef(false);
     const { authenticatedRequest } = useAuthApi();
-    const [formNonSubmittedAndStopCaseCount, setFormNonSubmittedAndStopCaseCount] = useState(0);
+    const [formNonSubmittedAndStopCaseCount, setFormNonSubmittedAndStopCaseCount] = useState({});
 
     useEffect(() => {
         const fetchCases = async (organizationId) => {
@@ -50,7 +50,7 @@ const OrganizationCases = () => {
                 const response = await authenticatedRequest(undefined, `${GET_CANDIDATES_TASKS_FOR_ORGANIZATION}/${organizationId}`, METHOD.GET);
                 if (response.status === 200 && response.data) {
                     const apiData = response.data;
-                    const completedCount = apiData.filter(data => (data?.caseDetails.status === "GREEN" || data?.caseDetails?.status === "AMBER" || data?.caseDetails?.status === "RED"))?.length;
+                    const completedCount = apiData.filter(data => ['GREEN', 'AMBER', 'RED', 'STOP_CASE'].includes(data?.caseDetails?.status))?.length;
                     const inProgressCount = apiData.filter(data => data?.caseDetails.status === "IN_PROGRESS")?.length;
                     const unableToVerifyCount = apiData.filter(data => data?.caseDetails.status === "INSUFFICIENCY")?.length;
                     setStats({
@@ -92,7 +92,12 @@ const OrganizationCases = () => {
 
     const getFormNotFillingCandidateCount = async (organizationId) => {
         try {
-            const response = await authenticatedRequest(undefined, `${FORM_NOT_SUBMITTED_COUNT}/${organizationId}`, METHOD.GET);
+            const options = {
+                params: {
+                    organizationId: organizationId,
+                }
+            }
+            const response = await authenticatedRequest(undefined, FORM_NOT_SUBMITTED_COUNT, METHOD.GET, options);
             if(response.status === 200) {
                 setFormNonSubmittedAndStopCaseCount(response.data);
             }

@@ -33,7 +33,7 @@ export const REMOVE_DOCUMENT = "/files/candidate/document"
 export const EXTRACT_EDUCATION_DOCUMENT = "/ocr/extract-marksheet-data"
 export const UPLOAD_EMPLOYMENT_DOCUMENT = "/files/candidate/{candidateId}/upload-multiple";
 export const UPLOAD_INTERNAL_PROOF = "/files/task/{taskId}/upload-proof"
-export const REMOVE_INTERNAL_PROOF = "/files/task/{artifactId}/delete-file"
+export const REMOVE_INTERNAL_PROOF = "/files/task/{fileId}/delete-file"
 
 export const INVITED_CANDIDATE_LIST = "/candidate/invited-candidate";
 export const FORM_NOT_SUBMITTED_COUNT = "/candidate/form-non-submitted-stop-case-count"
@@ -42,6 +42,7 @@ export const RESEND_INVITE_NOTIFICATION = "/candidate/resend-invitation"
 export const GET_ALL_CANDIDATES_TASKS = "/tasks/get-all-candidate";
 export const GET_CANDIDATES_TASKS_FOR_ORGANIZATION = "/tasks/get-candidate-for-organization";
 export const MARK_CANDIDATE_AS_STOP_CASE = "/candidate/mark-as-stop-case"
+export const RESUME_CANDIDATE_STATUS = "/candidate/resume-candidate-status"
 export const CANDIDATE_SEARCH_API = "/candidate/search-candidate"
 export const GET_CANDIDATE_DETAILS = "/tasks/get-candidate-details"
 
@@ -56,3 +57,5 @@ export const ASSIGN_CHECK_TO_ME = "/task-assignments/assign"
 export const GET_TASK_AUDIT_DETAILS = "/tasks/audit-details"
 export const SUBMIT_TASK_FEEDBACK_DETAILS = "/tasks/submit-feedback"
 export const UPDATE_TASK_STAUS = "/tasks/update-task"
+
+export const DOWNLOAD_CANDIDATE_REPORT = "/reports/bgv"

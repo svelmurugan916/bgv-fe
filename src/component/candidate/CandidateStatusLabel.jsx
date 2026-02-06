@@ -1,11 +1,11 @@
-import {AlertCircle, Clock, FileText, SearchX, ShieldCheck, XCircle} from "lucide-react";
+import {AlertCircle, CircleStop, Clock, FileText, SearchX, ShieldCheck, XCircle} from "lucide-react";
 import React from "react";
 
 const CandidateStatusLabel = ({status, label}) => {
 
     const statusConfig = {
         'IN_PROGRESS': {
-            color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
+            color: 'bg-blue-50 text-blue-600 border-blue-100',
             icon: Clock,
             label: 'In Progress'
         },
@@ -28,6 +28,11 @@ const CandidateStatusLabel = ({status, label}) => {
             color: 'bg-emerald-50 text-emerald-600 border-emerald-100',
             icon: ShieldCheck,
             label: 'Cleared'
+        },
+        'STOP_CASE': {
+            color: 'bg-slate-50 text-slate-600 border-slate-100',
+            icon: CircleStop,
+            label: 'Stop CASE'
         },
         'DEFAULT': {
             color: 'bg-slate-50 text-slate-400 border-slate-100',

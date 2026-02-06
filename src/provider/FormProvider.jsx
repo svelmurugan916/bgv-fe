@@ -34,7 +34,6 @@ export const FormProvider = ({ children }) => {
         idVerification: {
             pan: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
             aadhar: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
-            aadharBack: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
             passport: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
             consent: false
         },
@@ -128,14 +127,6 @@ export const FormProvider = ({ children }) => {
                     dob: data.idVerification?.aadhar?.dob || '',
                     isExtracted: data.idVerification?.aadhar?.isExtracted || false,
                     fileId: data.idVerification?.aadhar?.fileId || '',
-                },
-                aadharBack: {
-                    ...prev.idVerification.aadharBack,
-                    idNumber: data.idVerification?.aadharBack?.idNumber || '',
-                    fileName: data.idVerification?.aadharBack?.fileName || '',
-                    dob: data.idVerification?.aadharBack?.dob || '',
-                    isExtracted: data.idVerification?.aadharBack?.isExtracted || false,
-                    fileId: data.idVerification?.aadharBack?.fileId || '',
                 },
                 passport: {
                     ...prev.idVerification.passport,

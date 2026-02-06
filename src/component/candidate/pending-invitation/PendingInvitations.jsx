@@ -10,8 +10,10 @@ import {
 } from "../../../constant/Endpoint.tsx";
 import { METHOD } from "../../../constant/ApplicationConstant.js";
 import SingleSelectDropdown from "../../dropdown/SingleSelectDropdown.jsx";
+import {useParams} from "react-router-dom";
 
 const PendingInvitations = () => {
+    const { id } = useParams();
     const [loading, setLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState([]);
     const [invitations, setInvitations] = useState([]);
@@ -31,7 +33,12 @@ const PendingInvitations = () => {
     const fetchInvitedCandidates = async () => {
         setLoading(true)
         try {
-            const response = await authenticatedRequest(undefined, INVITED_CANDIDATE_LIST, METHOD.GET);
+            const options = {
+                params: {
+                    organizationId: id,
+                }
+            }
+            const response = await authenticatedRequest(undefined, INVITED_CANDIDATE_LIST, METHOD.GET, options);
             if(response.status === 200) {
                 setInvitations(response.data);
             }
@@ -186,6 +193,7 @@ const PendingInvitations = () => {
                     onSelect={toggleSelect}
                     onSelectAll={toggleSelectAll}
                     onStopCase={handleStopCase}
+                    onSendInvitation={handleResend}
                 />
             </div>
 

@@ -51,10 +51,10 @@ const BaseCheckLayout = ({
     const statusConfig = {
         'CLEARED': { bg: 'bg-emerald-500', lightBg: 'bg-emerald-50', text: 'text-emerald-700', icon: <ShieldCheck size={16} />, label: 'Verification Cleared' },
         'INSUFFICIENCY': { bg: 'bg-orange-500', lightBg: 'bg-orange-50', text: 'text-orange-700', icon: <ShieldX size={16} />, label: 'Source Stopper: Action Required' },
-        'NEEDS_REVIEW': { bg: 'bg-orange-500', lightBg: 'bg-orange-50', text: 'text-orange-700', icon: <ShieldQuestion size={16} />, label: 'Manual Review Required' },
+        'NEEDS_REVIEW': { bg: 'bg-violet-500', lightBg: 'bg-violet-50', text: 'text-violet-700', icon: <ShieldQuestion size={16} />, label: 'Manual Review Required' },
         'UNABLE_TO_VERIFY': { bg: 'bg-amber-500', lightBg: 'bg-amber-50', text: 'text-amber-700', icon: <ShieldQuestion size={16} />, label: 'Unable to Verify' },
         'FAILED': { bg: 'bg-red-500', lightBg: 'bg-red-50', text: 'text-red-700', icon: <ShieldAlertIcon size={16} />, label: 'Verification Failed' },
-        'IN_PROGRESS': { bg: 'bg-yellow-500', lightBg: 'bg-yellow-50', text: 'text-yellow-700', icon: <ClockIcon size={16} />, label: 'Verification In Progress' }
+        'IN_PROGRESS': { bg: 'bg-blue-500', lightBg: 'bg-blue-50', text: 'text-blue-700', icon: <ClockIcon size={16} />, label: 'Verification In Progress' }
     };
 
     const updateFeedback = (feedback) => {
@@ -88,6 +88,12 @@ const BaseCheckLayout = ({
         } catch (error) {
             throw error;
         }
+    }
+
+    const onRemoveSuccess = (fileId) => {
+        setAuditData(prevAuditData => {
+            return {...prevAuditData, verificationProofDocuments:prevAuditData.verificationProofDocuments.filter(f => f.fileId !== fileId)};
+        })
     }
 
     const currentStatus = statusConfig[status] || { bg: 'bg-slate-400', lightBg: 'bg-slate-50', text: 'text-slate-600', icon: <Clock size={16} />, label: 'Verification Pending' };
@@ -144,7 +150,7 @@ const BaseCheckLayout = ({
                             <CheckAuditTrail data={auditData} checkId={checkId} />
                             <AuditIntelligence data={auditData} hasInsufficiency={true} formatFullDateTime={formatFullDateTime} isInsufficiencyCleared={false} />
                             {auditData?.verificationProofDocuments?.length > 0 && (
-                                <EvidenceVault evidences={auditData.verificationProofDocuments}/>
+                                <EvidenceVault evidences={auditData.verificationProofDocuments} onRemoveSuccess={(fileId) => onRemoveSuccess(fileId)} />
                             )}
                         </>
                     }

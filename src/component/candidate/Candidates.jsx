@@ -7,11 +7,12 @@ import {
 import { useNavigate } from "react-router-dom";
 import CandidatesTable from "./CandidatesTable.jsx";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
-import { GET_ALL_CANDIDATES_TASKS} from "../../constant/Endpoint.tsx";
+import {FORM_NOT_SUBMITTED_COUNT, GET_ALL_CANDIDATES_TASKS} from "../../constant/Endpoint.tsx";
 import {METHOD} from "../../constant/ApplicationConstant.js";
 import StatsSkeleton from "../dashboard/organization/StatsSkeleton.jsx";
 import CandidateStatsView from "./CandidateStatsView.jsx";
 import TableSkeleton from "./TableSkeleton.jsx";
+import OperationalMetricsBar from "./OperationalMetricsBar.jsx";
 
 const Candidates = () => {
     const [candidates, setCandidates] = useState([]);
@@ -23,6 +24,8 @@ const Candidates = () => {
     const navigate = useNavigate();
     const { authenticatedRequest } = useAuthApi();
     const pageInitRef = useRef(false);
+    const [formNonSubmittedAndStopCaseCount, setFormNonSubmittedAndStopCaseCount] = useState({});
+
 
     useEffect(() => {
         const fetchCandidates = async () => {
@@ -42,8 +45,20 @@ const Candidates = () => {
         if(!pageInitRef.current) {
             pageInitRef.current = true;
             fetchCandidates();
+            getFormNotFillingCandidateCount();
         }
     }, []);
+
+    const getFormNotFillingCandidateCount = async () => {
+        try {
+            const response = await authenticatedRequest(undefined, FORM_NOT_SUBMITTED_COUNT, METHOD.GET);
+            if(response.status === 200) {
+                setFormNonSubmittedAndStopCaseCount(response.data);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -68,6 +83,12 @@ const Candidates = () => {
 
             {/* IMPROVISATION: Quick Stats Cards */}
             { isLoading ? <StatsSkeleton parentDivClass={""}/> : <CandidateStatsView candidates={candidates} parentDivClass={""}/> }
+
+            <OperationalMetricsBar
+                invitedCount={formNonSubmittedAndStopCaseCount?.formNonSubmittedCandidateCount || 0}
+                stopCaseCount={formNonSubmittedAndStopCaseCount?.stopCaseCount || 0}
+                onInvitedClick={() => navigate(`/candidate/pending-invitation`)}
+            />
 
             {/* 3. PRIMARY DETAILS TABLE */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">

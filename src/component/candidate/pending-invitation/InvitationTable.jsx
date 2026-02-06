@@ -37,7 +37,7 @@ const InvitationTable = ({ invitations, loading, selectedIds, onSelect, onSelect
 
         try {
             const response = await onSendInvitation(id);
-            if (response.success) {
+            if (response.status === 200) {
                 updateRowState(id, { inviteStatus: 'success', inviteMsg: response.message || 'Invitation Sent!' });
                 setTimeout(() => updateRowState(id, { inviteStatus: 'idle', inviteMsg: '' }), 3000);
             } else {

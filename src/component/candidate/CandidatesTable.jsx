@@ -16,28 +16,11 @@ import CheckIcon from "../common/CheckIcon.jsx";
 import MultiSelectDropdown from "../dropdown/MultiSelectDropdown.jsx";
 import SingleSelectDropdown from "../dropdown/SingleSelectDropdown.jsx";
 import { useNavigate } from "react-router-dom";
+import CandidateCheckIconStatus from "../common/CandidateCheckIconStatus.jsx";
 
 const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus, setSelectedStatus, checkTypeFilter, setCheckTypeFilter, selectedClient, setSelectedClient }) => {
     const navigate = useNavigate();
     const [copiedId, setCopiedId] = useState(null);
-
-    const getTaskIcon = (taskName) => {
-        switch (taskName.toLowerCase()) {
-            case 'unassigned': return <UserPlusIcon size={14} />;
-            case 'id':
-            case 'identity': return <UserCheck size={14} />;
-            case 'criminal': return <ShieldCheck size={14} />;
-            case 'education': return <GraduationCap size={14} />;
-            case 'employment':
-            case 'experience': return <Briefcase size={14} />;
-            case 'address': return <MapPinIcon size={14} />;
-            case 'db check':
-            case 'database': return <DatabaseIcon size={14} />;
-            case 'reference':
-            case 'reference check': return <UsersIcon size={14} />;
-            default: return <Package size={14} />;
-        }
-    };
 
     const handleCopy = (e, text) => {
         e.stopPropagation(); // Prevent navigation when clicking the copy button
@@ -48,47 +31,6 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
 
     const mappedCandidates = useMemo(() => {
         return candidates.map(item => {
-            // 1. Group checks by normalized task name
-            const grouped = item?.caseDetails?.checks?.reduce((acc, check) => {
-                let category = check.taskName.toUpperCase();
-                if (category.includes('ADDRESS')) category = 'ADDRESS';
-                else if (category.includes('IDENTITY') || category.includes('ID ')) category = 'IDENTITY';
-                else if (category.includes('EDUCATION')) category = 'EDUCATION';
-                else if (category.includes('EMPLOYMENT') || category.includes('EXPERIENCE')) category = 'EMPLOYMENT';
-                else if (category.includes('CRIMINAL')) category = 'CRIMINAL';
-                else if (category.includes('REFERENCE')) category = 'REFERENCE';
-                else if (category.includes('DATABASE') || category.includes('DB ')) category = 'DATABASE';
-
-                if (!acc[category]) acc[category] = [];
-                acc[category].push(check);
-                return acc;
-            }, {});
-
-            // 2. Determine final status for each group based on weightage
-            const processedChecks = grouped ? Object.keys(grouped).map(taskName => {
-                const checks = grouped[taskName];
-                const hasFailed = checks.some(c => c.status.toLowerCase().includes('failed'));
-                const hasInsufficiency = checks.some(c => c.status.toLowerCase().includes('insufficiency'));
-                const hasUnable = checks.some(c => c.status.toLowerCase().includes('unable_to_verify'));
-                const hasInProgress = checks.some(c =>
-                    c.status.toLowerCase() === 'in_progress' || c.status.toLowerCase() === 'needs_review'
-                );
-                const allUnassigned = checks.every(c => !c.assignedToUserId);
-
-                let finalStatus = 'cleared';
-
-                if (hasFailed) finalStatus = 'failed';
-                else if (hasInsufficiency) finalStatus = 'insufficiency';
-                else if (hasUnable) finalStatus = 'unableto_verify';
-                else if (allUnassigned) finalStatus = 'unassigned';
-                else if (hasInProgress) finalStatus = 'inprogress';
-
-                return {
-                    taskName: taskName,
-                    status: finalStatus
-                };
-            }) : [];
-
             return {
                 id: item.candidateInfo.candidateId,
                 caseNo: item.candidateInfo.caseNo,
@@ -100,7 +42,7 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
                 dueDate: item.candidateInfo.dueDate || 'TBD',
                 status: item.caseDetails.status,
                 taskStatus: item.caseDetails.taskStatus,
-                checks: processedChecks
+                checks: item.caseDetails?.checks,
             };
         });
     }, [candidates]);
@@ -254,16 +196,12 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
 
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2 min-w-max">
-                                            {item.checks.map((check, idx) => (
-                                                <div key={idx} className="relative group/icon">
-                                                    <CheckIcon key={idx} status={check.status} label={check.taskName} />
-                                                </div>
-                                            ))}
+                                            <CandidateCheckIconStatus  checks={item?.checks} candidateStatus={item.status} />
                                         </div>
                                     </td>
 
                                     <td className="px-6 py-4">
-                                        <StatusPill status={item.status} />
+                                        <StatusPill status={item.status} showDot={true} />
                                     </td>
 
                                     <td className="px-6 py-4 text-right">
@@ -310,21 +248,41 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
 
 const StatusPill = ({ status, showDot = false }) => {
     // Map API status strings to the UI Styles
-    const styles = {
-        'GREEN': 'bg-emerald-50 text-emerald-600 border-emerald-100 dot-emerald-500',
-        'IN_PROGRESS': 'bg-yellow-50 text-yellow-600 border-yellow-100 dot-yellow-500',
-        'RED': 'bg-red-50 text-red-600 border-red-100 dot-red-500',
-        'AMBER': 'bg-amber-50 text-amber-600 border-amber-100 dot-amber-500',
-        'INSUFFICIENCY': 'bg-orange-50 text-orange-600 border-orange-100 dot-orange-500'
-    };
 
-    const currentStyle = styles[status] || 'bg-slate-50 text-slate-500 border-slate-200 dot-slate-400';
+    const statusConfig = {
+        GREEN: {
+            className: 'bg-emerald-50 text-emerald-600 border-emerald-100 dot-emerald-500',
+            displayName: "Completed"
+        },
+        IN_PROGRESS: {
+            className: 'bg-blue-50 text-blue-600 border-blue-100 dot-blue-500',
+            displayName: "In Progress"
+        },
+        RED: {
+            className: 'bg-red-50 text-red-600 border-red-100 dot-red-500',
+            displayName: "Failed"
+        },
+        AMBER: {
+            className: 'bg-amber-50 text-amber-600 border-amber-100 dot-amber-500',
+            displayName: "Unable to Verify"
+        },
+        INSUFFICIENCY: {
+            className: 'bg-orange-50 text-orange-600 border-orange-100 dot-orange-500',
+            displayName: "Insufficiency"
+        },
+        STOP_CASE: {
+            className: 'bg-slate-50 text-slate-600 border-slate-100 dot-slate-400',
+            displayName: "Stop Case"
+        }
+    }
+
+    const currentStyle = statusConfig[status]?.className || 'bg-slate-50 text-slate-500 border-slate-200 dot-slate-400';
     const dotColor = currentStyle.split(' ').find(s => s.startsWith('dot-'))?.replace('dot-', 'bg-') || 'bg-slate-400';
 
     return (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-tight ${currentStyle}`}>
             {showDot && <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />}
-            {status?.replaceAll('_', ' ')}
+            {statusConfig[status]?.displayName}
         </span>
     );
 };

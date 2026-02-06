@@ -23,7 +23,7 @@ import {useAuthApi} from "../../../provider/AuthApiProvider.jsx";
 import {ASSIGN_CHECK_TO_ME} from "../../../constant/Endpoint.tsx";
 import {METHOD} from "../../../constant/ApplicationConstant.js";
 
-const CheckAuditTrail = ({ data = {}, addressId  }) => {
+const CheckAuditTrail = ({ data = {}, checkId  }) => {
     const isSlaBreached = data.isSlaBreached || (data.slaRemainingHours <= 0);
     const isCompleted = data.status === "COMPLETED" || !!data.taskCompletedAt;
     const [isAssigning, setIsAssigning] = React.useState(false);
@@ -51,7 +51,7 @@ const CheckAuditTrail = ({ data = {}, addressId  }) => {
         setErrorWhileAssigned(false);
         try {
             const payload = {
-                taskId: addressId,
+                taskId: checkId,
                 assignedToUserId: user.id,
                 assignmentNotes: "Self assignment",
             }

@@ -90,9 +90,9 @@ const AssignedPackage = ({organizationPackage, activeDeleteId, setActiveDeleteId
                                             </>
                                         ) : (
                                             /* Delete Confirmation UI */
-                                            <div className="flex items-center gap-2 px-2 animate-in fade-in zoom-in duration-200">
-                                            <span className="text-[10px] font-black uppercase text-red-500 tracking-tighter">Are you sure?</span>
-                                            <div className="flex gap-1">
+                                    <div className="flex items-center gap-2 px-2 animate-in fade-in zoom-in duration-200">
+                                        <span className="text-[10px] font-black uppercase text-red-500 tracking-tighter">Are you sure?</span>
+                                        <div className="flex gap-1">
                                             <button
                                             onClick={(e) => { e.stopPropagation(); setShowLoader(pkg.id); handleDeletePackage(pkg.id); setActiveDeleteId(null); }}
                                          className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"

@@ -73,7 +73,7 @@ const SearchBar = ({ searchInputRef }) => {
         switch (status) {
             case 'COMPLETED':
             case 'CLEARED': return 'bg-emerald-500';
-            case 'IN_PROGRESS': return 'bg-indigo-500';
+            case 'IN_PROGRESS': return 'bg-blue-500';
             case 'ACTION_REQUIRED': return 'bg-rose-500';
             default: return 'bg-slate-300';
         }

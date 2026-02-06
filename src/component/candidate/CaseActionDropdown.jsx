@@ -2,14 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     Download, MoreVertical, MapPin, GraduationCap,
     Briefcase, Fingerprint, Users, Database,
-    ShieldAlert, CircleStop, Plus, ChevronRight
+    ShieldAlert, CircleStop, Plus, Loader2, PlayCircle
 } from 'lucide-react';
 
-const CaseActionDropdown = ({setIsCreateModalOpen}) => {
+const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidateStatus, handleDownloadReport, isDownloading }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const [actionLoading, setActionLoading] = useState(false);
 
-    // Close dropdown when clicking outside
+    // Derived State
+    const isStopped = candidateStatus === 'STOP_CASE';
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -21,7 +24,7 @@ const CaseActionDropdown = ({setIsCreateModalOpen}) => {
     }, []);
 
     const menuItems = [
-        { icon: <MapPin size={16} />, label: 'Address', onClick: () => setIsCreateModalOpen(true)},
+        { icon: <MapPin size={16} />, label: 'Address', onClick: () => setIsCreateModalOpen(true) },
         { icon: <GraduationCap size={16} />, label: 'Education' },
         { icon: <Briefcase size={16} />, label: 'Employment' },
         { icon: <Fingerprint size={16} />, label: 'Identity' },
@@ -30,11 +33,30 @@ const CaseActionDropdown = ({setIsCreateModalOpen}) => {
         { icon: <ShieldAlert size={16} />, label: 'Criminal check' },
     ];
 
+    const handleToggleCaseStatus = async () => {
+        setActionLoading(true);
+        try {
+            await handeStopCaseClick();
+        } finally {
+            setActionLoading(false);
+            setIsOpen(false);
+        }
+    }
+
     return (
         <div className="flex items-center gap-3 relative" ref={dropdownRef}>
             {/* Download Button */}
-            <button className="bg-[#5D4591] text-white px-6 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm hover:bg-[#4a3675] transition-all active:scale-95 cursor-pointer">
-                <Download size={16} /> Download report
+            <button onClick={handleDownloadReport} className="bg-[#5D4591] text-white px-6 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm hover:bg-[#4a3675] transition-all active:scale-95 cursor-pointer">
+                {
+                    isDownloading ? (
+                        <>
+                            <Loader2 className={"animate-spin"} size={16} /> Download report
+                        </>) : (
+                        <>
+                            <Download size={16} /> Download report
+                        </>
+                    )
+                }
             </button>
 
             {/* More Button */}
@@ -49,7 +71,7 @@ const CaseActionDropdown = ({setIsCreateModalOpen}) => {
                 <MoreVertical size={20} className={`transition-transform duration-500 ${isOpen ? 'rotate-90' : ''}`} />
             </button>
 
-            {/* SMOOTH TRANSITION DROPDOWN */}
+            {/* DROPDOWN */}
             <div className={`
                 absolute right-0 top-full mt-3 w-64 bg-white/95 backdrop-blur-md border border-slate-200/60 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[100] py-2 
                 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] origin-top-right
@@ -60,21 +82,20 @@ const CaseActionDropdown = ({setIsCreateModalOpen}) => {
 
                 <div className="px-4 py-2 mb-1 flex items-center justify-between">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Quick Actions</p>
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#5D4591] animate-pulse" />
+                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isStopped ? 'bg-slate-300' : 'bg-[#5D4591]'}`} />
                 </div>
 
                 <div className="space-y-0.5 px-1">
                     {menuItems.map((item, index) => (
                         <button
                             key={index}
-                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-slate-600 hover:bg-[#F9F7FF] hover:text-[#5D4591] transition-all group text-left"
+                            disabled={isStopped}
+                            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all group text-left 
+                                ${isStopped
+                                ? 'opacity-40 cursor-not-allowed grayscale'
+                                : 'text-slate-600 hover:bg-[#F9F7FF] hover:text-[#5D4591] cursor-pointer'}`}
                             onClick={() => {
-                                // Fix: Check if onClick exists before calling it
-                                if (item.onClick) {
-                                    item.onClick();
-                                } else {
-                                    console.log(`${item.label} clicked - No action defined yet`);
-                                }
+                                if (item.onClick) item.onClick();
                                 setIsOpen(false);
                             }}
                         >
@@ -84,7 +105,7 @@ const CaseActionDropdown = ({setIsCreateModalOpen}) => {
                                 </div>
                                 <span className="text-xs font-bold tracking-tight">{item.label}</span>
                             </div>
-                            <Plus size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                            {!isStopped && <Plus size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />}
                         </button>
                     ))}
                 </div>
@@ -92,18 +113,38 @@ const CaseActionDropdown = ({setIsCreateModalOpen}) => {
                 {/* Separator */}
                 <div className="h-px bg-slate-100 my-2 mx-3" />
 
-                {/* Stop Case Action - Red Shaded Warning */}
+                {/* Conditional Action: Stop or Resume */}
                 <div className="px-1">
                     <button
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-rose-600 hover:bg-rose-50 transition-all group text-left"
-                        onClick={() => setIsOpen(false)}
+                        disabled={actionLoading}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group text-left cursor-pointer
+                            ${isStopped
+                            ? 'text-emerald-600 hover:bg-emerald-50'
+                            : 'text-rose-600 hover:bg-rose-50'}`}
+                        onClick={handleToggleCaseStatus}
                     >
-                        <div className="w-8 h-8 rounded-lg bg-rose-100/50 flex items-center justify-center text-rose-500 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
-                            <CircleStop size={16} />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300
+                            ${isStopped
+                            ? 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white'
+                            : 'bg-rose-100 text-rose-600 group-hover:bg-rose-600 group-hover:text-white'}`}>
+                            {actionLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : isStopped ? (
+                                <PlayCircle size={16} />
+                            ) : (
+                                <CircleStop size={16} />
+                            )}
                         </div>
+
                         <div className="flex flex-col">
-                            <span className="text-xs font-black uppercase tracking-tight">Stop case</span>
-                            <span className="text-[9px] text-rose-400 font-bold uppercase">Terminate Case</span>
+                            <span className="text-xs font-black uppercase tracking-tight">
+                                {isStopped ? 'Resume Case' : 'Stop Case'}
+                            </span>
+                            <span className={`text-[9px] font-bold uppercase ${isStopped ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                {actionLoading
+                                    ? (isStopped ? 'Resuming...' : 'Terminating...')
+                                    : (isStopped ? 'Continue Verification' : 'Terminate Case')}
+                            </span>
                         </div>
                     </button>
                 </div>

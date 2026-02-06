@@ -113,6 +113,10 @@ export const AuthApiProvider = ({ children }) => {
             config.setResponseType(options.responseType);
         }
 
+        if(options.params) {
+            config.setParams(options.params);
+        }
+
         let currentToken = accessToken;
 
         // 2. Only attempt refresh if currentToken is missing/expired AND we aren't on candidate path

@@ -168,10 +168,6 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
                         missingLabels.push("Under Graduate (UG)");
                     }
 
-                    if (levels.includes("POST_GRADUATE") && !enteredLevels.includes("POST_GRADUATE")) {
-                        missingLabels.push("Post Graduate (PG)");
-                    }
-
                     if (missingLabels.length > 0) {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                         newErrors.education_general = `Mandatory educational details missing: ${missingLabels.join(", ")}.`;

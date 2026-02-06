@@ -49,6 +49,10 @@ const FeedbackForm = ({ taskId, onSuccessSubmitFeedback, onSuccessFileUpload }) 
         }
     };
 
+    useEffect(() => {
+
+    }, [isUploadModalOpen])
+
     return (
         <div className="relative">
             <FileUploadModal

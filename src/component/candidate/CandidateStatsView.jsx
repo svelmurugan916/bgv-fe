@@ -19,7 +19,7 @@ const CandidateStatsView = ({candidates, parentDivClass = "max-w-7xl"}) => {
                 </div>
                 <div>
                     <p className="text-sm font-medium text-slate-500">Total Completed</p>
-                    <p className="text-2xl font-black text-slate-900">{candidates?.filter(c => ['GREEN', 'AMBER', 'RED'].includes(c?.caseDetails?.status)).length ?? 0}</p>
+                    <p className="text-2xl font-black text-slate-900">{candidates?.filter(c => ['GREEN', 'AMBER', 'RED', 'STOP_CASE'].includes(c?.caseDetails?.status)).length ?? 0}</p>
                 </div>
             </div>
             <div className="bg-white p-6 rounded-3xl border border-slate-100 flex items-center gap-5">

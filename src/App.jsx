@@ -70,7 +70,9 @@ function App() {
                                         {/*<Route path="/address-verification/:token?" element={<AddressVerificationForm />} />*/}
 
                                         <Route element={<ProtectedRoute />}>
-                                            <Route path="/select-role" element={<RoleSelectionPage />} />
+                                            <Route element={<MainLayout />}>
+                                                <Route path="/select-role" element={<RoleSelectionPage />} />
+                                            </Route>
                                         </Route>
 
                                         {/* --- DASHBOARD ROUTES --- */}

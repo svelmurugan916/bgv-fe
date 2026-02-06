@@ -1,5 +1,16 @@
 import React from 'react';
-import {Home, FileText, BarChart2, Settings, UserPlus, UserCheck, ChevronLeft, ChevronRight, Building2Icon} from 'lucide-react';
+import {
+    Home,
+    FileText,
+    BarChart2,
+    Settings,
+    UserPlus,
+    UserCheck,
+    ChevronLeft,
+    ChevronRight,
+    Building2Icon,
+    UserIcon, BuildingIcon
+} from 'lucide-react';
 import SidebarItem from "./SidebarItem.jsx";
 import {useNavigate} from "react-router-dom";
 
@@ -10,8 +21,8 @@ const Sidebar = () => {
 
     const menuItems = [
         { icon: <Home size={20} />, label: 'Dashboard', active: true, route: '/dashboard' },
-        { icon: <Building2Icon size={20} />, label: 'Organizations', route: '/organisation-dashboard' },
-        { icon: <FileText size={20} />, label: 'Candidate List', route: '/candidate-list' },
+        { icon: <BuildingIcon size={20} />, label: 'Organizations', route: '/organisation-dashboard' },
+        { icon: <UserIcon size={20} />, label: 'Candidate List', route: '/candidate-list' },
         { icon: <UserCheck size={20} />, label: 'Case Assignment', route: '/case-assignment' },
         { icon: <BarChart2 size={20} />, label: 'Analytics' },
         { icon: <UserPlus size={20} />, label: 'User Management' },

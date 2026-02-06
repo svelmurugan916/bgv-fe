@@ -77,7 +77,7 @@ const LoginPage = () => {
                 setError(data.message || "Failed to resend OTP");
             }
         } catch (err) {
-            setError("Network error. Please try again.");
+            setError( err.response.data.message || "Network error. Please try again.");
         } finally {
             setIsLoading(false);
         }

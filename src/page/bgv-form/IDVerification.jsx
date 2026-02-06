@@ -16,7 +16,6 @@ const IDVerification = () => {
     const documentFaceJson = {
         pan: "SINGLE",
         aadhar: "FRONT",
-        aadharBack: 'BACK',
         passport: 'SINGLE'
     }
 
@@ -173,16 +172,6 @@ const IDVerification = () => {
                     processing={uploadingType === 'aadhar'} // Fixed: Use uploadingType
                     onFileSelect={(e) => handleFileChange('aadhar', e)}
                     onRemove={() => handleRemoveFile('aadhar')}
-                />
-
-                {/* --- AADHAR BACK --- */}
-                <DocCard
-                    title="Upload Aadharcard Back Side*"
-                    file={data.aadharBack.fileName}
-                    error={uploadErrors.aadharBack}
-                    processing={uploadingType === 'aadharBack'} // Fixed: Use uploadingType
-                    onFileSelect={(e) => handleFileChange('aadharBack', e)}
-                    onRemove={() => handleRemoveFile('aadharBack')}
                 />
 
                 {data.aadhar.isExtracted && (

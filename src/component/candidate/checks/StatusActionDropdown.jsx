@@ -72,7 +72,7 @@ const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatu
                 onClick={() => setIsEditModalOpen(true)}
                 className="px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-[#5D4591] bg-[#F9F7FF] border border-[#5D4591]/20 rounded-xl hover:bg-[#F0EDFF] transition-all flex items-center gap-2 cursor-pointer"
             >
-                <Edit3 size={14} /> Edit Address
+                <Edit3 size={14} /> Edit Details
             </button>
 
             <button
