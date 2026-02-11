@@ -117,18 +117,19 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
         const initialFormData = candidateDataResponse?.candidateDetailsResponse;
         const candidateId = candidateDataResponse?.candidateId
         if(candidateId) setCandidateId(candidateId);
-
+        const checks = candidateDataResponse?.checks || [];
+        const checkConfigs = candidateDataResponse?.checkConfigs || {};
         if (initialFormData) {
             hydrateForm(initialFormData);
             let resumeStep = BASIC_INFO_PAGE_IDX;
             const validationSteps = filteredSteps.filter(s => s.id < REVIEW_PAGE_IDX);
-
             for (const stepObj of validationSteps) {
                 const i = stepObj.id;
-                const stepErrors = validateStep(i, initialFormData, () => {});
+                const stepErrors = validateStep(i, initialFormData, () => {}, checkConfigs, checks);
                 let hasData = true;
 
-                if (i === ADDRESS_INFO_PAGE_IDX) hasData = initialFormData.basic?.addresses?.length > 0;
+                if(i === BASIC_INFO_PAGE_IDX) hasData = initialFormData.basic?.fatherName !== "" || initialFormData.basic?.fatherName !== undefined;
+                else if (i === ADDRESS_INFO_PAGE_IDX) hasData = initialFormData.basic?.addresses?.length > 0;
                 else if (i === EDUCATION_PAGE_IDX) hasData = initialFormData.education?.length > 0;
                 else if (i === EXPERIENCE_PAGE_IDX) hasData = initialFormData.employment?.isFresher || initialFormData.employment?.details?.length > 0;
                 else if (i === REFERENCE_PAGE_IDX) hasData = initialFormData.references?.length > 0;

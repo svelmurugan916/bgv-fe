@@ -1,17 +1,32 @@
 import React, {useState, useCallback, useEffect} from 'react';
-import { InfoIcon, Camera, Trash2, Crop, RefreshCw, X, Check, AlertCircle } from 'lucide-react';
+import {
+    InfoIcon,
+    Camera,
+    Trash2,
+    Crop,
+    RefreshCw,
+    X,
+    Check,
+    AlertCircle,
+    Loader2,
+    RefreshCwIcon,
+    Trash2Icon, AlertCircleIcon, CheckIcon
+} from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import InputComponent from "./InputComponent.jsx";
 import FormPageHeader from "./FormPageHeader.jsx";
 import { useForm } from "../../provider/FormProvider.jsx";
 import {getCroppedImg} from "./form-utils.js";
 import FormSingleDropdownSelect from "./FormSingleDropdownSelect.jsx";
-import {EMAIL_REGEX, PHONE_NUMBER_REGEX} from "../../constant/ApplicationConstant.js";
+import {EMAIL_REGEX, METHOD, PHONE_NUMBER_REGEX} from "../../constant/ApplicationConstant.js";
 import CustomDatePicker from "../../component/common/CustomDatePicker.jsx";
+import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
+import {REMOVE_PROFILE_PICTURE, UPLOAD_PROFILE_PICTURE} from "../../constant/Endpoint.tsx";
 
 const BasicInfo = ({ checks }) => {
-    const { formData, updateFormData, errors, clearError } = useForm();
+    const { formData, updateFormData, errors, clearError, candidateId } = useForm();
     const data = formData.basic;
+    const { authenticatedRequest } = useAuthApi();
 
     // --- Cropper State ---
     const [originalImage, setOriginalImage] = useState(null); // WORKAROUND: Store original high-res image
@@ -20,6 +35,12 @@ const BasicInfo = ({ checks }) => {
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
     const [showCropper, setShowCropper] = useState(false);
+
+    const [uploadStatus, setUploadStatus] = useState('idle'); // 'idle' | 'uploading' | 'success' | 'error'
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isImageLoading, setIsImageLoading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState(false);
 
     const validateField = (field, value) => {
         let isValid = false;
@@ -41,6 +62,65 @@ const BasicInfo = ({ checks }) => {
         }
         if (isValid) clearError(field);
     };
+
+    console.log("formData -- ", candidateId);
+
+    const handleDeleteImage = async () => {
+        setIsDeleting(true);
+        try {
+
+            const response = await authenticatedRequest(
+               undefined,
+                `${REMOVE_PROFILE_PICTURE.replace("{candidateId}", candidateId)}`, // Update with your actual endpoint
+                METHOD.DELETE,
+            );
+
+            if (response.status === 200) {
+                // Clear all local states upon successful deletion
+                updateFormData('basic', { ...data, profilePic: null, profilePictureUrl: null });
+                setOriginalImage(null);
+                setUploadStatus('idle');
+            }
+        } catch (error) {
+            console.error("Delete failed", error);
+            setDeleteError(true);
+            setUploadStatus('error');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const uploadProfileImage = async (imageBlob) => {
+        setUploadStatus('uploading');
+        setUploadProgress(0);
+
+        const file = new File([imageBlob], "profile.jpg", { type: "image/jpeg" });
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+
+        try {
+            const response = await authenticatedRequest(
+                uploadData,
+                `${UPLOAD_PROFILE_PICTURE.replace("{candidateId}", candidateId)}`,
+                METHOD.POST,
+                {
+                    // This is where you pass the progress handler
+                    onUploadProgress: (progressEvent) => {
+                        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(percent);
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                setUploadStatus('success');
+                setTimeout(() => setUploadStatus('idle'), 3000);
+            }
+        } catch (error) {
+            setUploadStatus('error');
+        }
+    };
+
 
     const handleInputChange = (field, value) => {
         console.log('handleInputChange', field, value);
@@ -71,33 +151,49 @@ const BasicInfo = ({ checks }) => {
         }
     };
 
+    useEffect(() => {
+        if (data.profilePictureUrl && !data.profilePic) {
+            setIsImageLoading(true);
+        }
+    }, [data.profilePictureUrl, data.profilePic]);
+
     const onCropComplete = useCallback((_, pixels) => {
         setCroppedAreaPixels(pixels);
     }, []);
 
     const saveCroppedImage = async () => {
         try {
+            // getCroppedImg should return a blob/url
             const croppedImage = await getCroppedImg(tempImage, croppedAreaPixels);
+
+            // 1. Update local UI state
             updateFormData('basic', { ...data, profilePic: croppedImage });
             setShowCropper(false);
+
+            // 2. Trigger API Upload
+            const response = await fetch(croppedImage);
+            const blob = await response.blob();
+            await uploadProfileImage(blob);
+
         } catch (e) {
             console.error(e);
+            setUploadStatus('error');
         }
     };
 
     // Helper to handle recrop of existing image
     const handleRecrop = () => {
         // Use originalImage if available, otherwise fallback to current profilePic
-        const imageToCrop = originalImage || data.profilePic;
+        const imageToCrop = originalImage || data.profilePic || data.profilePictureUrl;
         if (imageToCrop) {
             setTempImage(imageToCrop);
-            // WORKAROUND: Reset states to ensure the cropper area is selectable/responsive
             setCrop({ x: 0, y: 0 });
             setZoom(1);
             setShowCropper(true);
         }
     };
 
+    const doesCheckContainsId = checks.includes("IDENTITY");
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
             <FormPageHeader heading={"Basic Information"} helperText={"Provide your personal and contact details."} />
@@ -105,11 +201,20 @@ const BasicInfo = ({ checks }) => {
             {/* --- PROFILE PICTURE SECTION --- */}
             <div className="flex flex-col items-center mb-10">
                 <div className="relative group">
-                    <div className={`w-32 h-32 lg:w-40 lg:h-40 rounded-3xl border-2 border-dashed transition-all duration-300 flex items-center justify-center overflow-hidden bg-slate-50
-                        ${data.profilePic ? 'border-[#5D4591] border-solid' : 'border-slate-200 hover:border-[#5D4591]/60'}`}>
+                    <div className={`w-32 h-32 lg:w-40 lg:h-40 rounded-3xl border-2 transition-all duration-500 flex items-center justify-center overflow-hidden bg-slate-50 relative
+                    ${uploadStatus === 'success' ? 'border-emerald-500 shadow-lg shadow-emerald-100' :
+                        (data.profilePic || data.profilePictureUrl) ? 'border-[#5D4591] border-solid' : 'border-dashed border-slate-200 hover:border-[#5D4591]/60'}`}>
 
-                        {data.profilePic ? (
-                            <img src={data.profilePic} alt="Profile" className="w-full h-full object-cover" />
+                        {/* 1. IMAGE DISPLAY */}
+                        {(data.profilePic || data.profilePictureUrl) ? (
+                            <img
+                                src={data.profilePic || data.profilePictureUrl}
+                                alt="Profile"
+                                onLoad={() => setIsImageLoading(false)}
+                                onError={() => setIsImageLoading(false)}
+                                className={`w-full h-full object-cover transition-all duration-500 
+                        ${(uploadStatus === 'uploading' || isImageLoading || isDeleting) ? 'opacity-0' : 'opacity-100'}`}
+                            />
                         ) : (
                             <label className="flex flex-col items-center cursor-pointer p-4 text-center">
                                 <Camera size={28} className="text-slate-400 mb-2" />
@@ -118,27 +223,95 @@ const BasicInfo = ({ checks }) => {
                             </label>
                         )}
 
-                        {data.profilePic && (
-                            <div className="absolute inset-0 bg-[#241B3B]/40 lg:bg-[#241B3B]/60 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                <button onClick={handleRecrop} className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all" title="Recrop">
-                                    <Crop size={18} />
+                        {/* 2. S3 FETCHING LOADER */}
+                        {isImageLoading && !uploadStatus === 'uploading' && !isDeleting && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 animate-pulse">
+                                <div className="w-8 h-8 border-2 border-[#5D4591]/20 border-t-[#5D4591] rounded-full animate-spin mb-2" />
+                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Loading Image...</span>
+                            </div>
+                        )}
+
+                        {/* 3. API UPLOADING OVERLAY */}
+                        {uploadStatus === 'uploading' && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px] z-10">
+                                <Loader2 className="text-[#5D4591] animate-spin mb-2" size={24} />
+                                <span className="text-[10px] font-black text-[#5D4591]">{uploadProgress}%</span>
+                                <div className="absolute bottom-0 left-0 h-1.5 bg-slate-100 w-full">
+                                    <div className="h-full bg-[#5D4591] transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 4. DELETING OVERLAY */}
+                        {isDeleting && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-[2px] z-40">
+                                <Loader2 className="text-red-500 animate-spin mb-2" size={24} />
+                                <span className="text-[10px] font-black text-red-500 uppercase">Deleting...</span>
+                            </div>
+                        )}
+
+                        {/* 5. SUCCESS OVERLAY */}
+                        {uploadStatus === 'success' && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-emerald-500/10 animate-in fade-in duration-500 z-20">
+                                <div className="bg-emerald-500 text-white rounded-full p-2 shadow-lg scale-110 animate-in zoom-in-50">
+                                    <Check size={24} strokeWidth={3} />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 6. ERROR OVERLAY */}
+                        {uploadStatus === 'error' && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-50 z-50 animate-in fade-in">
+                                <AlertCircle className="text-red-500 mb-1" size={24} />
+                                <span className="text-[8px] font-bold text-red-500 uppercase">
+                                    {deleteError ? 'Delete Failed' : 'Upload Failed'}
+                                </span>
+                                <button
+                                    onClick={() => { setUploadStatus('idle'); setDeleteError(false); }}
+                                    className="mt-2 text-[8px] font-bold underline text-slate-500 uppercase"
+                                >
+                                    Dismiss
                                 </button>
+                            </div>
+                        )}
+
+                        {/* 7. HOVER ACTIONS */}
+                        {(data.profilePic || data.profilePictureUrl) && uploadStatus === 'idle' && !isImageLoading && !isDeleting && (
+                            <div className="absolute inset-0 bg-[#241B3B]/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 z-30">
+                                {data.profilePic && (
+                                    <button onClick={handleRecrop} className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all" title="Recrop">
+                                        <Crop size={18} />
+                                    </button>
+                                )}
                                 <label className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white cursor-pointer transition-all" title="Change">
                                     <RefreshCw size={18} />
                                     <input type="file" className="hidden" accept="image/*" onChange={onFileChange} />
                                 </label>
-                                <button onClick={() => {
-                                    updateFormData('basic', { ...data, profilePic: null });
-                                    setOriginalImage(null); // Clear original too
-                                }} className="p-2 bg-white/20 hover:bg-red-500 rounded-full text-white transition-all" title="Remove">
+                                <button onClick={handleDeleteImage} className="p-2 bg-white/20 hover:bg-red-500 rounded-full text-white transition-all" title="Remove">
                                     <Trash2 size={18} />
                                 </button>
                             </div>
                         )}
                     </div>
                 </div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase mt-3 tracking-widest">Candidate Profile Picture</p>
+
+                {/* Status Text Logic */}
+                <p className="text-[10px] font-bold uppercase mt-3 tracking-widest">
+                    {uploadStatus === 'success' ? (
+                        <span className="text-emerald-600 flex items-center gap-1"><Check size={12} /> Profile Picture Uploaded</span>
+                    ) : uploadStatus === 'uploading' ? (
+                        <span className="text-[#5D4591]">Uploading to server...</span>
+                    ) : isDeleting ? (
+                        <span className="text-red-500 animate-pulse">Removing Photo...</span>
+                    ) : isImageLoading ? (
+                        <span className="text-slate-400 animate-pulse">Fetching from S3...</span>
+                    ) : (
+                        <span className="text-slate-400">Candidate Profile Picture</span>
+                    )}
+                </p>
             </div>
+
+
 
             {/* --- PERSONAL DETAILS GRID --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12">
@@ -229,15 +402,20 @@ const BasicInfo = ({ checks }) => {
                         onChange={(v) => handleInputChange('fatherName', v)}
                     />
                 </div>
-                <div id={"emailAddress"}>
-                    <CustomDatePicker
-                        label="Date Of Birth"
-                        isMandatory={true}
-                        value={data.dateOfBirth}
-                        error={errors.dateOfBirth}
-                        onChange={(v) => handleInputChange('dateOfBirth', v)}
-                    />
-                </div>
+                {
+                    !doesCheckContainsId && (
+                        <div id={"dateOfBirth"}>
+                            <CustomDatePicker
+                                label="Date Of Birth"
+                                isMandatory={true}
+                                value={data.dateOfBirth}
+                                error={errors.dateOfBirth}
+                                onChange={(v) => handleInputChange('dateOfBirth', v)}
+                            />
+                        </div>
+                    )
+                }
+
 
             </div>
 

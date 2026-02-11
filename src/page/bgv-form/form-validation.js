@@ -10,7 +10,6 @@ export const REVIEW_PAGE_IDX = 7;
 
 export const validateStep = (step, formData, setErrors, checkConfigs = {}, checks = []) => {
     let newErrors = {};
-
     if (step === BASIC_INFO_PAGE_IDX) {
         const { basic } = formData;
         if (!basic.firstName) newErrors.firstName = "First name is required";
@@ -19,7 +18,7 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
         if (!basic.gender) newErrors.gender = "Gender is required";
         if (!EMAIL_REGEX.test(basic.email)) newErrors.email = "Invalid email format";
         if (!PHONE_NUMBER_REGEX.test(basic.phone)) newErrors.phone = "Invalid 10-digit phone number";
-        if(checks.includes("ADDRESS") && !basic.dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required";
+        if(!checks.includes("ADDRESS") && !basic.dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required";
     }
 
     if(step === ADDRESS_INFO_PAGE_IDX) {

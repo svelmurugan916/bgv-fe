@@ -11,6 +11,7 @@ export class RequestConfig {
         this.timeout = 20000;
         this.params = {};
         this.responseType = 'json';
+        this.onUploadProgress = null;
     }
 
     setUrl(url) { this.url = url; return this; }
@@ -20,6 +21,7 @@ export class RequestConfig {
     setParams(params) { this.params = params; return this; }
     setHeaders(headers) { this.headers = { ...this.headers, ...headers }; return this; }
     setResponseType(type) { this.responseType = type; return this; }
+    setOnUploadProgress(callback) { this.onUploadProgress = callback; return this; }
 }
 
 export const useAxios = () => {
@@ -36,6 +38,7 @@ export const useAxios = () => {
             responseType: requestConfig.responseType,
             // This is the key for your cookies/refresh tokens
             withCredentials: requestConfig.type === AUTH_TYPE.AUTH,
+            onUploadProgress: requestConfig.onUploadProgress,
         };
         return axios(metaData);
     };

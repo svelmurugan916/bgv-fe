@@ -114,6 +114,10 @@ export const AuthApiProvider = ({ children }) => {
             config.setResponseType(options.responseType);
         }
 
+        if (options.onUploadProgress) {
+            config.setOnUploadProgress(options.onUploadProgress);
+        }
+
         if(options.params) {
             config.setParams(options.params);
         }

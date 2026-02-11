@@ -29,6 +29,8 @@ export const SAVE_BGV_STEP = "/candidate/form-step"
 export const OCR_PAN_UPLOAD = "/ocr/extract-pan-number"
 export const OCR_AADHAAR_UPLOAD = "/ocr/extract-aadhaar-number"
 export const REMOVE_DOCUMENT = "/files/candidate/document"
+export const UPLOAD_PROFILE_PICTURE = "/candidate/{candidateId}/profile-picture"
+export const REMOVE_PROFILE_PICTURE = "/candidate/{candidateId}/remove-profile-picture"
 
 export const EXTRACT_EDUCATION_DOCUMENT = "/ocr/extract-marksheet-data"
 export const UPLOAD_EMPLOYMENT_DOCUMENT = "/files/candidate/{candidateId}/upload-multiple";

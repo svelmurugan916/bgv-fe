@@ -1,14 +1,14 @@
-import React, {useState, useEffect, useRef, useMemo} from 'react';
-import { Search, RotateCcw, ArrowLeftIcon, Filter } from 'lucide-react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {ArrowLeftIcon, Filter, RotateCcw, Search} from 'lucide-react';
 import InvitationTable from './InvitationTable';
 import BulkActionsBar from './BulkActionsBar';
-import { useAuthApi } from "../../../provider/AuthApiProvider.jsx";
+import {useAuthApi} from "../../../provider/AuthApiProvider.jsx";
 import {
     INVITED_CANDIDATE_LIST,
     MARK_CANDIDATE_AS_STOP_CASE,
     RESEND_INVITE_NOTIFICATION
 } from "../../../constant/Endpoint.tsx";
-import { METHOD } from "../../../constant/ApplicationConstant.js";
+import {METHOD} from "../../../constant/ApplicationConstant.js";
 import SingleSelectDropdown from "../../dropdown/SingleSelectDropdown.jsx";
 import {useParams} from "react-router-dom";
 
@@ -89,6 +89,15 @@ const PendingInvitations = () => {
         try {
             const response = await authenticatedRequest(selectedIds, RESEND_INVITE_NOTIFICATION, METHOD.POST);
             return response.status === 200;
+        } catch (err) {
+            console.log(err);
+            return false;
+        }
+    }
+
+    const handleSendInvitation = async (candidateId) => {
+        try {
+            return await authenticatedRequest([candidateId], RESEND_INVITE_NOTIFICATION, METHOD.POST);
         } catch (err) {
             console.log(err);
             return false;
@@ -193,7 +202,7 @@ const PendingInvitations = () => {
                     onSelect={toggleSelect}
                     onSelectAll={toggleSelectAll}
                     onStopCase={handleStopCase}
-                    onSendInvitation={handleResend}
+                    onSendInvitation={(id) => handleSendInvitation(id)}
                 />
             </div>
 
