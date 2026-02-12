@@ -48,15 +48,11 @@ const Header = () => {
 
     return (
         <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 shrink-0 z-50">
-            {/* LOGO & BRAND */}
-            <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#5D4591] rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md shadow-[#5D4591]/10 shrink-0">
-                    T
-                </div>
-                <div className="flex flex-col justify-center">
-                    <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">Trace-U</h1>
-                    <span className="text-[9px] text-slate-400 mt-1">Powered by Mini-U</span>
-                </div>
+            <div className="inline-flex flex-col items-end">
+                <img src="/logo.png" alt="Trace-U" className="h-8 w-auto" />
+                <span className="text-[7px] font-bold text-slate-400 tracking-[0.15em] uppercase -mt-1 pr-0.5">
+                    Powered by Mini-U
+                </span>
             </div>
 
             {/* CENTER: SEARCH BAR */}

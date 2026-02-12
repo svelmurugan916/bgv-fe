@@ -1,21 +1,16 @@
 import React from 'react';
-import { HelpCircle, LogOut, User, ShieldCheck, Clock, CloudCheck } from 'lucide-react';
+import { HelpCircle, LogOut, User, Clock, CloudCheck } from 'lucide-react';
 
 const GlobalHeader = ({ candidateName, appId }) => {
     return (
         <header className="w-full bg-white border-b border-slate-100 sticky top-0 z-[60] shadow-sm">
             {/* MAIN HEADER ROW */}
             <div className="px-4 lg:px-8 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 lg:w-10 lg:h-10 bg-[#5D4591] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[#5D4591]/10 shrink-0">
-                        <ShieldCheck size={22} />
-                    </div>
-                    <div className="flex flex-col">
-                        <h1 className="text-base lg:text-lg font-extrabold text-slate-900 leading-tight tracking-tight">
-                            Trace<span className="text-[#5D4591]">U</span>
-                        </h1>
-                        <p className="hidden lg:block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Secure Verification</p>
-                    </div>
+                <div className="inline-flex flex-col items-end">
+                    <img src="/logo.png" alt="Trace-U" className="h-8 w-auto" />
+                    <span className="text-[7px] font-bold text-slate-400 tracking-[0.15em] uppercase -mt-1 pr-0.5">
+                    Secure Verification
+                </span>
                 </div>
 
                 {/* RIGHT: Actions */}
