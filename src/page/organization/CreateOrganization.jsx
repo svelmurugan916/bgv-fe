@@ -1,16 +1,16 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
     Building2, Mail, Phone, Globe, MapPin,
-    ChevronDown, ChevronUp, Camera, Info, ShieldCheck, ArrowLeftIcon, Loader2, AlertCircle
+    ChevronDown, ChevronUp, Camera, Info, ShieldCheck, ArrowLeftIcon, Loader2
 } from 'lucide-react';
-import {useNavigate, useParams, useSearchParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {EMAIL_REGEX, METHOD, PHONE_NUMBER_REGEX} from "../../constant/ApplicationConstant.js";
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 import {CREATE_ORGANIZATION, GET_ORGANIZATION, SAVE_ORGANIZATION} from "../../constant/Endpoint.tsx";
 import SecureImage from "../../component/secure-document-api/SecureImage.jsx";
 import ShowError from "../../component/common/ShowError.jsx";
 
-const CreateOrganization = ({ onCancel }) => {
+const CreateOrganization = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [showAdditional, setShowAdditional] = useState(false);
@@ -147,7 +147,12 @@ const CreateOrganization = ({ onCancel }) => {
                 response = await authenticatedRequest(dataToSend,  CREATE_ORGANIZATION);
             }
             if (response.status === 200) {
-                navigate(`/organisation-dashboard/organisation-details/${id}`, {replace: true});
+                if(id) {
+                    navigate(`/organisation-dashboard/organisation-details/${id}`, {replace: true});
+                } else {
+                    const {data} = response;
+                    navigate(`/organisation-dashboard/organisation-details/${data?.id}`, {replace: true});
+                }
             } else {
                 const errorData = await response;
                 setErrors({ server: errorData.message || "Failed to save organization" });
