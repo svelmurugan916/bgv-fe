@@ -9,7 +9,7 @@ const StatsView = ({allOrganizationStatistics, parentDivClass = "max-w-7xl"}) =>
                     <Users className="w-7 h-7 text-blue-500" />
                 </div>
                 <div>
-                    <p className="text-sm font-medium text-slate-500">Global Total Cases</p>
+                    <p className="text-sm font-medium text-slate-500">Total Cases</p>
                     <p className="text-2xl font-black text-slate-900">{allOrganizationStatistics?.totalCasesAcrossAll || 0}</p>
                 </div>
             </div>

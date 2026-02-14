@@ -1,14 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {
-    Search,
-    Filter,
     Download,
     UserPlus,
-    FileText,
-    Send,
-    AlertTriangle,
-    StopCircle,
-    Clock,
     ArrowLeftIcon
 } from 'lucide-react';
 import TableSkeleton from './TableSkeleton';
@@ -20,7 +13,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 import {
     FORM_NOT_SUBMITTED_COUNT,
-    GET_CANDIDATES_TASKS_FOR_ORGANIZATION, GET_ORGANIZATION, GET_ORGANIZATION_MINIMAL_DETAILS
+    GET_CANDIDATES_TASKS_FOR_ORGANIZATION, ORGANIZATION_STATISTICS
 } from "../../constant/Endpoint.tsx"; // Assuming GET_ORG_CASES is defined in your constants
 import {METHOD} from "../../constant/ApplicationConstant.js";
 
@@ -36,6 +29,7 @@ const OrganizationCases = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [checkTypeFilter, setCheckTypeFilter] = useState('All');
     const [selectedStatus, setSelectedStatus] = useState([]);
+    const [statisticLoading, setStatisticLoading] = useState(false);
     const [organizationDetails, setOrganizationDetails] = useState({});
     const navigate = useNavigate();
     const { id } = useParams();
@@ -50,15 +44,6 @@ const OrganizationCases = () => {
                 const response = await authenticatedRequest(undefined, `${GET_CANDIDATES_TASKS_FOR_ORGANIZATION}/${organizationId}`, METHOD.GET);
                 if (response.status === 200 && response.data) {
                     const apiData = response.data;
-                    const completedCount = apiData.filter(data => ['GREEN', 'AMBER', 'RED', 'STOP_CASE'].includes(data?.caseDetails?.status))?.length;
-                    const inProgressCount = apiData.filter(data => data?.caseDetails.status === "IN_PROGRESS")?.length;
-                    const unableToVerifyCount = apiData.filter(data => data?.caseDetails.status === "INSUFFICIENCY")?.length;
-                    setStats({
-                        totalCases: apiData?.length,
-                        totalCompleted: completedCount,
-                        workInProgress: inProgressCount,
-                        insufficiency: unableToVerifyCount
-                    });
                     setCases(apiData);
                 }
             } catch (error) {
@@ -70,24 +55,37 @@ const OrganizationCases = () => {
         if(!componentInitRef.current && id) {
             componentInitRef.current = true;
             fetchCases(id);
+            fetchOrganizationStatistics(id);
             getFormNotFillingCandidateCount(id);
-            getOrganizationDetails(id);
         }
 
     }, [id]);
 
-    const getOrganizationDetails = async (organizationId) => {
+    const fetchOrganizationStatistics = async (organizationId) => {
+        setStatisticLoading(true);
         try {
-            const response = await authenticatedRequest(undefined, `${GET_ORGANIZATION_MINIMAL_DETAILS}/${organizationId}`, METHOD.GET);
-            console.log(response.data);
+            const response = await authenticatedRequest(undefined, `${ORGANIZATION_STATISTICS}/${organizationId}`, METHOD.GET);
             if (response.status === 200 && response.data) {
-                setOrganizationDetails(response.data);
+                const apiData = response.data;
+                setStats({
+                    totalCases: apiData?.totalCases,
+                    totalCompleted: apiData?.completedCases,
+                    workInProgress: apiData?.inProgressCases,
+                    insufficiency: apiData?.insufficientCases
+                });
+                setOrganizationDetails({
+                    name: apiData?.organizationName,
+                })
             } else {
-                console.log("Error getting organization details: ", response);
+                console.log("Error getting organization statistics: ", response);
+
             }
         } catch (err) {
             console.error("Error getting organization details:", err);
+        } finally {
+            setStatisticLoading(false);
         }
+
     }
 
     const getFormNotFillingCandidateCount = async (organizationId) => {
@@ -137,7 +135,7 @@ const OrganizationCases = () => {
             </div>
 
             {/* Summary Ribbon - Calculated from API data */}
-            { loading ? (
+            { statisticLoading ? (
                 <StatsSkeleton parentDivClass={""}/>
             ) : (
                 <StatsView

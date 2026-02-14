@@ -12,7 +12,7 @@ import {
     X
 } from "lucide-react";
 import CategoriesSkeleton from "./CategoriesSkeleton.jsx";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 import {GET_ALL_CHECK_TYPE} from "../../constant/Endpoint.tsx";
 import {METHOD} from "../../constant/ApplicationConstant.js";
@@ -26,6 +26,7 @@ const CreateOrganizationModal = ({setIsModalOpen, selectedChecks,
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(undefined);
     const {authenticatedRequest} = useAuthApi()
+    const initiationRef = useRef(false);
     const fetchCheckTypes = async () => {
         setLoading(true);
         setError(undefined);
@@ -50,10 +51,11 @@ const CreateOrganizationModal = ({setIsModalOpen, selectedChecks,
 
     useEffect(() => {
         console.log('checkTypes -- ', checkTypes);
-        if(checkTypes.length === 0) {
+        if(checkTypes.length === 0 && !initiationRef.current) {
+            initiationRef.current = true;
             fetchCheckTypes();
         }
-    })
+    }, [])
 
     const getIcon = (checkCode) => {
         switch (checkCode) {

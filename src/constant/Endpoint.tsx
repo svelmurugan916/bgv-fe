@@ -14,7 +14,6 @@ export const CREATE_ORGANIZATION = "/organizations/new-organization";
 export const SAVE_ORGANIZATION = "/organizations/save-organization";
 export const GET_ALL_ORGANIZATION = "/organizations/get-all";
 export const GET_ORGANIZATION = "/organizations";
-export const GET_ORGANIZATION_MINIMAL_DETAILS = "/organizations/get-organization-details";
 export const FILE_GET = "/files"
 export const GET_ALL_CHECK_TYPE = "/check-type/get-all"
 export const SAVE_CHECK_PACKAGE = "/check-type/save-package"
@@ -47,6 +46,7 @@ export const MARK_CANDIDATE_AS_STOP_CASE = "/candidate/mark-as-stop-case"
 export const RESUME_CANDIDATE_STATUS = "/candidate/resume-candidate-status"
 export const CANDIDATE_SEARCH_API = "/candidate/search-candidate"
 export const GET_CANDIDATE_DETAILS = "/tasks/get-candidate-details"
+export const ORGANIZATION_STATISTICS = "/organizations/statistics"
 
 export const ADDRESS_CHECK_DETAILS = "/address-check/get-details"
 export const SUBMIT_ADDRESS_VERIFICATION = "/address-check/submit-verification"
