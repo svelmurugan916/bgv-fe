@@ -50,6 +50,7 @@ function App() {
                                     <Routes>
                                         <Route path="/" element={<RootRedirect />} />
                                         <Route path="/login" element={<LoginPage />} />
+                                        <Route path="/reset-password" element={<LoginPage />} />
                                         {/*<Route path="/fill-candidate-form/:token?" element={<TokenVerifier />} />*/}
                                         <Route
                                             path="/fill-candidate-form/:token?"

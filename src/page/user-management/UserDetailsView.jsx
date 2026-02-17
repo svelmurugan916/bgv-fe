@@ -5,7 +5,7 @@ import AssignedRoles from "./AssignedRoles.jsx";
 import { formatDate } from "../../utils/date-util.js";
 import InfoField from "./InfoField.jsx";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
-import {EMAIL_RESET_URL, MANUAL_RESET_URL, TOGGLE_USER_ACTIVE, UPDATE_USER} from "../../constant/Endpoint.tsx";
+import {EMAIL_RESET_URL, MANUAL_RESET_PASSWORD, TOGGLE_USER_ACTIVE, UPDATE_USER} from "../../constant/Endpoint.tsx";
 import { METHOD } from "../../constant/ApplicationConstant.js";
 import PasswordResetModal from "./PasswordResetModal.jsx";
 
@@ -101,7 +101,7 @@ const UserDetailsView = ({ user, activeTab, setActiveTab, availableRoles, onUpda
     const handleManualReset = async () => {
         setIsResetting(true);
         try {
-            const response = await authenticatedRequest({ password: newPassword }, `${MANUAL_RESET_URL}/${user.id}`, METHOD.PUT);
+            const response = await authenticatedRequest({ newPassword: newPassword }, `${MANUAL_RESET_PASSWORD}/${user.id}`, METHOD.PUT);
             if(response.status === 200) {
                 setMessage({ type: 'success', text: 'Password updated manually!' });
                 setShowResetModal(false);
@@ -118,7 +118,7 @@ const UserDetailsView = ({ user, activeTab, setActiveTab, availableRoles, onUpda
     const handleEmailReset = async () => {
         setIsResetting(true);
         try {
-            const response = await authenticatedRequest(undefined, `${EMAIL_RESET_URL}/${user.id}`, METHOD.POST);
+            const response = await authenticatedRequest(undefined, `${EMAIL_RESET_URL}/${user.email}`, METHOD.POST);
             if(response.status === 200) {
                 setMessage({ type: 'success', text: 'Reset link sent to user email!' });
                 setShowResetModal(false);

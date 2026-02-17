@@ -1,7 +1,7 @@
 import React from 'react';
 import { Mail, Lock, ShieldAlert, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 
-const LoginPanel = ({ email, setEmail, password, setPassword, fieldErrors, setFieldErrors, error, isLoading, onSubmit }) => (
+const LoginPanel = ({ email, setEmail, password, setPassword, fieldErrors, setFieldErrors, error, isLoading, onSubmit, setStep }) => (
     <div className="animate-in fade-in slide-in-from-right-8 duration-500">
         <div className="mb-10">
             <h2 className="text-3xl font-bold text-slate-900 mb-2">Welcome Back</h2>
@@ -41,7 +41,7 @@ const LoginPanel = ({ email, setEmail, password, setPassword, fieldErrors, setFi
                         className={`w-full pl-12 pr-4 py-4 bg-white border rounded-xl outline-none transition-all font-medium ${fieldErrors.password ? 'border-red-500 bg-red-50/30' : 'border-slate-200 focus:border-[#5D4591] focus:ring-4 focus:ring-[#5D4591]/10'}`}
                     />
                 </div>
-                <div className="text-right mt-2"><a href="#" className="text-[11px] font-bold text-[#5D4591] uppercase hover:underline">Forgot Password?</a></div>
+                <div onClick={() => setStep("forgotPassword")} className="text-right mt-2"><a href="#" className="text-[11px] font-bold text-[#5D4591] uppercase hover:underline">Forgot Password?</a></div>
                 {fieldErrors.password && <div className="flex items-center gap-1.5 mt-2 text-red-500 text-[10px] font-bold uppercase"><AlertCircle size={14} /> {fieldErrors.password}</div>}
             </div>
 

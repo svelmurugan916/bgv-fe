@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ShieldCheck, Shield, MapPinIcon, Zap } from 'lucide-react';
+import {ShieldCheck, Shield, MapPinIcon, Zap, ChevronRight, ChevronRightIcon} from 'lucide-react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
-import { VERIFY_OTP, RESEND_OTP } from "../../constant/Endpoint.tsx";
-import { EMAIL_REGEX } from "../../constant/ApplicationConstant.js";
+import {VERIFY_OTP, RESEND_OTP, VALIDATE_RESET_TOKEN} from "../../constant/Endpoint.tsx";
+import {EMAIL_REGEX, METHOD} from "../../constant/ApplicationConstant.js";
 import LoginPanel from './LoginPanel';
 import MfaPanel from './MfaPanel';
-import {useNavigate} from "react-router-dom";
+import {replace, useNavigate, useSearchParams} from "react-router-dom";
+import ResetPasswordView from "./ResetPasswordView.jsx";
+import ForgotPasswordView from "./ForgotPasswordView.jsx";
 
 const LoginPage = () => {
     const [step, setStep] = useState('login');
+    const [tokenError, setTokenError] = useState('');
+    const [isValidatingToken, setIsValidatingToken] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -18,6 +22,41 @@ const LoginPage = () => {
     const [mfaResponseData, setMfaResponseData] = useState({});
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const otpRefs = useRef([]);
+
+    const [searchParams] = useSearchParams();
+
+    const validateToken = async (token) => {
+        setIsValidatingToken(true);
+        setStep('resetPassword');
+        try {
+            // Call backend to check if token exists and isn't expired
+            const response = await unAuthenticatedRequest(undefined, `${VALIDATE_RESET_TOKEN}?token=${token}`, METHOD.GET);
+            if(response.status !== 200 || response.data.success === false) {
+                setTokenError(response.data?.message || "This link is invalid or has expired.");
+            }
+        } catch (err) {
+            setTokenError("Unable to verify security link. Please try again.");
+        } finally {
+            setIsValidatingToken(false);
+        }
+    };
+
+    useEffect(() => {
+        const token = searchParams.get('token');
+
+        if (location.pathname === '/reset-password') {
+            if (!token) {
+                setTokenError("Invalid request. No security token found.");
+                setStep('resetPassword');
+                return;
+            }
+            validateToken(token);
+        } else if (location.pathname === '/login') {
+            setStep('login');
+            setTokenError('');
+            setError('');
+        }
+    }, [location.pathname, searchParams]);
 
     const navigate = useNavigate();
 
@@ -171,15 +210,17 @@ const LoginPage = () => {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 bg-slate-50/50 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]"><Shield size={600} strokeWidth={1} className="rotate-12 text-[#5D4591]" /></div>
                 <div className="w-full max-w-md relative z-10">
-                    {step === 'login' ? (
+                    {step === 'login' && (
                         <LoginPanel
                             email={email} setEmail={setEmail}
                             password={password} setPassword={setPassword}
                             fieldErrors={fieldErrors} setFieldErrors={setFieldErrors}
                             error={error} isLoading={isLoading}
                             onSubmit={handleLoginSubmit}
+                            setStep={setStep}
                         />
-                    ) : (
+                    )}
+                    {step === 'mfa' &&  (
                         <MfaPanel
                             mfaResponseData={mfaResponseData}
                             otp={otp} setOtp={setOtp}
@@ -189,6 +230,17 @@ const LoginPage = () => {
                             onSubmit={handleMfaSubmit}
                             onResend={handleResendOtp}
                             onBack={() => setStep('login')}
+                        />
+                    )}
+                    {step === 'forgotPassword' && (
+                        <ForgotPasswordView onBack={() => setStep('login')} />
+                    )}
+                    {step === 'resetPassword' && (
+                        <ResetPasswordView
+                            token={searchParams.get('token')}
+                            isValidating={isValidatingToken}
+                            tokenError={tokenError}
+                            onBack={() => navigate('/login', {replace: true})}
                         />
                     )}
                     {/* Common Footer */}
