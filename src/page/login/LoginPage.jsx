@@ -21,7 +21,7 @@ const LoginPage = () => {
 
     const navigate = useNavigate();
 
-    const { login, setAuthData, unAuthenticatedRequest, setUser, setLoading } = useAuthApi();
+    const { login, setAuthData, unAuthenticatedRequest, setUser, setLoading, setAvailableRoles } = useAuthApi();
     const { executeRecaptcha } = useGoogleReCaptcha();
 
     // Carousel Logic
@@ -125,6 +125,7 @@ const LoginPage = () => {
                     // 3. Now navigate. ProtectedRoute will see user AND loggedInRole immediately.
                     navigate("/dashboard");
                 } else {
+                    setAvailableRoles(responseData?.availableRoles);
                     navigate("/select-role");
                 }
             } else {

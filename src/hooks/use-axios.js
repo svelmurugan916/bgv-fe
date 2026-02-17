@@ -39,8 +39,13 @@ export const useAxios = () => {
             // This is the key for your cookies/refresh tokens
             withCredentials: requestConfig.type === AUTH_TYPE.AUTH,
             onUploadProgress: requestConfig.onUploadProgress,
+
+            validateStatus: (status) => {
+                return status >= 200 && status < 500;
+            },
         };
         return axios(metaData);
     };
     return { apiCallHit };
 };
+

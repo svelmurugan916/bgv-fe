@@ -31,6 +31,8 @@ const OrganizationDetail = lazy(() => import("./page/organization/OrganizationDe
 const OrganizationCases = lazy(() => import("./component/candidate/OrganizationCases.jsx"));
 const PendingInvitations = lazy(() => import("./component/candidate/pending-invitation/PendingInvitations.jsx"));
 const CaseAssignmentPage = lazy(() => import("./page/case-assignment/CaseAssignmentPage.jsx"));
+const UserManagement = lazy(() => import("./page/user-management/UserManagement.jsx"));
+const RoleManagement = lazy(() => import("./page/role-management/RoleManagement.jsx"));
 
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
@@ -74,9 +76,7 @@ function App() {
                                         {/*<Route path="/address-verification/:token?" element={<AddressVerificationForm />} />*/}
 
                                         <Route element={<ProtectedRoute />}>
-                                            <Route element={<MainLayout />}>
                                                 <Route path="/select-role" element={<RoleSelectionPage />} />
-                                            </Route>
                                         </Route>
 
                                         {/* --- DASHBOARD ROUTES --- */}
@@ -88,6 +88,8 @@ function App() {
                                                 <Route path="/organisation-dashboard/organisation-details/:id?" element={<OrganizationDetail />} />
                                                 <Route path="/organisation-dashboard/organisation-cases/:id?" element={<OrganizationCases />} />
                                                 <Route path="/case-assignment" element={<CaseAssignmentPage />} />
+                                                <Route path="/user-management" element={<UserManagement />} />
+                                                <Route path="/role-management" element={<RoleManagement />} />
 
                                                 <Route path="/candidate/pending-invitation/:id?" element={<PendingInvitations />} />
 

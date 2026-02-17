@@ -2,11 +2,23 @@ export const VERIFY_CREDENTIALS = "/auth/verify-credentials"
 export const VERIFY_OTP = "/auth/verify-otp"
 export const RESEND_OTP = "/auth/resend-otp"
 export const USER_PROFILE = "/user/me"
-export const ACTIVATE_ROLE = '/auth/activate-role'
+export const ACTIVATE_ROLE = '/pre-auth/select-role'
+export const GET_ALL_USERS = "/user/get-all"
+export const GET_ALL_ALLOCATED_ROLES = "/pre-auth/get-allocated-roles"
+export const UPDATE_USER_ROLES = '/user/update-user-roles'
+export const UPDATE_USER = '/user/update-user'
+export const CREATE_USER = '/user/create-user'
+export const TOGGLE_USER_ACTIVE = '/user/toggle-user-active'
+export const EMAIL_RESET_URL = ''
+export const MANUAL_RESET_URL = ''
+
+export const GET_ALL_ROLES = '/role/get-all-roles'
+export const GET_ALL_ENABLED_ROLES = '/role/get-all-enabled-roles'
+export const CREATE_NEW_ROLE = '/role/create-role'
+export const UPDATE_ROLE_ENDPOINT = '/role/update-role'
 
 export const VERIFY_CANDIDATE_TOKEN = '/auth/verify-invite'
 export const VERIFY_ADDRESS_TOKEN = '/auth/verify-address-invite'
-
 
 export const REFRESH_TOKEN = "/auth/refresh-token"
 export const LOGOUT = "/auth/logout";
@@ -24,7 +36,7 @@ export const GET_PACKAGES_BY_ORG = "/check-type/get-packages"
 export const INITIATE_BULK_VERIFICATION = "/candidate/invite-bulk"
 export const SEND_ADDRESS_VERIFICATION = "/address-check/{candidateId}/send-address-verification-link/{addressId}"
 
-export const SAVE_BGV_STEP = "/candidate/form-step"
+export const SAVE_BGV_STEP = "/candidate-register/save-form"
 export const OCR_PAN_UPLOAD = "/ocr/extract-pan-number"
 export const OCR_AADHAAR_UPLOAD = "/ocr/extract-aadhaar-number"
 export const REMOVE_DOCUMENT = "/files/candidate/document"
@@ -36,7 +48,8 @@ export const UPLOAD_EMPLOYMENT_DOCUMENT = "/files/candidate/{candidateId}/upload
 export const UPLOAD_INTERNAL_PROOF = "/files/task/{taskId}/upload-proof"
 export const REMOVE_INTERNAL_PROOF = "/files/task/{fileId}/delete-file"
 
-export const INVITED_CANDIDATE_LIST = "/candidate/invited-candidate";
+    export const INVITED_CANDIDATE_LIST = "/candidate/invited-candidate";
+export const INVITED_ALL_CANDIDATE_LIST = "/candidate/all-invited-candidate";
 export const FORM_NOT_SUBMITTED_COUNT = "/candidate/form-non-submitted-stop-case-count"
 export const RESEND_INVITE_NOTIFICATION = "/candidate/resend-invitation"
 

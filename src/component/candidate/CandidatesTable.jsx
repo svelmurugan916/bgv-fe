@@ -18,7 +18,7 @@ import SingleSelectDropdown from "../dropdown/SingleSelectDropdown.jsx";
 import { useNavigate } from "react-router-dom";
 import CandidateCheckIconStatus from "../common/CandidateCheckIconStatus.jsx";
 
-const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus, setSelectedStatus, checkTypeFilter, setCheckTypeFilter, selectedClient, setSelectedClient }) => {
+const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus, setSelectedStatus, checkTypeFilter, setCheckTypeFilter, selectedClient, setSelectedClient, parentRoute }) => {
     const navigate = useNavigate();
     const [copiedId, setCopiedId] = useState(null);
 
@@ -60,6 +60,12 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
             setSelectedStatus([...selectedStatus, option]);
         }
     };
+
+    const handleCandidateClick = (candidateId) => {
+        navigate(`/candidate-details/${candidateId}`,
+            {state: { activeMenu: parentRoute }}
+        )
+    }
 
     return (
         <>
@@ -132,7 +138,7 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
                                             <div className="flex flex-col">
                                                 {/* Candidate Name */}
                                                 <span
-                                                    onClick={() => navigate(`/candidate-details/${item.id}`)}
+                                                    onClick={() => handleCandidateClick(item.id)}
                                                     className="text-sm font-bold text-slate-800 leading-none group-hover:text-[#5D4591] cursor-pointer transition-colors"
                                                 >
                                                     {item.name}
@@ -140,7 +146,7 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
 
                                                 <div className="flex items-center gap-1.5 mt-1.5">
                                                     <span
-                                                        onClick={() => navigate(`/candidate-details/${item.id}`)}
+                                                        onClick={() => handleCandidateClick(item.id)}
                                                         className="text-[11px] font-bold text-[#5D4591] cursor-pointer"
                                                     >
                                                         {item.caseNo}

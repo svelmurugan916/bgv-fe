@@ -13,6 +13,7 @@ export const AuthApiProvider = ({ children }) => {
     const [tokenType, setTokenType] = useState(null);
     const [loggedInRole, setLoggedInRole] = useState(null);
     const [userType, setUserType] = useState(null);
+    const [availableRoles, setAvailableRoles] = useState([]);
     const { apiCallHit } = useAxios();
     const gettingToken = useRef(false);
     const initialized = useRef(false);
@@ -224,9 +225,9 @@ export const AuthApiProvider = ({ children }) => {
     const value = useMemo(() => ({
         accessToken, user, loading, login, logout, isAuthenticated,
         authenticatedRequest, unAuthenticatedRequest,
-        setAuthData: handleTokenUpdate,
+        setAuthData: handleTokenUpdate, availableRoles, setAvailableRoles,
         loggedInRole, userType, tokenType, setUser, setLoading
-    }), [accessToken, user, loading, login, logout, isAuthenticated, authenticatedRequest, unAuthenticatedRequest, handleTokenUpdate, loggedInRole, userType, tokenType]);
+    }), [accessToken, user, loading, login, logout, isAuthenticated, authenticatedRequest, unAuthenticatedRequest, handleTokenUpdate, availableRoles, loggedInRole, userType, tokenType]);
 
     return <AuthApiContext.Provider value={value}>{children}</AuthApiContext.Provider>;
 };

@@ -4,7 +4,7 @@ import InvitationTable from './InvitationTable';
 import BulkActionsBar from './BulkActionsBar';
 import {useAuthApi} from "../../../provider/AuthApiProvider.jsx";
 import {
-    INVITED_CANDIDATE_LIST,
+    INVITED_ALL_CANDIDATE_LIST, INVITED_CANDIDATE_LIST,
     MARK_CANDIDATE_AS_STOP_CASE,
     RESEND_INVITE_NOTIFICATION
 } from "../../../constant/Endpoint.tsx";
@@ -33,12 +33,17 @@ const PendingInvitations = () => {
     const fetchInvitedCandidates = async () => {
         setLoading(true)
         try {
-            const options = {
-                params: {
-                    organizationId: id,
+            let response;
+            if(id) {
+                const options = {
+                    params: {
+                        organizationId: id,
+                    }
                 }
+                response = await authenticatedRequest(undefined, INVITED_CANDIDATE_LIST, METHOD.GET, options);
+            } else {
+                response = await authenticatedRequest(undefined, INVITED_ALL_CANDIDATE_LIST, METHOD.GET);
             }
-            const response = await authenticatedRequest(undefined, INVITED_CANDIDATE_LIST, METHOD.GET, options);
             if(response.status === 200) {
                 setInvitations(response.data);
             }

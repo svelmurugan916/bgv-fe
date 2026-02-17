@@ -106,6 +106,7 @@ const Candidates = () => {
                             selectedClient={selectedClient}
                             setSelectedClient={setSelectedClient}
                             candidates={candidates}
+                            parentRoute="/candidate-list"
                         />
                 )}
             </div>

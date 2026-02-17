@@ -168,6 +168,7 @@ const OrganizationCases = () => {
                     selectedClient={undefined}
                     setSelectedClient={undefined}
                     candidates={cases}
+                    parentRoute="/organisation-dashboard"
                 />}
             </div>
         </div>

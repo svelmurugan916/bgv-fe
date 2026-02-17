@@ -26,3 +26,10 @@ export const formatFullDateTime = (dateString) => {
         hour12: true
     });
 };
+
+export const formatDate = (date) => {
+    if (!date) return 'NA';
+    return new Date(date)
+        .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        .replace(' ', ', ');
+}

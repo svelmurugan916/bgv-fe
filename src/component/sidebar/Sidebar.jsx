@@ -1,56 +1,100 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom'; // Import useLocation
 import {
-    Home,
-    FileText,
-    BarChart2,
-    Settings,
-    UserPlus,
-    UserCheck,
-    ChevronLeft,
-    ChevronRight,
-    Building2Icon,
-    UserIcon, BuildingIcon
+    Home, BarChart2, Settings, UserPlus, UserCheck,
+    ChevronLeft, ChevronRight, UserIcon, BuildingIcon,
+    ShieldAlert, FilePlus, ShieldCheckIcon
 } from 'lucide-react';
 import SidebarItem from "./SidebarItem.jsx";
-import {useNavigate} from "react-router-dom";
 
 const Sidebar = () => {
-    const [isExpanded, setIsExpanded] = React.useState(false);
-    const [activeItem, setActiveItem] = React.useState('Dashboard');
+    const [isExpanded, setIsExpanded] = React.useState(true);
     const navigate = useNavigate();
+    const location = useLocation(); // This gives us the current URL path
 
-    const menuItems = [
-        { icon: <Home size={20} />, label: 'Dashboard', active: true, route: '/dashboard' },
-        { icon: <BuildingIcon size={20} />, label: 'Organizations', route: '/organisation-dashboard' },
-        { icon: <UserIcon size={20} />, label: 'Candidate List', route: '/candidate-list' },
-        { icon: <UserCheck size={20} />, label: 'Case Assignment', route: '/case-assignment' },
-        { icon: <BarChart2 size={20} />, label: 'Analytics' },
-        { icon: <UserPlus size={20} />, label: 'User Management' },
-        { icon: <Settings size={20} />, label: 'Settings' },
+    const menuSections = [
+        {
+            title: 'OPERATIONS',
+            items: [
+                { icon: <Home size={20} />, label: 'Dashboard', route: '/dashboard' },
+                { icon: <BuildingIcon size={20} />, label: 'Organizations', route: '/organisation-dashboard' },
+                { icon: <UserIcon size={20} />, label: 'Candidate List', route: '/candidate-list' },
+                { icon: <UserCheck size={20} />, label: 'Case Assignment', route: '/case-assignment' },
+            ]
+        },
+        {
+            title: 'MASTERS / DATA',
+            items: [
+                { icon: <ShieldAlert size={20} />, label: 'Blocklist Colleges', route: '/blocklist' },
+                { icon: <FilePlus size={20} />, label: 'Check Creation', route: '/check-creation' },
+            ]
+        },
+        {
+            title: 'SYSTEM',
+            items: [
+                { icon: <BarChart2 size={20} />, label: 'Analytics', route: '/analytics' },
+                { icon: <UserPlus size={20} />, label: 'User Management', route: '/user-management' },
+                { icon: <ShieldCheckIcon size={20} />, label: 'Role Management', route: '/role-management' },
+                { icon: <Settings size={20} />, label: 'Settings', route: '/settings' },
+            ]
+        }
     ];
 
     const handleSidebarClick = (item) => {
-        setActiveItem(item.label)
-        navigate(item.route)
-    }
+        if(item.route) navigate(item.route);
+    };
+
+    /**
+     * Logic to determine if a link is active:
+     * 1. If the current path exactly matches the route.
+     * 2. If the current path starts with the route (for sub-pages like /candidate-list/details/1)
+     */
+    const isItemActive = (itemRoute) => {
+        const currentPath = location.pathname;
+        const stateActiveMenu = location.state?.activeMenu;
+
+        // 1. If we have an activeMenu in state (from the table click), use it
+        if (stateActiveMenu) {
+            return stateActiveMenu === itemRoute;
+        }
+
+        // 2. Fallback: Standard URL matching (for when they click the sidebar directly)
+        if (itemRoute === '/dashboard') {
+            return currentPath === '/dashboard' || currentPath === '/';
+        }
+
+        return currentPath.startsWith(itemRoute);
+    };
 
     return (
         <aside className={`bg-white border-r border-gray-100 flex flex-col h-full transition-all duration-300 ${isExpanded ? 'w-64' : 'w-20'}`}>
 
-
-            {/* Nav Links */}
-            <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-                {menuItems.map((item, idx) => (
-                    <SidebarItem idx={idx}
-                                 key={idx}
-                                 item={item} isExpanded={isExpanded}
-                                 handleSidebarClick={() => handleSidebarClick(item)}
-                                 isActive={activeItem === item.label}
-                    />
+            {/*
+               IMPORTANT: We use 'overflow-y-auto' for scrolling,
+               but 'overflow-x-visible' when collapsed so tooltips can fly out.
+            */}
+            <nav className={`flex-1 py-6 px-3 space-y-6 ${isExpanded ? 'overflow-y-auto' : 'overflow-y-visible'}`}>
+                {menuSections.map((section, sIdx) => (
+                    <div key={sIdx} className="space-y-1">
+                        {isExpanded && (
+                            <p className="px-3 text-[10px] font-bold text-slate-400 tracking-widest mb-2">
+                                {section.title}
+                            </p>
+                        )}
+                        {!isExpanded && <div className="border-t border-gray-50 mx-2 my-4" />}
+                        {section.items.map((item) => (
+                            <SidebarItem
+                                key={item.label}
+                                item={item}
+                                isExpanded={isExpanded}
+                                handleSidebarClick={() => handleSidebarClick(item)}
+                                isActive={isItemActive(item.route)}
+                            />
+                        ))}
+                    </div>
                 ))}
             </nav>
 
-            {/* Collapse Toggle at Bottom */}
             <div className="p-4 border-t border-gray-50">
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
