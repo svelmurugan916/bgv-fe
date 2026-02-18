@@ -75,12 +75,13 @@ const CaseAssignmentPage = () => {
     };
 
     return (
-        <div className="p-8 bg-slate-50 min-h-screen animate-in fade-in duration-700">
+        <div className="bg-slate-50 min-h-screen animate-in fade-in duration-700">
             <div className="mb-8">
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                    <Users className="text-[#5D4591]" size={28} />
+                <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
                     Case Assignment Manager
                 </h1>
+                <p className="text-sm text-slate-500 mt-1 font-medium">Assign the cases to the Operations team.</p>
+
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">

@@ -119,7 +119,7 @@ const CheckAuditTrail = ({ data = {}, checkId  }) => {
                                     ) : errorWhileAssigned ? (
                                         <>
                                             <AlertCircle size={10} />
-                                            <span>Error occurred, Try again!.</span>
+                                            <span className={"underline"}>Error occurred, Try again!.</span>
                                         </>
                                     ) : isAssigned ? (
                                         <>

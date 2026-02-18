@@ -24,6 +24,11 @@ import CaseActionDropdown from "./CaseActionDropdown.jsx";
 import EditAddressModal from "./checks/EditAddressModal.jsx";
 import CandidateCheckIconStatus from "../common/CandidateCheckIconStatus.jsx";
 import CheckEducation from "./checks/CheckEducation.jsx";
+import Employment from "../../page/bgv-form/Employment.jsx";
+import CheckExperience from "./checks/CheckExperience.jsx";
+import CheckDatabase from "./checks/CheckDatabase.jsx";
+import CheckIdentity from "./checks/CheckIdentity.jsx";
+import CheckReferences from "./checks/CheckReferences.jsx";
 
 const CandidateShow = () => {
     const [activeTab, setActiveTab] = useState(null);
@@ -288,7 +293,6 @@ const CandidateShow = () => {
             <div className="max-w-[1600px] mx-auto py-4">
                 {loading ? <SimpleLoader size="lg" className="py-20" /> : (
                     <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-400">
-                        {candidateData?.caseDetails?.checks.find(c => c.taskId === activeTab)?.taskName === 'criminal' && <CriminalDatabaseCheck />}
                         {(() => {
                             const activeCheck = candidateData?.caseDetails?.checks.find(c => c.taskId === activeTab);
                             switch (activeCheck?.taskName) {
@@ -296,6 +300,16 @@ const CandidateShow = () => {
                                     return <CheckAddress addressId={activeCheck.taskId} setIsPopOverOpen={setIsPopOverOpen} />;
                                 case 'education':
                                     return <CheckEducation educationId={activeCheck.taskId}/>
+                                case 'employment':
+                                    return <CheckExperience employmentId={activeCheck.taskId}/>
+                                case 'criminal':
+                                    return <CriminalDatabaseCheck taskId={activeCheck.taskId}  />
+                                case 'database':
+                                    return <CheckDatabase taskId={activeCheck.taskId}/>
+                                case 'identity':
+                                    return <CheckIdentity taskId={activeCheck.taskId}  />
+                                case 'reference':
+                                    return <CheckReferences taskId={activeCheck.taskId}  />
                                 default:
                                     return null;
                             }

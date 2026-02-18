@@ -25,6 +25,7 @@ const ProtectedRoute = lazy(() => import("./component/routes/ProtectedRoute.jsx"
 const RoleSelectionPage = lazy(() => import("./component/pre-auth/RoleSelectionPage.jsx"));
 const TokenVerifier = lazy(() => import("./page/bgv-form/CandidateTokenVerifier.jsx"));
 const OrganizationDashboard = lazy(() => import("./component/dashboard/organization/OrganizationDashboard.jsx"));
+const BlocklistCollegePage = lazy(() => import("./page/blocklist-college/BlocklistCollegePage.jsx"));
 const CreateOrganization = lazy(() => import("./page/organization/CreateOrganization.jsx"));
 const ReportGenerator = lazy(() => import("./component/report/ReportGenerator.jsx"));
 const OrganizationDetail = lazy(() => import("./page/organization/OrganizationDetail.jsx"));
@@ -91,6 +92,7 @@ function App() {
                                                 <Route path="/case-assignment" element={<CaseAssignmentPage />} />
                                                 <Route path="/user-management" element={<UserManagement />} />
                                                 <Route path="/role-management" element={<RoleManagement />} />
+                                                <Route path="/blocklist-college" element={<BlocklistCollegePage />} />
 
                                                 <Route path="/candidate/pending-invitation/:id?" element={<PendingInvitations />} />
 

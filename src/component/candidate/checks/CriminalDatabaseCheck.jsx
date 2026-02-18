@@ -1,45 +1,44 @@
 import React, { useState } from 'react';
 import { ShieldCheck, MoreHorizontal, CheckCircle2, AlertCircle } from 'lucide-react';
+import BaseCheckLayout from "./BaseCheckLayout.jsx";
 
-const CriminalDatabaseCheck = () => {
+const CriminalDatabaseCheck = ({taskId}) => {
     return (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
-            {/* Section Header */}
-            <div className="p-8 border-b border-slate-100">
-                <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-xl font-bold text-slate-800">Criminal Database</h2>
-                    <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold flex items-center justify-center">2</span>
-                </div>
-                <p className="text-sm text-slate-400 font-medium">Select records and charges to be included in the report.</p>
-                <div className="mt-6 flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-800">3 Records</span>
-                </div>
-            </div>
+        <BaseCheckLayout
+            title="Criminal Database"
+            description="Select records and charges to be included in the report."
+            status={"IN_PROGRESS"}
+            checkId={taskId}
+        >
+            <div className="bg-white   shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+                {/* Section Header */}
 
-            {/* Court Section: Oregon Courts */}
-            <div className="p-8">
-                <h3 className="text-sm font-bold text-slate-800 mb-6">Oregon Courts</h3>
-                <CourtTable
-                    records={[
-                        { id: 'CR165020', name: 'Terence Norman', type: 'Felony', status: 'Active', date: '02/26/2013', charges: '2/3' }
-                    ]}
-                />
-            </div>
 
-            {/* Court Section: Butte County */}
-            <div className="p-8 bg-slate-50/30 border-t border-slate-100">
-                <h3 className="text-sm font-bold text-slate-800 mb-6">Butte County Superior Court</h3>
-                <CourtTable
-                    records={[
-                        { id: 'CM44012', name: 'Terence Norman', type: 'Felony', status: 'Active', date: '02/26/2013', charges: '2/3' },
-                        { id: 'DF245602', name: 'Terence Norman', type: 'Felony', status: 'Active', date: '02/26/2013', charges: '1/3' }
-                    ]}
-                />
-                <div className="mt-6 text-center">
-                    <button className="text-[11px] font-bold text-[#5D4591] uppercase tracking-widest hover:underline">Show more</button>
+                {/* Court Section: Oregon Courts */}
+                <div className="p-8">
+                    <h3 className="text-sm font-bold text-slate-800 mb-6">Oregon Courts</h3>
+                    <CourtTable
+                        records={[
+                            { id: 'CR165020', name: 'Terence Norman', type: 'Felony', status: 'Active', date: '02/26/2013', charges: '2/3' }
+                        ]}
+                    />
+                </div>
+
+                {/* Court Section: Butte County */}
+                <div className="p-8 bg-slate-50/30 border-t border-slate-100">
+                    <h3 className="text-sm font-bold text-slate-800 mb-6">Butte County Superior Court</h3>
+                    <CourtTable
+                        records={[
+                            { id: 'CM44012', name: 'Terence Norman', type: 'Felony', status: 'Active', date: '02/26/2013', charges: '2/3' },
+                            { id: 'DF245602', name: 'Terence Norman', type: 'Felony', status: 'Active', date: '02/26/2013', charges: '1/3' }
+                        ]}
+                    />
+                    <div className="mt-6 text-center">
+                        <button className="text-[11px] font-bold text-[#5D4591] uppercase tracking-widest hover:underline">Show more</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </BaseCheckLayout>
     );
 };
 

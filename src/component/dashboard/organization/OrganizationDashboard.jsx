@@ -61,8 +61,10 @@ const OrganizationDashboard = () => {
             {/* Header Section */}
             <div className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Organizations</h1>
-                    <p className="text-slate-500 font-medium">Manage and monitor background verification across clients.</p>
+                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+                        Organizations
+                    </h1>
+                    <p className="text-sm text-slate-500 mt-1 font-medium">Manage and monitor background verification across clients.</p>
                 </div>
 
                 <button onClick={() => navigate("organisation-form")} className="flex items-center cursor-pointer justify-center gap-2 bg-[#5D4591] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-[#5D4591]/20 hover:bg-[#4A3675] transition-all">

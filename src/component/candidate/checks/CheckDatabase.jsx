@@ -1,12 +1,19 @@
 import React from 'react';
 import { Database, Search, ShieldCheck, AlertCircle, Globe } from 'lucide-react';
 import FeedbackForm from "./FeedbackForm.jsx";
+import BaseCheckLayout from "./BaseCheckLayout.jsx";
 
-const CheckDatabase = () => {
+const CheckDatabase = ({taskId}) => {
     return (
-        <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+        <BaseCheckLayout
+            title="Global Database Search"
+            description="Select records and charges to be included in the report."
+            status={"IN_PROGRESS"}
+            checkId={taskId}
+        >
+        <div className="p-8 space-y-6 animate-in slide-in-from-right-4 duration-500">
             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-800">Global Database Search</h2>
+                <h2 className="text-xl font-bold text-slate-800"></h2>
                 <button className="px-4 py-2 text-[10px] font-bold uppercase text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-xl">Verified (No Hits)</button>
             </div>
 
@@ -16,7 +23,7 @@ const CheckDatabase = () => {
                 <DatabaseCard icon={<Search size={20}/>} label="Credit Default" status="Low Risk" color="text-[#5D4591]" />
             </div>
 
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 block">Search Scope</label>
                 <div className="flex flex-wrap gap-2">
                     {['OFAC', 'INTERPOL', 'RBI Defaulters', 'SEBI Action', 'FATF List'].map(tag => (
@@ -24,13 +31,13 @@ const CheckDatabase = () => {
                     ))}
                 </div>
             </div>
-            <FeedbackForm />
         </div>
+        </BaseCheckLayout>
     );
 };
 
 const DatabaseCard = ({ icon, label, status, color }) => (
-    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm text-center">
+    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm text-center">
         <div className={`w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mx-auto mb-4 ${color}`}>
             {icon}
         </div>

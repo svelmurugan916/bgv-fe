@@ -25,7 +25,7 @@ const Sidebar = () => {
         {
             title: 'MASTERS / DATA',
             items: [
-                { icon: <ShieldAlert size={20} />, label: 'Blocklist Colleges', route: '/blocklist' },
+                { icon: <ShieldAlert size={20} />, label: 'Blocklist Colleges', route: '/blocklist-college' },
                 { icon: <FilePlus size={20} />, label: 'Check Creation', route: '/check-creation' },
             ]
         },

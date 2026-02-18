@@ -96,11 +96,14 @@ const RoleManagement = () => {
 
     return (
         <div className="min-h-screen bg-[#F8F9FB] pb-12 relative overflow-hidden">
-            <header className="px-8 py-4 flex justify-between items-center">
-                <h1 className="text-xl font-bold text-slate-800">Role Management</h1>
-            </header>
+            <div className="mb-8">
+                <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+                    Role Management
+                </h1>
+                <p className="text-sm text-slate-500 mt-1 font-medium">Create and Manage the roles.</p>
+            </div>
 
-            <main className="max-w-[1400px] mx-auto px-8 mt-8">
+            <main className="max-w-[1400px] mx-auto mt-8">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
                     <div className="flex-1 min-w-[300px] max-w-md relative group">
                         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${searchQuery ? 'text-[#5D4591]' : 'text-slate-400'}`} size={18} />
