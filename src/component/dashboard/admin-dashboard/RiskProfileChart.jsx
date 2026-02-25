@@ -44,7 +44,7 @@ const RiskProfileChart = () => {
     const redCases = riskDistributionData?.find(item => item.status === 'RED')?.value || 0;
     const calculatedAccuracy = totalRiskCases > 0
         ? (((totalRiskCases - redCases) / totalRiskCases) * 100).toFixed(1)
-        : "100.0";
+        : "0";
     return (
         <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
             <div className="flex justify-between items-center mb-8">
