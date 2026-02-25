@@ -13,12 +13,12 @@ import {
     Smartphone, Timer, XCircle,
     User, Users, Home // Added these icons
 } from "lucide-react";
-import {formatFullDateTime} from "../../../utils/date-util.js";
-import PhotoPreview from "../../common/PhotoPreview.jsx";
+import {formatFullDateTime} from "../../../../utils/date-util.js";
+import PhotoPreview from "../../../common/PhotoPreview.jsx";
 import React from "react";
-import {SEND_ADDRESS_VERIFICATION} from "../../../constant/Endpoint.tsx";
-import {METHOD} from "../../../constant/ApplicationConstant.js";
-import {useAuthApi} from "../../../provider/AuthApiProvider.jsx";
+import {SEND_ADDRESS_VERIFICATION} from "../../../../constant/Endpoint.tsx";
+import {METHOD} from "../../../../constant/ApplicationConstant.js";
+import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
 import {useParams} from "react-router-dom";
 
 const AddressVerificationEvidence = ({addressData, setLoading, fetchAddressDetails, addressId}) => {

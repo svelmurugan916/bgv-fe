@@ -1,30 +1,26 @@
 import React, { useEffect, useMemo, useRef, useState, forwardRef } from 'react';
 import {
-    Download, MoreVertical, ChevronRightIcon, FileCheck, Search,
-    CheckCircle2, Clock, AlertCircle, XCircle, AlertTriangle, TimerIcon
+    ChevronRightIcon, AlertTriangle, TimerIcon
 } from 'lucide-react';
 import CriminalDatabaseCheck from './checks/CriminalDatabaseCheck';
 import { useParams } from "react-router-dom";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 import {
     DOWNLOAD_CANDIDATE_REPORT,
-    FILE_GET,
     GET_CANDIDATE_DETAILS,
     MARK_CANDIDATE_AS_STOP_CASE,
     RESUME_CANDIDATE_STATUS
 } from "../../constant/Endpoint.tsx";
 import { METHOD } from "../../constant/ApplicationConstant.js";
 import SimpleLoader from "../common/SimpleLoader.jsx";
-import CheckIcon from "../common/CheckIcon.jsx";
 import CandidateStatusLabel from "./CandidateStatusLabel.jsx";
 import CandidateDetailsPageHeaderLoader from "./CandidateDetailsPageHeaderLoader.jsx";
-import CheckAddress from "./checks/CheckAddress.jsx";
+import CheckAddress from "./checks/address-check/CheckAddress.jsx";
 import AssignPopOver from "../../page/case-assignment/AssignPopOver.jsx";
 import CaseActionDropdown from "./CaseActionDropdown.jsx";
-import EditAddressModal from "./checks/EditAddressModal.jsx";
+import EditAddressModal from "./checks/address-check/EditAddressModal.jsx";
 import CandidateCheckIconStatus from "../common/CandidateCheckIconStatus.jsx";
-import CheckEducation from "./checks/CheckEducation.jsx";
-import Employment from "../../page/bgv-form/Employment.jsx";
+import CheckEducation from "./checks/education-check/CheckEducation.jsx";
 import CheckExperience from "./checks/CheckExperience.jsx";
 import CheckDatabase from "./checks/CheckDatabase.jsx";
 import CheckIdentity from "./checks/CheckIdentity.jsx";
@@ -381,8 +377,8 @@ const TabItem = forwardRef(({ label, active, status, onClick, candidateStatus },
 
 const Attribute = ({ label, value }) => (
     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-        <span className="text-[10px] sm:text-[11px] font-black text-slate-900 uppercase tracking-tight">{label}</span>
-        <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold truncate max-w-[150px]" title={value}>{value}</span>
+        <span className="text-[10px] sm:text-[11px] text-slate-500 font-bold truncate max-w-[150px]">{label}</span>
+        <span className="text-[10px] sm:text-[11px] font-black text-slate-900 uppercase tracking-tight" title={value}>{value}</span>
     </div>
 );
 

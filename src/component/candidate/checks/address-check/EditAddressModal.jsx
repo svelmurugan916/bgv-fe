@@ -9,12 +9,12 @@ import {
     ShieldCheckIcon,
     Phone, PlusIcon
 } from 'lucide-react';
-import { useAuthApi } from "../../../provider/AuthApiProvider.jsx";
-import { METHOD, PHONE_NUMBER_REGEX } from "../../../constant/ApplicationConstant.js";
-import InputComponent from "../../../page/bgv-form/InputComponent.jsx";
-import CustomDatePicker from "../../common/CustomDatePicker.jsx";
-import FormSingleDropdownSelect from "../../../page/bgv-form/FormSingleDropdownSelect.jsx";
-import {SAVE_NEW_ADDRESS_ENDPOINT, UPDATE_ADDRESS_ENDPOINT} from "../../../constant/Endpoint.tsx";
+import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
+import { METHOD, PHONE_NUMBER_REGEX } from "../../../../constant/ApplicationConstant.js";
+import InputComponent from "../../../../page/bgv-form/InputComponent.jsx";
+import CustomDatePicker from "../../../common/CustomDatePicker.jsx";
+import FormSingleDropdownSelect from "../../../../page/bgv-form/FormSingleDropdownSelect.jsx";
+import {SAVE_NEW_ADDRESS_ENDPOINT, UPDATE_ADDRESS_ENDPOINT} from "../../../../constant/Endpoint.tsx";
 
 
 const EditAddressModal = ({ isOpen, onClose, addressData = {}, onUpdateSuccess, addressId = null, candidateId = null }) => {

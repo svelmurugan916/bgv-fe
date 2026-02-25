@@ -3,11 +3,11 @@ import {
     Paperclip, Trash2, Loader2, AlertCircle, Check, X, User
 } from 'lucide-react';
 import React, { useState } from "react";
-import { formatFullDateTime } from "../../../utils/date-util.js";
-import { useAuthApi } from "../../../provider/AuthApiProvider.jsx";
-import { REMOVE_INTERNAL_PROOF, FILE_GET } from "../../../constant/Endpoint.tsx";
-import { METHOD } from "../../../constant/ApplicationConstant.js";
-import SecureImage from "../../secure-document-api/SecureImage.jsx";
+import { formatFullDateTime } from "../../../../utils/date-util.js";
+import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
+import { REMOVE_INTERNAL_PROOF, FILE_GET } from "../../../../constant/Endpoint.tsx";
+import { METHOD } from "../../../../constant/ApplicationConstant.js";
+import SecureImage from "../../../secure-document-api/SecureImage.jsx";
 
 const EvidenceVault = ({ evidences, taskId, onRemoveSuccess }) => {
     const { authenticatedRequest } = useAuthApi();
@@ -15,15 +15,6 @@ const EvidenceVault = ({ evidences, taskId, onRemoveSuccess }) => {
     const [downloadingId, setDownloadingId] = useState(null);
     const [activeDeleteId, setActiveDeleteId] = useState(null);
     const [error, setError] = useState({ id: null, message: '' });
-
-    const formatFileSize = (bytes) => {
-        if (bytes === 0) return "0 B";
-        if (bytes < 1024) return `${bytes} B`;
-        const kb = bytes / 1024;
-        if (kb < 1024) return `${kb.toFixed(1)} KB`;
-        const mb = kb / 1024;
-        return `${mb.toFixed(1)} MB`;
-    };
 
     const handleDownload = async (fileUrl, fileName) => {
         if (!fileUrl) return;

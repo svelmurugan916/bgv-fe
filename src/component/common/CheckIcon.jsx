@@ -47,7 +47,7 @@ const CheckIcon = ({ status, label }) => {
 
     return (
         <div className="group/icon relative cursor-help">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 relative     ${colors[status] || 'bg-slate-50 text-slate-300 border-slate-100'}`}>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 relative ${colors[status] || 'bg-slate-50 text-slate-300 border-slate-100'}`}>
                 {getTaskIcon(label)}
 
                 {/* STRIKE THROUGH FOR STOP CASE: Diagonal line from top-left to bottom-right */}

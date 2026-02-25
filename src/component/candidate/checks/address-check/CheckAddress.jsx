@@ -5,13 +5,13 @@ import {
     UserCheck,
     Home,
 } from 'lucide-react';
-import { useAuthApi } from "../../../provider/AuthApiProvider.jsx";
-import {ADDRESS_CHECK_DETAILS, SEND_ADDRESS_VERIFICATION} from "../../../constant/Endpoint.tsx";
-import { METHOD } from "../../../constant/ApplicationConstant.js";
-import SimpleLoader from "../../common/SimpleLoader.jsx";
+import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
+import {ADDRESS_CHECK_DETAILS} from "../../../../constant/Endpoint.tsx";
+import { METHOD } from "../../../../constant/ApplicationConstant.js";
+import SimpleLoader from "../../../common/SimpleLoader.jsx";
 import EditAddressModal from "./EditAddressModal.jsx";
 import AddressVerificationEvidence from "./AddressVerificationEvidence.jsx";
-import BaseCheckLayout from "./BaseCheckLayout.jsx";
+import BaseCheckLayout from "../base-check-layout/BaseCheckLayout.jsx";
 
 const CheckAddress = ({ addressId }) => {
     const [loading, setLoading] = useState(true);
@@ -78,7 +78,6 @@ const CheckAddress = ({ addressId }) => {
         <BaseCheckLayout
             title="Address Verification"
             description="Physical verification via geo-tagging and site photography."
-            status={addressData.status}
             checkId={addressId}
             onStatusUpdate={fetchAddressDetails}
             setIsEditModalOpen={setIsEditModalOpen}

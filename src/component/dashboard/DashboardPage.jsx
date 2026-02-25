@@ -1,6 +1,5 @@
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
-import AdminDashboard from "./AdminDashboard.jsx";
-import OperationsDashboard from "./OperationsDashboard.jsx";
+import AdminDashboard from "./admin-dashboard/AdminDashboard.jsx";
 
 const DashboardPage = () => {
     const { loggedInRole, loading } = useAuthApi();
@@ -8,7 +7,7 @@ const DashboardPage = () => {
     if (loading) return null; // Or a spinner
 
     if (loggedInRole === "ROLE_ADMIN") return <AdminDashboard />;
-    if (loggedInRole === "ROLE_OPERATIONS_MANAGER") return <OperationsDashboard />;
+    if (loggedInRole === "ROLE_OPERATIONS_MANAGER") return <AdminDashboard />;
 
     return (
         <div className="p-8">

@@ -4,8 +4,6 @@ import { Routes, Route } from 'react-router-dom';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import TopBarLoader from "./component/common/TopBarLoader.jsx";
 import {VERIFY_ADDRESS_TOKEN, VERIFY_CANDIDATE_TOKEN} from "./constant/Endpoint.tsx";
-import SimpleLoader from "./component/common/SimpleLoader.jsx";
-import {useAuthApi} from "./provider/AuthApiProvider.jsx";
 
 
 // --- LAZY IMPORTS ---
@@ -19,7 +17,7 @@ const BulkCreateCandidates = lazy(() => import("./component/candidate/BulkCreate
 const CandidateDetails = lazy(() => import("./component/candidate/CandidateDetails.jsx"));
 const LoginPage = lazy(() => import("./page/login/LoginPage.jsx"));
 const RootRedirect = lazy(() => import("./RootRedirect.jsx"));
-const AdminDashboard = lazy(() => import("./component/dashboard/AdminDashboard.jsx"));
+const AdminDashboard = lazy(() => import("./component/dashboard/admin-dashboard/AdminDashboard.jsx"));
 const DashboardPage = lazy(() => import("./component/dashboard/DashboardPage.jsx"));
 const ProtectedRoute = lazy(() => import("./component/routes/ProtectedRoute.jsx"));
 const RoleSelectionPage = lazy(() => import("./component/pre-auth/RoleSelectionPage.jsx"));
@@ -101,6 +99,7 @@ function App() {
                                                 <Route path="/admin-dashboard" element={<AdminDashboard />} />
                                                 <Route path="/candidate-list" element={<Candidates />} />
                                                 <Route path="/add-candidate/:id?" element={<BulkCreateCandidates />} />
+                                                <Route path="/check-creation" element={<BulkCreateCandidates />} />
                                                 <Route path="/candidate-details/:id?" element={<CandidateDetails />} />
                                                 <Route path="/dddd" element={<DashboardContent />} />
                                                 <Route path="/report" element={<ReportGenerator />} />

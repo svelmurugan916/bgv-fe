@@ -5,11 +5,10 @@ import {
     CheckCircle2,
     Terminal,
     Shield,
-    MessageSquareQuoteIcon,
     UserCheckIcon,
     PaperclipIcon
 } from 'lucide-react';
-import ContentDisplay from "../../common/ContentDisplay.jsx";
+import ContentDisplay from "../../../common/ContentDisplay.jsx";
 
 const AuditIntelligence = ({ data, formatFullDateTime }) => {
     const hasInsufficiency = !!data.insufficiencyRaisedAt;

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Briefcase, Phone, Mail, FileText, CheckCircle2, AlertCircle, Send } from 'lucide-react';
-import BaseCheckLayout from "./BaseCheckLayout.jsx";
+import { Briefcase } from 'lucide-react';
+import BaseCheckLayout from "./base-check-layout/BaseCheckLayout.jsx";
 
 const CheckExperience = ({employmentId}) => {
     const isSubmitted = true; // Toggle for UI testing
@@ -9,7 +9,6 @@ const CheckExperience = ({employmentId}) => {
         <BaseCheckLayout
             title="Employment Verification"
             description="Primary source verification of employment."
-            status={"IN_PROGRESS"}
             checkId={employmentId}
         >
             <div className="space-y-6 p-8 animate-in slide-in-from-right-4 duration-500">

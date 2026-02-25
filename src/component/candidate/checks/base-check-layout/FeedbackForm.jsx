@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    FileText, Loader2, CheckCircle2, AlertCircle, X,
-    PaperclipIcon, Upload, File, Trash2, Check, CloudUpload
+    Loader2, CheckCircle2, AlertCircle, X,
+    PaperclipIcon
 } from 'lucide-react';
-import { useAuthApi } from "../../../provider/AuthApiProvider.jsx";
-import { SUBMIT_TASK_FEEDBACK_DETAILS, UPLOAD_INTERNAL_PROOF } from "../../../constant/Endpoint.tsx"; // Added placeholder for upload endpoint
-import { METHOD } from "../../../constant/ApplicationConstant.js";
-import RichTextEditor from "../../text-editor/RichTextEditor.jsx";
-import FileUploadModal from "./FileUploadModal.jsx";
+import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
+import { SUBMIT_TASK_FEEDBACK_DETAILS } from "../../../../constant/Endpoint.tsx"; // Added placeholder for upload endpoint
+import { METHOD } from "../../../../constant/ApplicationConstant.js";
+import RichTextEditor from "../../../text-editor/RichTextEditor.jsx";
+import FileUploadModal from "../FileUploadModal.jsx";
 
 const FeedbackForm = ({ taskId, onSuccessSubmitFeedback, onSuccessFileUpload }) => {
     const [feedback, setFeedback] = useState('');

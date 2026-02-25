@@ -1,23 +1,32 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {ShieldCheck, ShieldX, ShieldQuestion, Clock, History, FileText, ShieldAlertIcon, ClockIcon} from 'lucide-react';
-import StatusActionDropdown from "./StatusActionDropdown.jsx";
+import {
+    ShieldCheck,
+    ShieldX,
+    ShieldQuestion,
+    Clock,
+    ShieldAlertIcon,
+    ClockIcon,
+    InfoIcon
+} from 'lucide-react';
+import StatusActionDropdown from "../StatusActionDropdown.jsx";
 import CheckAuditTrail from "./CheckAuditTrail.jsx";
-import {useAuthApi} from "../../../provider/AuthApiProvider.jsx";
-import {GET_TASK_AUDIT_DETAILS, UPDATE_TASK_STAUS} from "../../../constant/Endpoint.tsx";
-import {METHOD} from "../../../constant/ApplicationConstant.js";
-import AuditTrailSkeleton from "./loader/AuditTrailSkeleton.jsx";
+import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
+import {GET_TASK_AUDIT_DETAILS, UPDATE_TASK_STAUS} from "../../../../constant/Endpoint.tsx";
+import {METHOD} from "../../../../constant/ApplicationConstant.js";
+import AuditTrailSkeleton from "../loader/AuditTrailSkeleton.jsx";
 import FeedbackForm from "./FeedbackForm.jsx";
 import AuditIntelligence from "./AuditIntelligence.jsx";
-import {formatFullDateTime} from "../../../utils/date-util.js";
+import {formatFullDateTime} from "../../../../utils/date-util.js";
 import EvidenceVault from "./EvidenceVault.jsx";
-import AuditIntelligenceSkeleton from "./loader/AuditIntelligenceSkeleton.jsx";
+import AuditIntelligenceSkeleton from "../loader/AuditIntelligenceSkeleton.jsx";
+import VerificationStatusLoader from "../loader/VerificationStatusLoader.jsx";
 
 const BaseCheckLayout = ({
              title,
              description,
-             status,
              checkId,
              onStatusUpdate,
+             eyebrow,
              setIsEditModalOpen,
              badgeConfig, // { label: string, colorClass: string, icon: ReactNode }
              children
@@ -26,7 +35,8 @@ const BaseCheckLayout = ({
     const componentInitRef = useRef(false);
     const { authenticatedRequest } = useAuthApi();
     const [auditData, setAuditData] = useState({});
-    const [isAuditLoading, setIsAuditLoading] = useState(false);
+    const [isAuditLoading, setIsAuditLoading] = useState(true);
+    const [status, setStatus] = useState({});
 
     const fetchAuditDetails = async (taskId) => {
         try {
@@ -34,6 +44,7 @@ const BaseCheckLayout = ({
             const response = await authenticatedRequest(undefined, `${GET_TASK_AUDIT_DETAILS}/${taskId}`, METHOD.GET);
             if (response.status === 200) {
                 setAuditData(response.data);
+                setStatus(response.data?.status);
             }
         } catch (err) {
             console.error(err);
@@ -86,7 +97,8 @@ const BaseCheckLayout = ({
                 onStatusUpdate();
             }
         } catch (error) {
-            throw error;
+            console.error(error);
+            // throw error;
         }
     }
 
@@ -101,39 +113,63 @@ const BaseCheckLayout = ({
     return (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
             {/* COMMON: Top Status Banner */}
-            <div className={`flex items-center justify-between px-8 py-3 ${currentStatus.lightBg} border-b border-slate-100`}>
-                <div className={`flex items-center gap-2 ${currentStatus.text}`}>
-                    {currentStatus.icon}
-                    <span className="text-[11px] font-black uppercase tracking-[0.1em]">{currentStatus.label}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase">System Verdict</span>
-                    <div className={`w-2 h-2 rounded-full ${currentStatus.bg} shadow-sm`} />
-                </div>
-            </div>
+            {
+                isAuditLoading ? <VerificationStatusLoader /> : (
+                    <div className={`flex items-center justify-between px-8 py-3 ${currentStatus.lightBg} border-b border-slate-100`}>
+                        <div className={`flex items-center gap-2 ${currentStatus.text}`}>
+                            {currentStatus.icon}
+                            <span className="text-[11px] font-black uppercase tracking-[0.1em]">{currentStatus.label}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">System Verdict</span>
+                            <div className={`w-2 h-2 rounded-full ${currentStatus.bg} shadow-sm`} />
+                        </div>
+                    </div>
+                )
+            }
 
             {/* COMMON: Header Section */}
-            <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <h2 className="text-xl font-bold text-slate-800">{title}</h2>
-                        {badgeConfig && (
-                            <div className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${badgeConfig.colorClass}`}>
-                                {badgeConfig.icon}
-                                {badgeConfig.label}
-                            </div>
+            <div className="p-10 pb-8 border-b border-slate-100">
+                <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+                    <div className="space-y-1">
+                        {/* Point 1: Eyebrow Layout */}
+                        {eyebrow && (
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">
+                                {eyebrow}
+                            </span>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                            {/* Main Title */}
+                            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h2>
+
+                            {/* Point 2: Anchored Status Badge */}
+                            {badgeConfig && (
+                                <div className={`px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${badgeConfig.colorClass}`}>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                                    {badgeConfig.label}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Point 4: Description with Protocol Icon */}
+                        <div className="flex items-center gap-2 mt-2">
+                            <InfoIcon size={14} className="text-slate-300" />
+                            <p className="text-sm text-slate-400 font-medium leading-relaxed">{description}</p>
+                        </div>
+                    </div>
+
+                    {/* Point 3: Consolidated System Verdict & Dropdown */}
+                    <div className="flex items-center gap-6 self-end md:self-auto">
+                        {!isAuditLoading && status !== 'CLEARED' && (
+                            <StatusActionDropdown
+                                setIsEditModalOpen={setIsEditModalOpen}
+                                onStatusChange={(status, notes) => onStatusChange(status, notes)}
+                                currentStatus={status}
+                            />
                         )}
                     </div>
-                    <p className="text-sm text-slate-400 font-medium">{description}</p>
                 </div>
-
-                {status !== 'CLEARED' && (
-                    <StatusActionDropdown
-                        setIsEditModalOpen={setIsEditModalOpen}
-                        onStatusChange={(status, notes) => onStatusChange(status, notes)}
-                        currentStatus={status}
-                    />
-                )}
             </div>
 
             {/* SPECIFIC CONTENT: Grid and Evidence injected here */}

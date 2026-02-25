@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import { ShieldCheck, MoreHorizontal, CheckCircle2, AlertCircle } from 'lucide-react';
-import BaseCheckLayout from "./BaseCheckLayout.jsx";
+import React from 'react';
+import BaseCheckLayout from "./base-check-layout/BaseCheckLayout.jsx";
 
 const CriminalDatabaseCheck = ({taskId}) => {
     return (
         <BaseCheckLayout
             title="Criminal Database"
             description="Select records and charges to be included in the report."
-            status={"IN_PROGRESS"}
             checkId={taskId}
         >
             <div className="bg-white   shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">

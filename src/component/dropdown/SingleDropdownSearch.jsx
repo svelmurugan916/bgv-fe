@@ -1,21 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Search, X } from 'lucide-react';
+import { ChevronDown, Check, Search, X, Loader2 } from 'lucide-react';
 
-const SingleDropdownSearch = ({ label, options = [], selectedKey, onSelect, isOccupyFullWidth = false }) => {
+const SingleDropdownSearch = ({
+                                  label,
+                                  options = [],
+                                  selectedKey,
+                                  onSelect,
+                                  isOccupyFullWidth = false,
+                                  isLoading = false
+                              }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const dropdownRef = useRef(null);
     const searchInputRef = useRef(null);
 
-    // Find the currently selected object based on the key passed from parent
     const selectedOption = options.find(opt => opt.key === selectedKey);
 
-    // Filter options based on search term
     const filteredOptions = options.filter(option =>
         option.value.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Close when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -26,7 +30,6 @@ const SingleDropdownSearch = ({ label, options = [], selectedKey, onSelect, isOc
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Focus search input when dropdown opens
     useEffect(() => {
         if (isOpen && searchInputRef.current) {
             searchInputRef.current.focus();
@@ -34,8 +37,15 @@ const SingleDropdownSearch = ({ label, options = [], selectedKey, onSelect, isOc
     }, [isOpen]);
 
     const handleToggle = () => {
+        if (isLoading) return;
         setIsOpen(!isOpen);
-        setSearchTerm(""); // Reset search when opening/closing
+        setSearchTerm("");
+    };
+
+    // Helper for display text consistent with MultiSelect
+    const getDisplayText = () => {
+        if (isLoading) return "Loading...";
+        return selectedOption ? selectedOption.value : label;
     };
 
     return (
@@ -43,20 +53,29 @@ const SingleDropdownSearch = ({ label, options = [], selectedKey, onSelect, isOc
             {/* TRIGGER BUTTON */}
             <button
                 onClick={handleToggle}
-                className={`flex items-center justify-between px-4 py-2.5 w-full bg-white border rounded-xl transition-all
+                disabled={isLoading}
+                className={`flex items-center justify-between px-4 py-2.5 w-full bg-white border rounded-xl transition-all h-10
+                ${isLoading ? 'bg-slate-50 cursor-wait opacity-100' : 'bg-white'}
                 ${isOpen ? 'border-[#5D4591] ring-4 ring-[#5D4591]/5 shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}
             >
-                <span className={`text-sm font-bold truncate ${selectedOption ? 'text-slate-900' : 'text-slate-400'}`}>
-                    {selectedOption ? selectedOption.value : label}
+                <span className={`text-sm font-bold truncate 
+                    ${isLoading ? 'text-slate-400' : (selectedOption ? 'text-slate-900' : 'text-slate-400')}`}>
+                    {getDisplayText()}
                 </span>
-                <ChevronDown
-                    size={16}
-                    className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                />
+
+                {/* DYNAMIC ICON: Loader or Chevron */}
+                {isLoading ? (
+                    <Loader2 size={16} className="text-[#5D4591] animate-spin shrink-0" />
+                ) : (
+                    <ChevronDown
+                        size={16}
+                        className={`text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-[#5D4591]' : ''}`}
+                    />
+                )}
             </button>
 
-            {/* DROPDOWN MENU */}
-            {isOpen && (
+            {/* DROPDOWN MENU - Only renders if not loading */}
+            {isOpen && !isLoading && (
                 <div className="absolute left-0 mt-2 w-full min-w-[240px] bg-white border border-slate-100 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
 
                     {/* SEARCH INPUT */}
@@ -83,7 +102,7 @@ const SingleDropdownSearch = ({ label, options = [], selectedKey, onSelect, isOc
                                     <button
                                         key={option.key}
                                         onClick={() => {
-                                            onSelect(option); // Returns the whole object {key, value}
+                                            onSelect(option);
                                             setIsOpen(false);
                                         }}
                                         className={`w-full flex items-center px-4 py-3 transition-colors group
@@ -101,7 +120,7 @@ const SingleDropdownSearch = ({ label, options = [], selectedKey, onSelect, isOc
                             })
                         ) : (
                             <div className="px-4 py-8 text-center">
-                                <p className="text-xs font-bold text-slate-400">No results found</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No results found</p>
                             </div>
                         )}
                     </div>
@@ -112,7 +131,7 @@ const SingleDropdownSearch = ({ label, options = [], selectedKey, onSelect, isOc
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onSelect({ key: "", value: "" }); // Clears selection
+                                    onSelect({ key: "", value: "" });
                                     setIsOpen(false);
                                 }}
                                 className="w-full flex items-center justify-center gap-2 py-2 text-[10px] font-black text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest"

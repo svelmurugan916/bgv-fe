@@ -65,6 +65,8 @@ export const ORGANIZATION_STATISTICS = "/organizations/statistics"
 
 export const ADDRESS_CHECK_DETAILS = "/address-check/get-details"
 export const SUBMIT_ADDRESS_VERIFICATION = "/address-check/submit-verification"
+export const EDUCATION_CHECK_DETAILS = "/education-check/get-details"
+export const UPDATE_EDUCATION_CHECK = "/education-check/update-check"
 
 export const UPDATE_ADDRESS_ENDPOINT = "/address-check/update-address"
 export const SAVE_NEW_ADDRESS_ENDPOINT = "/address-check/save-address"
@@ -76,3 +78,19 @@ export const SUBMIT_TASK_FEEDBACK_DETAILS = "/tasks/submit-feedback"
 export const UPDATE_TASK_STAUS = "/tasks/update-task"
 
 export const DOWNLOAD_CANDIDATE_REPORT = "/reports/bgv"
+
+export const GET_ALL_OPERATIONS_MEMBERS = "/user/get-all-operations-user"
+export const GET_ALL_PENDING_TASKS = "/tasks/get-all-pending-tasks"
+export const SEARCH_PENDING_TASKS = "/tasks/search"
+export const GET_ALL_PENDING_CANDIDATES = "/candidate/get-pending-candidates"
+
+export const SINGLE_TASK_ASSIGN = "/task-assignments/assign"
+export const BULK_TASK_ASSIGN = "/task-assignments/bulk-assign"
+export const REASSIGN_TASK = "/task-assignments/reassign"
+
+export const GET_SYSTEM_OVERVIEW_DETAILS = "/tasks/get-system-overview"
+export const GET_MONTH_WISE_DETAILS = "/tasks/month-wise-data"
+export const GET_THROUGHPUT_DATA = "/case/get-throughput-metrics"
+export const GET_OPERATIONS_BOTTLENECK_DATA = "/tasks/operation-bottleneck-data"
+export const GET_RISK_PROFILE_DATA = "/tasks/risk-profile-data"
+export const GET_ORGANIZATION_HEALTH_PORTFOLIO = "/organizations/portfolio-health"

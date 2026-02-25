@@ -1,13 +1,12 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {
-    Plus, Trash2, User, Mail, Phone,
+    Plus, Trash2, User,
     AlertCircle, Info, CheckCircle2, ArrowLeft, Send,
-    Loader2, Building2, Package, FileUp, ArrowLeftIcon
+    Loader2, Building2, Package, FileUp
 } from 'lucide-react';
 import { EMAIL_REGEX, PHONE_NUMBER_REGEX, METHOD } from "../../constant/ApplicationConstant.js";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 import { GET_ALL_ORGANIZATIONS, GET_PACKAGES_BY_ORG, INITIATE_BULK_VERIFICATION } from "../../constant/Endpoint.tsx";
-import SingleSelectDropdown from "../dropdown/SingleSelectDropdown.jsx";
 import ShowError from "../common/ShowError.jsx";
 import SingleDropdownSearch from "../dropdown/SingleDropdownSearch.jsx";
 import {useParams} from "react-router-dom";
@@ -220,7 +219,7 @@ const BulkCreateCandidates = () => {
                 >
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform duration-200" />
                 </button>
-                <h1 className="text-2xl font-black text-slate-800 tracking-tight">Bulk Candidate Onboarding</h1>
+                <h1 className="text-2xl font-black text-slate-800 tracking-tight">Candidate Onboarding</h1>
             </div>
 
             {/* MAIN CONTENT AREA */}

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Users, Mail, Phone, Send, CheckCircle2, Clock } from 'lucide-react';
-import FeedbackForm from "./FeedbackForm.jsx";
-import BaseCheckLayout from "./BaseCheckLayout.jsx";
+import { Users, Mail, Send } from 'lucide-react';
+import BaseCheckLayout from "./base-check-layout/BaseCheckLayout.jsx";
 
 const CheckReferences = ({taskId}) => {
     const references = [
@@ -13,7 +12,6 @@ const CheckReferences = ({taskId}) => {
         <BaseCheckLayout
             title="Professional References"
             description="Select records and charges to be included in the report."
-            status={"IN_PROGRESS"}
             checkId={taskId}
         >
             <div className="p-8 space-y-6 animate-in slide-in-from-right-4 duration-500">

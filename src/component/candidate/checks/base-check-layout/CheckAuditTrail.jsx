@@ -1,27 +1,19 @@
 import React from 'react';
 import {
-    User,
     Clock,
-    Calendar,
     AlertCircle,
     CheckCircle2,
-    FileText,
-    Maximize2,
     Gauge,
     AlertOctagon,
     UserCheck,
     History,
-    Info,
-    ClipboardEdit,
     Timer,
-    FileSearch,
-    ArrowLeft, RefreshCwIcon, UserPlusIcon, UserIcon, CheckIcon, MessageSquareQuoteIcon, UserCheckIcon, TerminalIcon,
-    CpuIcon
+    RefreshCwIcon, UserPlusIcon, UserIcon, CheckIcon
 } from 'lucide-react';
-import { formatFullDateTime } from "../../../utils/date-util.js";
-import {useAuthApi} from "../../../provider/AuthApiProvider.jsx";
-import {ASSIGN_CHECK_TO_ME} from "../../../constant/Endpoint.tsx";
-import {METHOD} from "../../../constant/ApplicationConstant.js";
+import { formatFullDateTime } from "../../../../utils/date-util.js";
+import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
+import {ASSIGN_CHECK_TO_ME} from "../../../../constant/Endpoint.tsx";
+import {METHOD} from "../../../../constant/ApplicationConstant.js";
 
 const CheckAuditTrail = ({ data = {}, checkId  }) => {
     const isSlaBreached = data.isSlaBreached || (data.slaRemainingHours <= 0);
@@ -197,7 +189,7 @@ const CheckAuditTrail = ({ data = {}, checkId  }) => {
                             <p className="text-sm font-bold tracking-tight">
                                 {isCompleted ? (
                                     isSlaBreached
-                                        ? `Target Missed (${Math.abs(data.slaRemainingHours)}d Over)`
+                                        ? `Target Missed (${Math.abs(data.slaRemainingHours)}h Over)`
                                         : `SLA Met Successfully (Goal: ${data.slaTotalDays}d)`
                                 ) : (
                                     isSlaBreached

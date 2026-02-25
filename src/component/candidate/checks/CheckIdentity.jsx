@@ -1,14 +1,12 @@
 import React from 'react';
-import { Fingerprint, CheckCircle2, Eye, ShieldCheck, AlertCircle } from 'lucide-react';
-import FeedbackForm from "./FeedbackForm.jsx";
-import BaseCheckLayout from "./BaseCheckLayout.jsx";
+import { Fingerprint, CheckCircle2, Eye, ShieldCheck } from 'lucide-react';
+import BaseCheckLayout from "./base-check-layout/BaseCheckLayout.jsx";
 
 const CheckIdentity = ({taskId}) => {
     return (
         <BaseCheckLayout
             title="Identity Verification (OCR)"
             description="Select records and charges to be included in the report."
-            status={"IN_PROGRESS"}
             checkId={taskId}
         >
             <div className="p-8 space-y-6 animate-in slide-in-from-right-4 duration-500">
