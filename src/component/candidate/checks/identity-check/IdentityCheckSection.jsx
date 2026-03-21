@@ -1,0 +1,156 @@
+// src/components/identity-check/components/IdentityCheckSection.jsx
+import React from 'react';
+import {ShieldCheck, AlertCircle, Clock, XCircle, ShieldQuestion, ClockIcon} from 'lucide-react';
+import DocumentPreview from './DocumentPreview.jsx';
+import VerifierIntervention from './VerifierIntervention.jsx';
+import PanDetails from './PanDetails.jsx';
+import AadhaarDetails from './AadhaarDetails.jsx';
+import PassportDetails from './PassportDetails.jsx';
+import { formatFullDateTime } from '../../../../utils/date-util.js';
+import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
+import {PAN_VERIFY, SEND_DIGI_LOCKER_LINK_FOR_AADHAAR} from "../../../../constant/Endpoint.tsx";
+import {METHOD} from "../../../../constant/ApplicationConstant.js";
+
+const IdentityCheckSection = ({
+                                  documentType,
+                                  taskId,
+                                  data,
+                                  updateIdentityData
+                              }) => {
+
+    const { authenticatedRequest } = useAuthApi();
+
+    const getOverallStatusColor = () => {
+        switch (data.overallStatus) {
+            case 'CLEARED': return 'bg-emerald-50 text-emerald-700';
+            case 'FAILED': return 'bg-red-50 text-red-600';
+            case 'IN_PROGRESS':
+                return 'bg-blue-50 text-blue-700';
+            case 'NEEDS_REVIEW':
+                return 'bg-violet-50 text-violet-700';
+            case 'UNABLE_TO_VERIFY':
+                return 'bg-amber-50 text-amber-700';
+            default: return 'bg-slate-100 text-slate-600';
+        }
+    };
+
+    const getStatusIcon = () => {
+        switch (data.overallStatus) {
+            case 'CLEARED': return <ShieldCheck size={20} className="text-emerald-700" />;
+            case 'IN_PROGRESS':
+                return <ClockIcon size={20} className="text-blue-700" />;
+            case 'NEEDS_REVIEW':
+                return <ShieldQuestion size={20} className="text-violet-700" />;
+            case 'UNABLE_TO_VERIFY':
+                return <ShieldQuestion size={20} className="text-amber-700" />;
+            case 'FAILED': return <XCircle size={20} className="text-red-500" />;
+            default: return <Clock size={20} className="text-slate-400" />;
+        }
+    };
+
+    const handleSendDigilockerLink = async () => {
+        try {
+            console.log("Triggering DigiLocker Link Service...");
+
+            const payload = {
+                candidateId: data.candidateId,
+                identityCheckId: taskId,
+            };
+
+            const response = await authenticatedRequest(payload, SEND_DIGI_LOCKER_LINK_FOR_AADHAAR, METHOD.POST);
+            return response.status === 200;
+        } catch (error) {
+            // Re-throw so AadhaarDetails can catch it
+            throw error;
+        }
+    };
+
+    const handleOnTriggerReVerify = async () => {
+        try {
+            console.log("Triggering DigiLocker Link Service...");
+
+            const payload = {
+                candidateId: data.candidateId,
+                task_id: taskId,
+            };
+            const response = await authenticatedRequest(payload, PAN_VERIFY, METHOD.POST);
+            return response.status === 200;
+        } catch (error) {
+            // Re-throw so AadhaarDetails can catch it
+            throw error;
+        }
+    }
+
+    const renderDetailsComponent = () => {
+        switch (documentType) {
+            case 'PAN': return <PanDetails data={data} onTriggerReVerify={handleOnTriggerReVerify} />;
+            case 'AADHAAR': return (
+                <AadhaarDetails
+                    data={data}
+                    onSendDigilockerLink={handleSendDigilockerLink}
+                />
+            );
+            case 'PASSPORT': return <PassportDetails data={data} />;
+            default: return null;
+        }
+    };
+
+    const handleUpdateField = (fieldName, value) => {
+        updateIdentityData(data.documentType.toLowerCase(), {
+            ...data,
+            [fieldName]: value
+        });
+    };
+
+    const hasAnyDiscrepancy = data.claimedDetails
+        ? Object.values(data.claimedDetails).some(field => field.doesMatch === false)
+        : false;
+
+    return (
+        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mb-8">
+            <div className="w-full flex items-center justify-between p-8 border-b border-slate-50">
+                <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-xl ${getOverallStatusColor()}`}>
+                        {getStatusIcon()}
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-black text-slate-800">{documentType} Verification</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Identity Assurance Level 2</p>
+                    </div>
+                </div>
+                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${getOverallStatusColor()}`}>
+                    {data.overallStatus?.replace(/_/g, ' ')}
+                </span>
+            </div>
+
+            <div className="p-8">
+                {renderDetailsComponent()}
+
+                <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-100">
+                    <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Method</p>
+                        <p className="text-sm font-bold text-slate-800">{data.verificationMethod || 'NA'}</p>
+                    </div>
+                    <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Timestamp</p>
+                        <p className="text-sm font-bold text-slate-800">
+                            {data.verificationTimestamp ? formatFullDateTime(data.verificationTimestamp) : 'N/A'}
+                        </p>
+                    </div>
+                </div>
+
+                <VerifierIntervention
+                    discrepancyReason={data.discrepancyReason}
+                    onDiscrepancyReasonChange={(val) => handleUpdateField('discrepancyReason', val)}
+                    verifierComments={data.verifierComments}
+                    onVerifierCommentsChange={(val) => handleUpdateField('verifierComments', val)}
+                    finalVerifierStatus={data.finalVerifierStatus || data.overallStatus}
+                    onFinalVerifierStatusChange={(val) => handleUpdateField('overallStatus', val)}
+                    hasDiscrepancy={hasAnyDiscrepancy || data.overallStatus === 'DISCREPANCY'}
+                />
+            </div>
+        </div>
+    );
+};
+
+export default IdentityCheckSection;

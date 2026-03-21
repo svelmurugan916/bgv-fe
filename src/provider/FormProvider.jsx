@@ -32,7 +32,7 @@ export const FormProvider = ({ children }) => {
             }]
         },
         idVerification: {
-            pan: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
+            pan: { file: null, fileName: '', idNumber: '', dob: '', name: '', isExtracted: false },
             aadhar: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
             passport: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
             consent: false
@@ -49,11 +49,13 @@ export const FormProvider = ({ children }) => {
             level: '',
             degree: '',
             college: '',
+            university: '',
             year: '',
             gpa: '',
             rollNumber: '',
             isExtracted: false,
-            documents: []
+            primaryDocument: null,
+            supportingDocuments: []
         }],
         employment: {
             details: [{
@@ -84,10 +86,14 @@ export const FormProvider = ({ children }) => {
     const [candidateId, setCandidateId] = useState(null);
 
     const updateFormData = (step, newData) => {
-        setFormData(prev => ({
-            ...prev,
-            [step]: newData
-        }));
+        setFormData(prev => {
+            const currentStepValue = prev[step];
+            const valueToStore = typeof newData === 'function' ? newData(currentStepValue) : newData;
+            return {
+                ...prev,
+                [step]: valueToStore
+            };
+        });
     };
 
     const initBasicInfo = (data) => {
@@ -117,6 +123,7 @@ export const FormProvider = ({ children }) => {
                     idNumber: data.idVerification?.pan?.idNumber || '',
                     fileName: data.idVerification?.pan?.fileName || '',
                     dob: data.idVerification?.pan?.dob || '',
+                    name: data.idVerification?.pan?.name || '',
                     isExtracted: data.idVerification?.pan?.isExtracted || false,
                     fileId: data.idVerification?.pan?.fileId || '',
                 },

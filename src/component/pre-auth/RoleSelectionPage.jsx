@@ -45,7 +45,7 @@ const RoleSelectionPage = () => {
             const response = await authenticatedRequest(undefined, `${ACTIVATE_ROLE}/${selectedRoleId}`, METHOD.GET);
             if (response.data.success) {
                 setAuthData(response.data.responseData.accessToken);
-                navigate("/dashboard");
+                navigate("/");
             }
         } catch (err) {
             console.error("Role activation failed", err);

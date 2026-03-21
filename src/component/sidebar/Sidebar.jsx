@@ -32,7 +32,7 @@ const Sidebar = () => {
         {
             title: 'SYSTEM',
             items: [
-                { icon: <BarChart2 size={20} />, label: 'Analytics', route: '/analytics' },
+                { icon: <BarChart2 size={20} />, label: 'Analytics', route: '/report-analytics' },
                 { icon: <UserPlus size={20} />, label: 'User Management', route: '/user-management' },
                 { icon: <ShieldCheckIcon size={20} />, label: 'Role Management', route: '/role-management' },
                 { icon: <Settings size={20} />, label: 'Settings', route: '/settings' },

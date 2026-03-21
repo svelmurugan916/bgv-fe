@@ -18,7 +18,7 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
         if (!basic.gender) newErrors.gender = "Gender is required";
         if (!EMAIL_REGEX.test(basic.email)) newErrors.email = "Invalid email format";
         if (!PHONE_NUMBER_REGEX.test(basic.phone)) newErrors.phone = "Invalid 10-digit phone number";
-        if(!checks.includes("ADDRESS") && !basic.dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required";
+        if(!checks.includes("IDENTITY") && !basic.dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required";
     }
 
     if(step === ADDRESS_INFO_PAGE_IDX) {
@@ -136,6 +136,7 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
                 if (!edu.level) newErrors[`edu_${edu.id}_level`] = "Required";
                 if (!edu.degree) newErrors[`edu_${edu.id}_degree`] = "Required";
                 if (!edu.college) newErrors[`edu_${edu.id}_college`] = "Required";
+                if (!edu.university) newErrors[`edu_${edu.id}_university`] = "Required";
                 if (!edu.year) newErrors[`edu_${edu.id}_year`] = "Required";
                 if (!edu.gpa) {
                     newErrors[`edu_${edu.id}_gpa`] = "Required";
@@ -143,7 +144,10 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
                     newErrors[`edu_${edu.id}_gpa`] = "Invalid format (use 8.5 or 90)";
                 }
                 if (!edu.rollNumber) newErrors[`edu_${edu.id}_roll`] = "Required";
-                if (edu.documents.length === 0 && !edu.provideLater) newErrors[`edu_${edu.id}_doc`] = "Please upload or select 'Provide Later'"
+                if ((!edu.primaryDocument || !edu.supportingDocuments.length === 0) && !edu.provideLater) {
+                    newErrors[`edu_${edu.id}_primaryDoc`] = "Please upload or select 'Provide Later'"
+                    newErrors[`edu_${edu.id}_supportingDocs`] = "Please upload or select 'Provide Later'"
+                }
             });
             const educationConfig = checkConfigs?.EDUCATION;
             if (educationConfig && Array.isArray(educationConfig.levels)) {

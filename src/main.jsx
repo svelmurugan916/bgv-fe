@@ -4,7 +4,8 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom';
 import {FormProvider} from "./provider/FormProvider.jsx";
-import {AuthApiProvider} from "./provider/AuthApiProvider.jsx"; // Import BrowserRouter
+import {AuthApiProvider} from "./provider/AuthApiProvider.jsx";
+import {NotificationProvider} from "./context/NotificationContext.jsx"; // Import BrowserRouter
 
 
 createRoot(document.getElementById('root')).render(
@@ -12,7 +13,9 @@ createRoot(document.getElementById('root')).render(
       <AuthApiProvider>
           <FormProvider>
               <BrowserRouter>
-                <App />
+                <NotificationProvider>
+                    <App />
+                </NotificationProvider>
               </BrowserRouter>
           </FormProvider>
       </AuthApiProvider>

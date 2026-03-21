@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Mail, Phone, Clock, AlertCircle, Send, Calendar, RotateCcw, Ban, Loader2, X as CloseIcon, Check, Package,
     SearchIcon
 } from 'lucide-react';
 import TableSkeleton from "./TableSkeleton.jsx";
 
-const InvitationTable = ({ invitations, loading, selectedIds, onSelect, onSelectAll, onStopCase, onSendInvitation }) => {
+const InvitationTable = ({ invitations, loading, selectedIds, onSelect, onSelectAll, onStopCase, onSendInvitation, isSyncing }) => {
     // Track state per row: { [id]: { status: 'idle'..., inviteStatus: 'idle' | 'loading' | 'success' | 'error', inviteMsg: '' } }
     const [rowStates, setRowStates] = useState({});
 
@@ -15,6 +15,10 @@ const InvitationTable = ({ invitations, loading, selectedIds, onSelect, onSelect
             [id]: { ...(prev[id] || {}), ...newState }
         }));
     };
+
+    useEffect(() => {
+        setRowStates({});
+    }, [isSyncing])
 
     const handleStopClick = (id) => {
         updateRowState(id, { status: 'confirming', errorMsg: '' });
@@ -98,7 +102,11 @@ const InvitationTable = ({ invitations, loading, selectedIds, onSelect, onSelect
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-[#F9F7FF] border border-[#5D4591]/10 flex items-center justify-center text-[#5D4591] font-bold text-xs">
-                                                {item.name.split(' ').map(n => n[0]).join('')}
+                                                {
+                                                    item?.profilePicUrl ? <img src={item.profilePicUrl} className={"rounded-full"} alt="" /> :
+                                                        item.name.split(' ').map(n => n[0]).join('')
+                                                }
+
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold text-slate-900">{item.name}</p>

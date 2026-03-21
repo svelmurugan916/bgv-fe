@@ -124,7 +124,7 @@ const PendingInvitations = () => {
     };
 
     return (
-        <div className="bg-slate-50 min-h-screen relative p-8">
+        <div className="bg-slate-50 min-h-screen relative">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div className="flex items-start md:items-center gap-4">
@@ -208,6 +208,7 @@ const PendingInvitations = () => {
                     onSelectAll={toggleSelectAll}
                     onStopCase={handleStopCase}
                     onSendInvitation={(id) => handleSendInvitation(id)}
+                    isSyncing={isSyncing}
                 />
             </div>
 

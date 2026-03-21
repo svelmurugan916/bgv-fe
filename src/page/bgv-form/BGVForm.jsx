@@ -127,6 +127,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
                 const i = stepObj.id;
                 const stepErrors = validateStep(i, initialFormData, () => {}, checkConfigs, checks);
                 let hasData = true;
+                console.log('stepErrors -- ', stepErrors)
 
                 if(i === BASIC_INFO_PAGE_IDX) hasData = initialFormData.basic?.fatherName !== "" || initialFormData.basic?.fatherName !== undefined;
                 else if (i === ADDRESS_INFO_PAGE_IDX) hasData = initialFormData.basic?.addresses?.length > 0;

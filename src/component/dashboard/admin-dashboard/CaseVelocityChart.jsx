@@ -3,7 +3,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {GET_MONTH_WISE_DETAILS, GET_THROUGHPUT_DATA} from "../../../constant/Endpoint.tsx";
 import {METHOD} from "../../../constant/ApplicationConstant.js";
 import {useAuthApi} from "../../../provider/AuthApiProvider.jsx";
-import {Zap, Target, Layers, ArrowUpRight, MinusIcon} from 'lucide-react';
+import {Zap, Target, Layers, ArrowUpRight, MinusIcon, ArrowDownRightIcon} from 'lucide-react';
 import CaseVelocityLoader from "./CaseVelocityLoader.jsx";
 
 const CaseVelocityChart = ({activeCases, isLoading}) => {
@@ -60,7 +60,7 @@ const CaseVelocityChart = ({activeCases, isLoading}) => {
         if (trend < 0) return {
             color: "text-rose-600",
             bg: "bg-rose-50",
-            icon: <ArrowDownRight size={10} strokeWidth={3} />
+            icon: <ArrowDownRightIcon size={10} strokeWidth={3} />
         };
         return {
             color: "text-slate-500",

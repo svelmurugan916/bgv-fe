@@ -20,7 +20,7 @@ export const AuthApiProvider = ({ children }) => {
     const isAuthenticated = !!accessToken;
 
     // Helper to identify if current user is a candidate on the form
-    const isCandidatePath = window.location.pathname.includes('/fill-candidate-form') || window.location.pathname.includes('/address-verification-form');
+    const isCandidatePath = window.location.pathname.includes('/fill-candidate-form') || window.location.pathname.includes('/address-verification-form') || window.location.pathname.includes('/digilocker-verification') || window.location.pathname.includes('/login') ;
 
     const clearAuthStates = useCallback(() => {
         setAccessToken("");

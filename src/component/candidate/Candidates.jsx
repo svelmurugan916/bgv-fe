@@ -32,8 +32,7 @@ const Candidates = () => {
             try {
                 setIsLoading(true);
                 const response = await authenticatedRequest(null, GET_ALL_CANDIDATES_TASKS, METHOD.GET);
-
-                if (response.data) {
+                if (response.status === 200 && response.data) {
                     setCandidates(response.data);
                 }
             } catch (error) {

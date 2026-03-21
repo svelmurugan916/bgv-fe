@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState, forwardRef } from 'react';
 import {
-    ChevronRightIcon, AlertTriangle, TimerIcon
+    ChevronRightIcon, AlertTriangle, TimerIcon, GraduationCap
 } from 'lucide-react';
 import CriminalDatabaseCheck from './checks/CriminalDatabaseCheck';
 import { useParams } from "react-router-dom";
@@ -21,10 +21,13 @@ import CaseActionDropdown from "./CaseActionDropdown.jsx";
 import EditAddressModal from "./checks/address-check/EditAddressModal.jsx";
 import CandidateCheckIconStatus from "../common/CandidateCheckIconStatus.jsx";
 import CheckEducation from "./checks/education-check/CheckEducation.jsx";
-import CheckExperience from "./checks/CheckExperience.jsx";
+import CheckExperience from "./checks/employement-check/CheckExperience.jsx";
 import CheckDatabase from "./checks/CheckDatabase.jsx";
-import CheckIdentity from "./checks/CheckIdentity.jsx";
+import CheckIdentity from "./checks/identity-check/CheckIdentity.jsx";
 import CheckReferences from "./checks/CheckReferences.jsx";
+import CandidateChecksTab from "./CandidateChecksTab.jsx";
+import CaseTimelineTabContent from "./timeline/Timeline.jsx";
+import IDVerificationModal from "./checks/identity-check/IDVerificationModal.jsx";
 
 const CandidateShow = () => {
     const [activeTab, setActiveTab] = useState(null);
@@ -39,6 +42,18 @@ const CandidateShow = () => {
     const [selectedIds, setSelectedIds] = useState([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isIDModalOpen, setIsIDModalOpen] = useState(false);
+    const [selectedIDDocumentType, setSelectedIDDocumentType] = useState(null);
+
+    const handleOpenIDVerificationModal = (docType) => {
+        setSelectedIDDocumentType(docType);
+        setIsIDModalOpen(true);
+    };
+
+    const handleCloseIDVerificationModal = () => {
+        setIsIDModalOpen(false);
+        setSelectedIDDocumentType(null);
+    };
 
     const operationalUsers = [
         { key: '1', value: 'Priya Kumar', email: 'priya@ford.com', wip: 2 },
@@ -169,6 +184,14 @@ const CandidateShow = () => {
         return {};
     }, [candidateData]);
 
+    const formatHourDuration = (hours) => {
+        const parts = [];
+        const days = Math.floor(hours / 24);
+        if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
+        if (hours % 24 > 0) parts.push(`${hours % 24} hr${hours % 24 > 1 ? 's' : ''}`);
+        return parts.join(', ');
+    }
+
     return (
         <div className="min-h-screen bg-[#F8F9FB] animate-in fade-in duration-500">
             <div className="bg-white px-4 sm:px-8 pt-6 border-b border-slate-100">
@@ -202,7 +225,7 @@ const CandidateShow = () => {
                                         </div>
                                     </div>
 
-                                    {consolidatedData?.totalTatHours && (
+                                    {(consolidatedData?.totalTatHours !== undefined && consolidatedData?.totalTatHours > 0) && (
                                         <div className="flex items-center gap-4 lg:pl-6 lg:border-l lg:border-slate-200">
                                             <div className="flex flex-col gap-1">
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Turnaround</p>
@@ -213,7 +236,7 @@ const CandidateShow = () => {
                                                         <TimerIcon size={12} className={"text-emerald-600"}/>
                                                     )}
                                                     <span className={`text-xs font-bold tabular-nums ${consolidatedData?.isSlaBreached ? 'text-rose-600' : 'text-emerald-600'}`}>
-                                                        {consolidatedData?.totalTatHours} Hrs
+                                                        {formatHourDuration(consolidatedData?.totalTatHours)}
                                                     </span>
                                                     <div className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter ${
                                                         consolidatedData?.isSlaBreached ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'
@@ -243,7 +266,9 @@ const CandidateShow = () => {
 
                                 <div className="shrink-0 ml-auto lg:ml-0">
                                     <CaseActionDropdown setIsCreateModalOpen={setIsCreateModalOpen} handeStopCaseClick={handleToggleCaseStatus}
-                                                        candidateStatus={consolidatedData?.status} handleDownloadReport={handleDownloadReport} isDownloading={isDownloading} />
+                                                        candidateStatus={consolidatedData?.status} handleDownloadReport={handleDownloadReport} isDownloading={isDownloading}
+
+                                                        onOpenIDVerificationModal={handleOpenIDVerificationModal}/>
                                 </div>
                             </div>
 
@@ -257,29 +282,8 @@ const CandidateShow = () => {
                             </div>
 
                             {/* 4. NAVIGATION TABS */}
-                            <div className="relative flex items-center gap-2 border-b border-slate-100">
-                                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar relative">
-                                    <div
-                                        className="absolute bottom-0 h-0.5 bg-[#5D4591] transition-all duration-300 ease-out z-10 rounded-full"
-                                        style={{
-                                            left: indicatorStyle.left,
-                                            width: indicatorStyle.width
-                                        }}
-                                    />
-
-                                    {candidateData?.caseDetails?.checks.map((check) => (
-                                        <TabItem
-                                            ref={el => tabsRef.current[check.taskId] = el}
-                                            key={check.taskId}
-                                            label={check.taskName}
-                                            status={check.status}
-                                            active={activeTab === check.taskId}
-                                            onClick={() => setActiveTab(check.taskId)}
-                                            candidateStatus={consolidatedData?.status}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
+                            <CandidateChecksTab caseDetails={candidateData?.caseDetails} indicatorStyle={indicatorStyle}
+                                                tabsRef={tabsRef} activeTab={activeTab} setActiveTab={setActiveTab} consolidatedData={consolidatedData} />
                         </>
                     )}
                 </div>
@@ -303,11 +307,14 @@ const CandidateShow = () => {
                                 case 'database':
                                     return <CheckDatabase taskId={activeCheck.taskId}/>
                                 case 'identity':
+                                case 'aadhaar':
+                                case 'pan':
+                                case 'passport':
                                     return <CheckIdentity taskId={activeCheck.taskId}  />
                                 case 'reference':
                                     return <CheckReferences taskId={activeCheck.taskId}  />
                                 default:
-                                    return null;
+                                    return <CaseTimelineTabContent candidateId={candidateData?.caseDetails?.candidateId} />;
                             }
 
                         })()}
@@ -330,49 +337,33 @@ const CandidateShow = () => {
                 candidateId={candidateData?.caseDetails?.candidateId}
                 onUpdateSuccess={(payload) => onSuccess(payload)}
             />
+
+            <IDVerificationModal
+                isOpen={isIDModalOpen}
+                onClose={handleCloseIDVerificationModal}
+                documentType={selectedIDDocumentType}
+                candidateId={candidateData?.caseDetails?.candidateId}
+                onUpdateSuccess={(payload) => onSuccess(payload)}
+
+            />
+
+            {isCreateModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-8 rounded-lg">
+                        <h2 className="text-xl font-bold">Generic Create Modal</h2>
+                        <p>This modal would open for 'Address' or other non-ID related items.</p>
+                        <button onClick={() => setIsCreateModalOpen(false)} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Close</button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
 
 /* --- SUB-COMPONENTS --- */
 
-const TabItem = forwardRef(({ label, active, status, onClick, candidateStatus }, ref) => {
-    const getDotColor = () => {
-        if(candidateStatus === 'STOP_CASE' && !['CLEARED', 'FAILED', 'UNABLE_TO_VERIFY'].includes(status))
-            return 'bg-slate-300'
-        switch (status) {
-            case 'CLEARED': return 'bg-emerald-500';
-            case 'INSUFFICIENCY': return 'bg-orange-500';
-            case 'FAILED': return 'bg-red-500';
-            case 'NEEDS_REVIEW': return 'bg-violet-500';
-            case 'IN_PROGRESS': return 'bg-blue-500';
-            case 'UNABLE_TO_VERIFY': return 'bg-amber-400';
-            default: return 'bg-slate-300';
-        }
-    };
 
-    return (
-        <button
-            ref={ref}
-            onClick={onClick}
-            className="group relative flex items-center gap-2.5 pb-4 pt-2 px-4 transition-all cursor-pointer whitespace-nowrap"
-        >
-            <div className={`flex items-center gap-2 transition-all duration-300 ${active ? 'scale-105' : 'opacity-70 group-hover:opacity-100'}`}>
-                {status && (
-                    <div className="relative flex items-center justify-center">
-                        {['IN_PROGRESS', 'INSUFFICIENCY', 'NEEDS_REVIEW'].includes(status) && (candidateStatus !== 'STOP_CASE') && (
-                            <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${getDotColor()}`}></span>
-                        )}
-                        <div className={`w-2 h-2 rounded-full relative ${getDotColor()}`} />
-                    </div>
-                )}
-                <span className={`text-[13px] capitalize tracking-tight transition-colors ${active ? 'text-[#5D4591] font-bold' : 'font-semibold text-slate-500'}`}>
-                    {label}
-                </span>
-            </div>
-        </button>
-    );
-});
 
 
 const Attribute = ({ label, value }) => (

@@ -13,7 +13,8 @@ import {
 import { formatFullDateTime } from "../../../../utils/date-util.js";
 import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
 import {ASSIGN_CHECK_TO_ME} from "../../../../constant/Endpoint.tsx";
-import {METHOD} from "../../../../constant/ApplicationConstant.js";
+import {METHOD, TASK_COMPLETED_STATUS} from "../../../../constant/ApplicationConstant.js";
+import {useNavigate} from "react-router-dom";
 
 const CheckAuditTrail = ({ data = {}, checkId  }) => {
     const isSlaBreached = data.isSlaBreached || (data.slaRemainingHours <= 0);
@@ -23,6 +24,7 @@ const CheckAuditTrail = ({ data = {}, checkId  }) => {
     const [errorWhileAssigned, setErrorWhileAssigned] = React.useState(false);
     const {authenticatedRequest, user} = useAuthApi();
     console.log(user);
+    const navigate = useNavigate();
 
     const formatRemainingTime = (remainingHours) => {
         if (remainingHours < 0) {
@@ -96,68 +98,79 @@ const CheckAuditTrail = ({ data = {}, checkId  }) => {
                                 {data.assignedTo || 'UNASSIGNED'}
                             </h3>
 
-                            <div className={`mt-2 flex items-center  ${user?.id !== data.assignedToId && "gap-3"}`}>
-                                <button
-                                    onClick={clickAssignToMe}
-                                    disabled={isAssigning || isAssigned}
-                                    className={`text-[11px] font-semibold flex items-center gap-1 transition-all group
-                                    ${isAssigned ? 'text-emerald-600' : errorWhileAssigned ? 'text-red-600' : 'text-blue-600 hover:text-blue-800'}`}
-                                >
-                                    {isAssigning ? (
-                                        <>
-                                            <RefreshCwIcon size={10} className="animate-spin" />
-                                            <span>Assigning...</span>
-                                        </>
-                                    ) : errorWhileAssigned ? (
-                                        <>
-                                            <AlertCircle size={10} />
-                                            <span className={"underline"}>Error occurred, Try again!.</span>
-                                        </>
-                                    ) : isAssigned ? (
-                                        <>
-                                            <CheckIcon size={10} />
-                                            <span>Assigned Successfully</span>
-                                        </>
-                                    ) : user?.id !== data.assignedToId && (
-                                        <>
-                                            <UserPlusIcon size={10} />
-                                            <span className="underline underline-offset-4 decoration-blue-200 group-hover:decoration-blue-800">
-                                                Assign to me
-                                            </span>
-                                        </>
-                                    )}
-                                </button>
-
-                                {!isAssigned && !isAssigning && (
-                                    <>
-                                        {
-                                            user?.id !== data.assignedToId && <span className="text-slate-300 text-[10px]">|</span>
-                                        }
-
-
+                            {
+                                !TASK_COMPLETED_STATUS.includes(data?.status) ? (
+                                    <div className={`mt-2 flex items-center  ${user?.id !== data.assignedToId && "gap-3"}`}>
                                         <button
-                                            onClick={() => console.log(data.assignedTo ? 'Re-assign clicked' : 'Assign clicked')}
-                                            className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-all group"
+                                            onClick={clickAssignToMe}
+                                            disabled={isAssigning || isAssigned}
+                                            className={`text-[11px] font-semibold flex items-center gap-1 transition-all group
+                                    ${isAssigned ? 'text-emerald-600' : errorWhileAssigned ? 'text-red-600' : 'text-blue-600 hover:text-blue-800'}`}
                                         >
-                                            {data.assignedTo ? (
+                                            {isAssigning ? (
                                                 <>
-                                                    <RefreshCwIcon size={10} className="group-hover:rotate-180 transition-transform duration-500" />
-                                                    <span className="underline underline-offset-4 decoration-blue-200 group-hover:decoration-blue-800">
-                                                        Re-assign Task
-                                                    </span>
+                                                    <RefreshCwIcon size={10} className="animate-spin" />
+                                                    <span>Assigning...</span>
                                                 </>
-                                            ) : (
+                                            ) : errorWhileAssigned ? (
+                                                <>
+                                                    <AlertCircle size={10} />
+                                                    <span className={"underline"}>Error occurred, Try again!.</span>
+                                                </>
+                                            ) : isAssigned ? (
+                                                <>
+                                                    <CheckIcon size={10} />
+                                                    <span>Assigned Successfully</span>
+                                                </>
+                                            ) : user?.id !== data.assignedToId && (
                                                 <>
                                                     <UserPlusIcon size={10} />
                                                     <span className="underline underline-offset-4 decoration-blue-200 group-hover:decoration-blue-800">
-                                                        Assign
-                                                    </span>
+                                                Assign to me
+                                            </span>
                                                 </>
                                             )}
                                         </button>
+
+                                        {!isAssigned && !isAssigning && (
+                                            <>
+                                                {
+                                                    user?.id !== data.assignedToId && <span className="text-slate-300 text-[10px]">|</span>
+                                                }
+
+
+                                                <button
+                                                    onClick={() => navigate("/case-assignment")}
+                                                    className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-all group"
+                                                >
+                                                    {data.assignedTo ? (
+                                                        <>
+                                                            <RefreshCwIcon size={10} className="group-hover:rotate-180 transition-transform duration-500" />
+                                                            <span className="underline underline-offset-4 decoration-blue-200 group-hover:decoration-blue-800">
+                                                        Re-assign Task
+                                                    </span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <UserPlusIcon size={10} />
+                                                            <span className="underline underline-offset-4 decoration-blue-200 group-hover:decoration-blue-800">
+                                                        Assign
+                                                    </span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <>
+                                    <div className={`mt-2 flex items-center font-medium text-[11px] text-slate-400 ${user?.id !== data.assignedToId && "gap-3"}`}>
+                                        You can't Assign or Re-assign the Completed task
+                                    </div>
                                     </>
-                                )}
-                            </div>
+                                )
+                            }
+
                         </div>
                     </div>
                 </div>

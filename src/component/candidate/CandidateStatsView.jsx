@@ -2,6 +2,7 @@ import {CheckCircle2, Clock, FileQuestion, Users} from "lucide-react";
 import React from "react";
 
 const CandidateStatsView = ({candidates, parentDivClass = "max-w-7xl"}) => {
+    console.log('candidates -- ', candidates);
     return (
         <div className={`${parentDivClass} mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 mb-5`} >
             <div className="bg-white p-6 rounded-3xl border border-slate-100 flex items-center gap-5">

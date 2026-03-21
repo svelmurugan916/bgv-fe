@@ -6,13 +6,17 @@ const CandidateCheckIconStatus = ({checks = [], candidateStatus}) => {
         if(checks && checks.length > 0) {
             const grouped = checks?.reduce((acc, check) => {
                 let category = check.taskName.toUpperCase();
+                console.log("category -- ", category)
                 if (category.includes('ADDRESS')) category = 'ADDRESS';
-                else if (category.includes('IDENTITY') || category.includes('ID ')) category = 'IDENTITY';
+                else if (category.includes('IDENTITY')) category = 'IDENTITY';
                 else if (category.includes('EDUCATION')) category = 'EDUCATION';
                 else if (category.includes('EMPLOYMENT') || category.includes('EXPERIENCE')) category = 'EMPLOYMENT';
                 else if (category.includes('CRIMINAL')) category = 'CRIMINAL';
                 else if (category.includes('REFERENCE')) category = 'REFERENCE';
                 else if (category.includes('DATABASE') || category.includes('DB ')) category = 'DATABASE';
+
+
+                console.log("result category - ", category)
 
                 if (!acc[category]) acc[category] = [];
                 acc[category].push(check);

@@ -10,15 +10,16 @@ const RootRedirect = () => {
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
-
+    console.log('loggedInRole -- ', loggedInRole);
     // Redirect based on Role
     switch (loggedInRole) {
-        case 'ADMIN':
-            return <Navigate to="/organisation-dashboard" replace />;
-        case 'OPERATION':
+        case 'ROLE_ADMIN':
+        case 'ROLE_OPERATIONS_MANAGER':
+            return <Navigate to="/dashboard" replace />;
+        case 'ROLE_OPERATIONS':
             return <Navigate to="/ops-dashboard" replace />;
         default:
-            return <Navigate to="/dashboard" replace />;
+            return <Navigate to="/unauthorized" replace />;
     }
 };
 

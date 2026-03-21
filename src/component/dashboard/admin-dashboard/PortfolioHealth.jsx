@@ -128,7 +128,7 @@ const PortfolioHealth = () => {
 
                                         <div>
                                             <div className="text-sm font-black text-slate-800">{org.name}</div>
-                                            <div className="text-[9px] font-bold text-rose-500 uppercase tracking-tighter">
+                                            <div className={`text-[9px] font-bold  ${org.breaches > 0 ? 'text-rose-500' : 'text-emerald-500'}  uppercase tracking-tighter`}>
                                                 {org.breaches > 0 ? `${org.breaches} IMMEDIATE BREACHES` : 'ALL CASES ON TRACK'}
                                             </div>
                                         </div>

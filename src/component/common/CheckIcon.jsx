@@ -7,8 +7,9 @@ import {
     UserCheck,
     ShieldCheck,
     GraduationCap,
-    Briefcase, MapPinIcon, DatabaseIcon, UsersIcon, Package
+    Briefcase, MapPinIcon, DatabaseIcon, UsersIcon, Package, Icon
 } from "lucide-react";
+import {getTaskIcon} from "../../utils/icon-utils.js";
 
 const CheckIcon = ({ status, label }) => {
     const colors = {
@@ -27,28 +28,12 @@ const CheckIcon = ({ status, label }) => {
         stop_case: 'bg-slate-100 text-slate-400 border-slate-200'
     };
 
-    const getTaskIcon = (taskName) => {
-        switch (taskName.toLowerCase()) {
-            case 'unassigned': return <UserPlusIcon size={14} />;
-            case 'id':
-            case 'identity': return <UserCheck size={14} />;
-            case 'criminal': return <ShieldCheck size={14} />;
-            case 'education': return <GraduationCap size={14} />;
-            case 'employment':
-            case 'experience': return <Briefcase size={14} />;
-            case 'address': return <MapPinIcon size={14} />;
-            case 'db check':
-            case 'database': return <DatabaseIcon size={14} />;
-            case 'reference':
-            case 'reference check': return <UsersIcon size={14} />;
-            default: return <Package size={14} />;
-        }
-    };
+    const Icon = getTaskIcon(label);
 
     return (
         <div className="group/icon relative cursor-help">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 relative ${colors[status] || 'bg-slate-50 text-slate-300 border-slate-100'}`}>
-                {getTaskIcon(label)}
+                <Icon size={14} />
 
                 {/* STRIKE THROUGH FOR STOP CASE: Diagonal line from top-left to bottom-right */}
                 {status === 'stop_case' && (

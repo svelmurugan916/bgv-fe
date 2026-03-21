@@ -162,7 +162,7 @@ const LoginPage = () => {
 
                 if(!responseData?.roleSelectionRequired) {
                     // 3. Now navigate. ProtectedRoute will see user AND loggedInRole immediately.
-                    navigate("/dashboard");
+                    navigate("/");
                 } else {
                     setAvailableRoles(responseData?.availableRoles);
                     navigate("/select-role");
@@ -248,6 +248,11 @@ const LoginPage = () => {
                         <div className="flex items-center gap-2"><Shield size={14} className="text-[#5D4591]" /> ISO 27001</div>
                         <div className="flex items-center gap-2"><Shield size={14} className="text-[#5D4591]" /> DPDP Compliant</div>
                     </div>
+                    <p className="text-center text-xs text-gray-500 mt-4 px-4">
+                        This site is protected by reCAPTCHA and the Google&nbsp;
+                        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Privacy Policy</a> and&nbsp;
+                        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Terms of Service</a> apply.
+                    </p>
                 </div>
             </div>
         </div>

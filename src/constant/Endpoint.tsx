@@ -21,6 +21,9 @@ export const UPDATE_ROLE_ENDPOINT = '/role/update-role'
 
 export const VERIFY_CANDIDATE_TOKEN = '/auth/verify-invite'
 export const VERIFY_ADDRESS_TOKEN = '/auth/verify-address-invite'
+export const VERIFY_DIGI_LOCKER_TOKEN = '/auth/verify-digilocker-invite'
+export const INITIATE_DIGILOCKER_VERIFICATION = '/aadhaar/generate-url'
+export const CREATE_IDENTITY_CHECK = "/identity-check/save-identity"
 
 export const REFRESH_TOKEN = "/auth/refresh-token"
 export const LOGOUT = "/auth/logout";
@@ -46,11 +49,15 @@ export const UPLOAD_PROFILE_PICTURE = "/candidate/{candidateId}/profile-picture"
 export const REMOVE_PROFILE_PICTURE = "/candidate/{candidateId}/remove-profile-picture"
 
 export const EXTRACT_EDUCATION_DOCUMENT = "/ocr/extract-marksheet-data"
+export const UPLOAD_SUPPORTING_DOCUMENT = "/candidate/upload-supporting-document"
 export const UPLOAD_EMPLOYMENT_DOCUMENT = "/files/candidate/{candidateId}/upload-multiple";
 export const UPLOAD_INTERNAL_PROOF = "/files/task/{taskId}/upload-proof"
 export const REMOVE_INTERNAL_PROOF = "/files/task/{fileId}/delete-file"
 
-    export const INVITED_CANDIDATE_LIST = "/candidate/invited-candidate";
+export const SEND_DIGI_LOCKER_LINK_FOR_AADHAAR = "/aadhaar/send-digilocker-verification-url"
+export const PAN_VERIFY = "/pan/verify"
+
+export const INVITED_CANDIDATE_LIST = "/candidate/invited-candidate";
 export const INVITED_ALL_CANDIDATE_LIST = "/candidate/all-invited-candidate";
 export const FORM_NOT_SUBMITTED_COUNT = "/candidate/form-non-submitted-stop-case-count"
 export const RESEND_INVITE_NOTIFICATION = "/candidate/resend-invitation"
@@ -63,10 +70,16 @@ export const CANDIDATE_SEARCH_API = "/candidate/search-candidate"
 export const GET_CANDIDATE_DETAILS = "/tasks/get-candidate-details"
 export const ORGANIZATION_STATISTICS = "/organizations/statistics"
 
-export const ADDRESS_CHECK_DETAILS = "/address-check/get-details"
 export const SUBMIT_ADDRESS_VERIFICATION = "/address-check/submit-verification"
-export const EDUCATION_CHECK_DETAILS = "/education-check/get-details"
 export const UPDATE_EDUCATION_CHECK = "/education-check/update-check"
+
+export const GET_TASK_DETAILS = "/tasks/get-details"
+export const VERIFY_DIGILOCKER_STATUS = "/aadhaar/download";
+
+export const UPDATE_EMPLOYMENT_CHECK = "/education-check/update-check"
+export const UPDATE_REFERENCE_CHECK = '';
+
+export const UPDATE_IDENTITY_CHECK_ENDPOINT = ""
 
 export const UPDATE_ADDRESS_ENDPOINT = "/address-check/update-address"
 export const SAVE_NEW_ADDRESS_ENDPOINT = "/address-check/save-address"
@@ -94,3 +107,4 @@ export const GET_THROUGHPUT_DATA = "/case/get-throughput-metrics"
 export const GET_OPERATIONS_BOTTLENECK_DATA = "/tasks/operation-bottleneck-data"
 export const GET_RISK_PROFILE_DATA = "/tasks/risk-profile-data"
 export const GET_ORGANIZATION_HEALTH_PORTFOLIO = "/organizations/portfolio-health"
+export const GET_TIMELINE_DATA = "/case/timeline"

@@ -2,13 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     Download, MoreVertical, MapPin, GraduationCap,
     Briefcase, Fingerprint, Users, Database,
-    ShieldAlert, CircleStop, Plus, Loader2, PlayCircle
+    ShieldAlert, CircleStop, Plus, Loader2, PlayCircle,
+    ChevronRight // Added for sub-menu indicator
 } from 'lucide-react';
 
-const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidateStatus, handleDownloadReport, isDownloading }) => {
+const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidateStatus, handleDownloadReport, isDownloading, onOpenIDVerificationModal }) => { // Added onOpenIDVerificationModal
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const identityMenuItemRef = useRef(null); // Ref for the Identity menu item
     const [actionLoading, setActionLoading] = useState(false);
+    const [identitySubMenuOpen, setIdentitySubMenuOpen] = useState(false);
+    const [openSubMenuLeft, setOpenSubMenuLeft] = useState(false); // New state for sub-menu direction
 
     // Derived State
     const isStopped = candidateStatus === 'STOP_CASE';
@@ -17,20 +21,59 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsOpen(false);
+                setIdentitySubMenuOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Effect to calculate sub-menu position based on available space
+    useEffect(() => {
+        if (identitySubMenuOpen && identityMenuItemRef.current) {
+            const menuItemRect = identityMenuItemRef.current.getBoundingClientRect();
+            // Assuming sub-menu width is w-48 (192px) + 2 units of margin (8px) = 200px
+            const subMenuEstimatedWidth = 200;
+            const rightSpace = window.innerWidth - menuItemRect.right;
+
+            if (rightSpace < subMenuEstimatedWidth + 30) { // Add a buffer of 30px
+                setOpenSubMenuLeft(true);
+            } else {
+                setOpenSubMenuLeft(false);
+            }
+        }
+    }, [identitySubMenuOpen]); // Recalculate when sub-menu opens
+
+    const handleIdentitySubItemClick = (documentType) => {
+        // This is the key change: call the new prop to open the IDVerification modal
+        if (onOpenIDVerificationModal) {
+            onOpenIDVerificationModal(documentType);
+        }
+        setIsOpen(false); // Close main dropdown
+        setIdentitySubMenuOpen(false); // Close sub-dropdown
+    };
+
     const menuItems = [
-        { icon: <MapPin size={16} />, label: 'Address', onClick: () => setIsCreateModalOpen(true) },
-        { icon: <GraduationCap size={16} />, label: 'Education' },
-        { icon: <Briefcase size={16} />, label: 'Employment' },
-        { icon: <Fingerprint size={16} />, label: 'Identity' },
-        { icon: <Users size={16} />, label: 'Reference' },
-        { icon: <Database size={16} />, label: 'Database check' },
-        { icon: <ShieldAlert size={16} />, label: 'Criminal check' },
+        { icon: <MapPin size={16} />, label: 'Address', onClick: () => { setIsCreateModalOpen(true); setIsOpen(false); } },
+        { icon: <GraduationCap size={16} />, label: 'Education', onClick: () => setIsOpen(false) },
+        { icon: <Briefcase size={16} />, label: 'Employment', onClick: () => setIsOpen(false) },
+        {
+            icon: <Fingerprint size={16} />,
+            label: 'Identity',
+            isSubMenu: true, // Mark this item as having a sub-menu
+            onClick: (e) => {
+                e.stopPropagation(); // Prevent closing the main dropdown immediately
+                setIdentitySubMenuOpen(prev => !prev);
+            },
+            subItems: [
+                { label: 'PAN', onClick: () => handleIdentitySubItemClick('PAN') },
+                { label: 'AADHAAR', onClick: () => handleIdentitySubItemClick('AADHAAR') },
+                { label: 'Passport', onClick: () => handleIdentitySubItemClick('PASSPORT') },
+            ]
+        },
+        { icon: <Users size={16} />, label: 'Reference', onClick: () => setIsOpen(false) },
+        { icon: <Database size={16} />, label: 'Database check', onClick: () => setIsOpen(false) },
+        { icon: <ShieldAlert size={16} />, label: 'Criminal check', onClick: () => setIsOpen(false) },
     ];
 
     const handleToggleCaseStatus = async () => {
@@ -40,6 +83,7 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
         } finally {
             setActionLoading(false);
             setIsOpen(false);
+            setIdentitySubMenuOpen(false); // Close sub-menu if case status is toggled
         }
     }
 
@@ -51,7 +95,8 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
                     isDownloading ? (
                         <>
                             <Loader2 className={"animate-spin"} size={16} /> Download report
-                        </>) : (
+                        </>
+                    ) : (
                         <>
                             <Download size={16} /> Download report
                         </>
@@ -61,7 +106,10 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
 
             {/* More Button */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => {
+                    setIsOpen(!isOpen);
+                    setIdentitySubMenuOpen(false); // Close sub-menu if main dropdown is toggled
+                }}
                 className={`p-2.5 rounded-xl transition-all duration-300 cursor-pointer border ${
                     isOpen
                         ? 'bg-slate-100 border-slate-200 text-slate-800'
@@ -73,7 +121,7 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
 
             {/* DROPDOWN */}
             <div className={`
-                absolute right-0 top-full mt-3 w-64 bg-white/95 backdrop-blur-md border border-slate-200/60 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[100] py-2 
+                absolute right-0 top-full mt-3 w-64 bg-white/95 backdrop-blur-md border border-slate-200/60 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[100] py-2
                 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] origin-top-right
                 ${isOpen
                 ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
@@ -87,26 +135,56 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
 
                 <div className="space-y-0.5 px-1">
                     {menuItems.map((item, index) => (
-                        <button
+                        <div
                             key={index}
-                            disabled={isStopped}
-                            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all group text-left 
-                                ${isStopped
-                                ? 'opacity-40 cursor-not-allowed grayscale'
-                                : 'text-slate-600 hover:bg-[#F9F7FF] hover:text-[#5D4591] cursor-pointer'}`}
-                            onClick={() => {
-                                if (item.onClick) item.onClick();
-                                setIsOpen(false);
-                            }}
+                            className="relative"
+                            ref={item.isSubMenu ? identityMenuItemRef : null}
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#5D4591] group-hover:shadow-sm transition-all duration-300">
-                                    {item.icon}
+                            <button
+                                disabled={isStopped}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all group text-left
+                                ${isStopped
+                                    ? 'opacity-40 cursor-not-allowed grayscale'
+                                    : 'text-slate-600 hover:bg-[#F9F7FF] hover:text-[#5D4591] cursor-pointer'}`}
+                                onClick={item.onClick}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#5D4591] group-hover:shadow-sm transition-all duration-300">
+                                        {item.icon}
+                                    </div>
+                                    <span className="text-xs font-bold tracking-tight">{item.label}</span>
                                 </div>
-                                <span className="text-xs font-bold tracking-tight">{item.label}</span>
-                            </div>
-                            {!isStopped && <Plus size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />}
-                        </button>
+                                {!isStopped && item.isSubMenu && <ChevronRight size={14} className={`transition-transform duration-300 ${identitySubMenuOpen ? 'rotate-90' : ''}`} />}
+                                {!isStopped && !item.isSubMenu && <Plus size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />}
+                            </button>
+
+                            {/* Nested Dropdown for Identity */}
+                            {item.isSubMenu && identitySubMenuOpen && (
+                                <div className={`
+                                    absolute top-0 w-48 bg-white/95 backdrop-blur-md border border-slate-200/60 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[101] py-2
+                                    transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]
+                                    ${openSubMenuLeft ? 'right-full mr-2 origin-top-right' : 'left-full ml-2 origin-top-left'}
+                                    opacity-100 scale-100 translate-x-0 pointer-events-auto
+                                `}>
+                                    {item.subItems.map((subItem, subIndex) => (
+                                        <button
+                                            key={subIndex}
+                                            disabled={isStopped}
+                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all group text-left
+                                                ${isStopped
+                                                ? 'opacity-40 cursor-not-allowed grayscale'
+                                                : 'text-slate-600 hover:bg-[#F9F7FF] hover:text-[#5D4591] cursor-pointer'}`}
+                                            onClick={subItem.onClick}
+                                        >
+                                            <div className="flex items-center justify-center text-slate-400 group-hover:text-[#5D4591] transition-all duration-300">
+                                                <Fingerprint size={16} />
+                                            </div>
+                                            <span className="text-xs font-bold tracking-tight">{subItem.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     ))}
                 </div>
 

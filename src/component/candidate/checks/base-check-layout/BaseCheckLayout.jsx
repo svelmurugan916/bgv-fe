@@ -108,6 +108,7 @@ const BaseCheckLayout = ({
         })
     }
 
+    console.log("statusstatus -- ", status);
     const currentStatus = statusConfig[status] || { bg: 'bg-slate-400', lightBg: 'bg-slate-50', text: 'text-slate-600', icon: <Clock size={16} />, label: 'Verification Pending' };
 
     return (

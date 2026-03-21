@@ -6,7 +6,7 @@ import {
     Home,
 } from 'lucide-react';
 import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
-import {ADDRESS_CHECK_DETAILS} from "../../../../constant/Endpoint.tsx";
+import {GET_TASK_DETAILS} from "../../../../constant/Endpoint.tsx";
 import { METHOD } from "../../../../constant/ApplicationConstant.js";
 import SimpleLoader from "../../../common/SimpleLoader.jsx";
 import EditAddressModal from "./EditAddressModal.jsx";
@@ -23,7 +23,7 @@ const CheckAddress = ({ addressId }) => {
     const fetchAddressDetails = async () => {
         setLoading(true);
         try {
-            const response = await authenticatedRequest({}, `${ADDRESS_CHECK_DETAILS}/${addressId}`, METHOD.GET);
+            const response = await authenticatedRequest({}, `${GET_TASK_DETAILS}/${addressId}?taskType=address`, METHOD.GET);
             if (response.status === 200) {
                 setAddressData(response.data);
             }
