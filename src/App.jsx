@@ -4,7 +4,6 @@ import { Routes, Route } from 'react-router-dom'; // No need to import 'BrowserR
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import TopBarLoader from "./component/common/TopBarLoader.jsx";
 import {VERIFY_ADDRESS_TOKEN, VERIFY_CANDIDATE_TOKEN, VERIFY_DIGI_LOCKER_TOKEN} from "./constant/Endpoint.tsx";
-import ReportAnalyticsPage from "./component/report-analytics/ReportAnalyticsPage.jsx";
 import NotificationSystem from "./component/notification/NotificationSystem.jsx";
 import { NotificationProvider } from './context/NotificationContext.jsx'; // Import NotificationProvider
 
@@ -21,6 +20,7 @@ const CandidateDetails = lazy(() => import("./component/candidate/CandidateDetai
 const LoginPage = lazy(() => import("./page/login/LoginPage.jsx"));
 const RootRedirect = lazy(() => import("./RootRedirect.jsx"));
 const AdminDashboard = lazy(() => import("./component/dashboard/admin-dashboard/AdminDashboard.jsx"));
+const ReportAnalyticsPage = lazy(() => import("./component/report-analytics/ReportAnalyticsPage.jsx"));
 const DashboardPage = lazy(() => import("./component/dashboard/DashboardPage.jsx"));
 const ProtectedRoute = lazy(() => import("./component/routes/ProtectedRoute.jsx"));
 const RoleSelectionPage = lazy(() => import("./component/pre-auth/RoleSelectionPage.jsx"));
