@@ -22,7 +22,7 @@ import {INITIATE_DIGILOCKER_VERIFICATION, VERIFY_DIGILOCKER_STATUS} from "../../
 import { METHOD } from "../../constant/ApplicationConstant.js";
 import SSEListener from "../../component/listener/SSEListener.jsx";
 
-const DigilockerVerificationPage = ({ candidateDataResponse }) => {
+const DigiLockerVerificationPage = ({ candidateDataResponse }) => {
     // --- STATES ---
     const [status, setStatus] = useState('idle'); // 'idle' | 'submitting' | 'verifying' | 'success' | 'error'
     const [isManualVerifying, setIsManualVerifying] = useState(false); // New state for fallback
@@ -389,4 +389,4 @@ const ErrorView = ({ message, onRetry }) => (
     </div>
 );
 
-export default DigilockerVerificationPage;
+export default DigiLockerVerificationPage;

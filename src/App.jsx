@@ -14,7 +14,7 @@ const MainLayout = lazy(() => import("./MainLayout.jsx"));
 const Candidates = lazy(() => import("./component/candidate/Candidates.jsx"));
 const OperationsDashboard = lazy(() => import("./component/dashboard/operation-dashboard/OperationsDashboard.jsx"));
 const AddressVerificationForm = lazy(() => import("./page/address-verification/AddressVerificationForm.jsx"));
-const DigiLockerVerificationPage = lazy(() => import("./page/digi-locker-verification/DigiLockerVerificationPage.jsx"));
+const DigiLockerVerificationPage = lazy(() => import("./page/digi-locker-verification/./DigiLockerVerificationPage"));
 const BulkCreateCandidates = lazy(() => import("./component/candidate/BulkCreateCandidates.jsx"));
 const CandidateDetails = lazy(() => import("./component/candidate/CandidateDetails.jsx"));
 const LoginPage = lazy(() => import("./page/login/LoginPage.jsx"));
