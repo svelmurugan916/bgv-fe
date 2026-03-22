@@ -9,13 +9,12 @@ import SSEListener from "./component/listener/SSEListener.jsx";
 const MainLayout = () => {
     const location = useLocation();
     const { user } = useAuthApi();
-    const API_BASE = import.meta.env.VITE_API_URL || "";
-    const sseEndpoint = `${API_BASE}/api/v1/sse/notifications`;
+
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-[#F9FAFB]">
             <Header />
-            {user && <SSEListener sseUrl={sseEndpoint} />}
+            {user && <SSEListener />}
             <div className="flex flex-1 overflow-hidden">
                 <Sidebar />
                 <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">

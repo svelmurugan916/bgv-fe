@@ -202,6 +202,7 @@ const MOCK_CANDIDATE_DATA = {
 const getStatusColorClass = (status) => {
     switch (status) {
         case 'CLEARED':
+        case 'COMPLETED':
         case 'INSUFFICIENCY_CLEARED':
         case 'case-completed': return 'text-emerald-500';
         case 'INSUFFICIENCY':
@@ -210,6 +211,7 @@ const getStatusColorClass = (status) => {
         case 'case-stopped': return 'text-red-500';
         case 'NEEDS_REVIEW': return 'text-violet-500';
         case 'IN_PROGRESS':
+        case 'INITIATED':
         case 'ASSIGNED':
         case 'candidate-invited':
         case 'case-created': return 'text-blue-500';
@@ -223,6 +225,7 @@ const getStatusColorClass = (status) => {
 const getStatusCardBgClass = (status) => {
     switch (status) {
         case 'CLEARED':
+        case 'COMPLETED':
         case 'INSUFFICIENCY_CLEARED':
         case 'case-completed': return 'bg-emerald-50';
         case 'INSUFFICIENCY':
@@ -231,6 +234,7 @@ const getStatusCardBgClass = (status) => {
         case 'case-stopped': return 'bg-red-50';
         case 'NEEDS_REVIEW': return 'bg-violet-50';
         case 'IN_PROGRESS':
+        case 'INITIATED':
         case 'ASSIGNED':
         case 'candidate-invited':
         case 'case-created': return 'bg-blue-50';
@@ -244,6 +248,7 @@ const getStatusCardBgClass = (status) => {
 const getStatusCardBorderClass = (status) => {
     switch (status) {
         case 'CLEARED':
+        case 'COMPLETED':
         case 'INSUFFICIENCY_CLEARED':
         case 'case-completed': return 'border-emerald-200';
         case 'INSUFFICIENCY':
@@ -252,6 +257,7 @@ const getStatusCardBorderClass = (status) => {
         case 'case-stopped': return 'border-red-200';
         case 'NEEDS_REVIEW': return 'border-violet-200';
         case 'IN_PROGRESS':
+        case 'INITIATED':
         case 'ASSIGNED':
         case 'candidate-invited':
         case 'case-created': return 'border-blue-200';
@@ -266,7 +272,7 @@ const getTaskIcon = (taskName) => {
     switch (taskName?.toLowerCase()) {
         case 'unassigned': return UserPlus;
         case 'id':
-        case 'identity': return FingerprintPattern;
+        case 'identity': case 'aadhaar': case 'pan': case 'passport': return FingerprintPattern;
         case 'criminal': return ShieldCheck;
         case 'education': return GraduationCap;
         case 'employment':
@@ -304,6 +310,7 @@ const getTimelineEventIcon = (eventType, checkStatus, taskName) => {
     switch (checkStatus) {
         case 'ASSIGNED': return UserCheck;
         case 'IN_PROGRESS': return Clock;
+        case 'INITIATED': return Clock;
         case 'REASSIGNED': return RotateCw;
         case 'INSUFFICIENCY': case 'LINK_SENT': return AlertCircle;
         case 'INSUFFICIENCY_CLEARED': return ClipboardCheck;
@@ -339,6 +346,7 @@ const formatDuration = (start, end) => {
 };
 
 const formatHourDuration = (hours) => {
+    if (hours < 1 && hours >= 0) return "< 1 hr";
     const parts = [];
     const days = Math.floor(hours / 24);
     if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
@@ -502,6 +510,12 @@ const generateCaseTimelineEvents = (caseDetails, consolidatedData) => {
                     break;
                 case 'CLEARED':
                     baseDescription = 'Check successfully cleared.';
+                    break;
+                case 'INITIATED':
+                    baseDescription = 'Initiated the Digi-Locker Session for candidate.';
+                    break;
+                case 'COMPLETED':
+                    baseDescription = 'Digi-Locker Document received successfully.';
                     break;
                 case 'FAILED':
                     baseDescription = 'Check failed to clear.';

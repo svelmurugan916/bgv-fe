@@ -1,12 +1,11 @@
 // src/components/identity-check/components/IdentityCheckSection.jsx
 import React from 'react';
-import {ShieldCheck, AlertCircle, Clock, XCircle, ShieldQuestion, ClockIcon} from 'lucide-react';
-import DocumentPreview from './DocumentPreview.jsx';
+import {Clock, ClockIcon, SearchIcon, ShieldCheck, ShieldQuestion, XCircle} from 'lucide-react';
 import VerifierIntervention from './VerifierIntervention.jsx';
 import PanDetails from './PanDetails.jsx';
 import AadhaarDetails from './AadhaarDetails.jsx';
 import PassportDetails from './PassportDetails.jsx';
-import { formatFullDateTime } from '../../../../utils/date-util.js';
+import {formatFullDateTime} from '../../../../utils/date-util.js';
 import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
 import {PAN_VERIFY, SEND_DIGI_LOCKER_LINK_FOR_AADHAAR} from "../../../../constant/Endpoint.tsx";
 import {METHOD} from "../../../../constant/ApplicationConstant.js";
@@ -15,7 +14,8 @@ const IdentityCheckSection = ({
                                   documentType,
                                   taskId,
                                   data,
-                                  updateIdentityData
+                                  updateIdentityData,
+                                  fetchIdentityDetails
                               }) => {
 
     const { authenticatedRequest } = useAuthApi();
@@ -73,8 +73,7 @@ const IdentityCheckSection = ({
                 candidateId: data.candidateId,
                 task_id: taskId,
             };
-            const response = await authenticatedRequest(payload, PAN_VERIFY, METHOD.POST);
-            return response.status === 200;
+            return await authenticatedRequest(payload, PAN_VERIFY, METHOD.POST);
         } catch (error) {
             // Re-throw so AadhaarDetails can catch it
             throw error;
@@ -83,7 +82,7 @@ const IdentityCheckSection = ({
 
     const renderDetailsComponent = () => {
         switch (documentType) {
-            case 'PAN': return <PanDetails data={data} onTriggerReVerify={handleOnTriggerReVerify} />;
+            case 'PAN': return <PanDetails data={data} onTriggerReVerify={handleOnTriggerReVerify} fetchIdentityDetails={fetchIdentityDetails} />;
             case 'AADHAAR': return (
                 <AadhaarDetails
                     data={data}
@@ -126,18 +125,39 @@ const IdentityCheckSection = ({
             <div className="p-8">
                 {renderDetailsComponent()}
 
-                <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-100">
-                    <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Method</p>
-                        <p className="text-sm font-bold text-slate-800">{data.verificationMethod || 'NA'}</p>
+                <div className="grid grid-cols-2 gap-4 pt-6 mt-4 border-t border-slate-100">
+
+                    {/* 1. Verification Method */}
+                    <div className="flex items-center gap-3 group/meta">
+                        <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100/50 transition-transform group-hover/meta:scale-110">
+                            <SearchIcon size={16} />
+                        </div>
+                        <div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">
+                                Verification Method
+                            </p>
+                            <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+                                {data.verificationMethod || 'Direct API Sync'}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Timestamp</p>
-                        <p className="text-sm font-bold text-slate-800">
-                            {data.verificationTimestamp ? formatFullDateTime(data.verificationTimestamp) : 'N/A'}
-                        </p>
+
+                    {/* 2. Verification Timestamp */}
+                    <div className="flex items-center gap-3 pl-4 border-l border-slate-100 group/meta">
+                        <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shadow-sm border border-slate-200/50 transition-transform group-hover/meta:scale-110">
+                            <ClockIcon size={16} />
+                        </div>
+                        <div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">
+                                Last Synced At
+                            </p>
+                            <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">
+                                {data.verificationTimestamp ? formatFullDateTime(data.verificationTimestamp) : 'Pending Sync'}
+                            </p>
+                        </div>
                     </div>
                 </div>
+
 
                 <VerifierIntervention
                     discrepancyReason={data.discrepancyReason}

@@ -100,13 +100,14 @@ const IDVerificationModal = ({ isOpen, onClose, documentType, candidateId, onUpd
             );
 
             if (response.status === 200) {
-                const { documentId, extractedData, fileName } = response.data;
+                const { documentId, extractedData, fileName, fileUrl } = response.data;
                 updateFormData('idVerification', {
                     ...formData.idVerification, // Keep other document types
                     [type]: { // Update only the current document type
                         ...formData.idVerification[type], // Keep existing fields for this type
                         fileId: documentId,
                         fileName: fileName || file.name,
+                        fileUrl: fileUrl,
                         idNumber: extractedData?.extractedPiiData || '',
                         dob: formatToISO(extractedData?.dateOfBirth) || '',
                         name: extractedData?.name || '',
@@ -132,7 +133,7 @@ const IDVerificationModal = ({ isOpen, onClose, documentType, candidateId, onUpd
         try {
             const response = await authenticatedRequest({}, `${REMOVE_DOCUMENT}/${fileId}`, METHOD.DELETE);
 
-            if (response.status === 200) {
+            if (response.status === 204) {
                 return true; // Success
             } else {
                 setUploadErrors(prev => ({
@@ -313,6 +314,7 @@ const IDVerificationModal = ({ isOpen, onClose, documentType, candidateId, onUpd
                         <DocCard
                             title={`${modalTitle()}${isCurrentDocMandatory(documentType) ? '*' : ''}`}
                             file={currentDocumentData.fileName}
+                            fileUrl={currentDocumentData.fileUrl}
                             processing={uploading} // Use general uploading state for the modal
                             error={uploadErrors[currentDocumentKey]}
                             onFileSelect={(e) => handleFileChange(currentDocumentKey, e)}

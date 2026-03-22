@@ -266,42 +266,43 @@ const CheckIdentity = ({ taskId }) => {
                         documentType={currentActiveDocumentData.documentType}
                         data={currentActiveDocumentData}
                         updateIdentityData={updateIdentityDocument}
+                        fetchIdentityDetails={fetchIdentityDetails}
                     />
                 )}
 
                 {/* Save Section */}
-                <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-                    <div className="flex items-center gap-3">
-                        {saveStatus === 'success' && (
-                            <div className="flex items-center gap-2 text-emerald-600 animate-in fade-in slide-in-from-left-2">
-                                <Check size={18} className="bg-emerald-100 rounded-full p-0.5" />
-                                <span className="text-xs font-bold uppercase tracking-wider">Identity Checks Saved Successfully</span>
-                            </div>
-                        )}
-                        {saveStatus === 'error' && (
-                            <div className="flex items-center gap-2 text-rose-600 animate-in shake">
-                                <AlertCircle size={18} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Failed to save changes. Please check for errors.</span>
-                            </div>
-                        )}
-                    </div>
+                {/*<div className="flex items-center justify-between pt-6 border-t border-slate-100">*/}
+                {/*    <div className="flex items-center gap-3">*/}
+                {/*        {saveStatus === 'success' && (*/}
+                {/*            <div className="flex items-center gap-2 text-emerald-600 animate-in fade-in slide-in-from-left-2">*/}
+                {/*                <Check size={18} className="bg-emerald-100 rounded-full p-0.5" />*/}
+                {/*                <span className="text-xs font-bold uppercase tracking-wider">Identity Checks Saved Successfully</span>*/}
+                {/*            </div>*/}
+                {/*        )}*/}
+                {/*        {saveStatus === 'error' && (*/}
+                {/*            <div className="flex items-center gap-2 text-rose-600 animate-in shake">*/}
+                {/*                <AlertCircle size={18} />*/}
+                {/*                <span className="text-xs font-bold uppercase tracking-wider">Failed to save changes. Please check for errors.</span>*/}
+                {/*            </div>*/}
+                {/*        )}*/}
+                {/*    </div>*/}
 
-                    <button
-                        onClick={handleOverallSave}
-                        disabled={isSaving}
-                        className={`
-                            flex items-center gap-3 px-8 py-3.5 rounded-2xl font-bold text-sm tracking-wide transition-all duration-300
-                            ${isSaving ? 'bg-slate-100 text-slate-400 cursor-not-allowed' :
-                            saveStatus === 'success' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' :
-                                'bg-[#5D4591] text-white shadow-lg shadow-[#5D4591]/20 hover:bg-[#4a3675] hover:shadow-xl hover:shadow-[#5D4591]/30 hover:-translate-y-0.5 active:scale-95'}
-                        `}
-                    >
-                        {isSaving ? <Loader2 size={18} className="animate-spin" /> : saveStatus === 'success' ? <CheckIcon size={18} /> : <SaveIcon size={18} />}
-                        <span className="uppercase tracking-widest">
-                            {isSaving ? 'Saving All...' : saveStatus === 'success' ? 'All Identities Updated' : 'Submit All Identities'}
-                        </span>
-                    </button>
-                </div>
+                {/*    <button*/}
+                {/*        onClick={handleOverallSave}*/}
+                {/*        disabled={isSaving}*/}
+                {/*        className={`*/}
+                {/*            flex items-center gap-3 px-8 py-3.5 rounded-2xl font-bold text-sm tracking-wide transition-all duration-300*/}
+                {/*            ${isSaving ? 'bg-slate-100 text-slate-400 cursor-not-allowed' :*/}
+                {/*            saveStatus === 'success' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' :*/}
+                {/*                'bg-[#5D4591] text-white shadow-lg shadow-[#5D4591]/20 hover:bg-[#4a3675] hover:shadow-xl hover:shadow-[#5D4591]/30 hover:-translate-y-0.5 active:scale-95'}*/}
+                {/*        `}*/}
+                {/*    >*/}
+                {/*        {isSaving ? <Loader2 size={18} className="animate-spin" /> : saveStatus === 'success' ? <CheckIcon size={18} /> : <SaveIcon size={18} />}*/}
+                {/*        <span className="uppercase tracking-widest">*/}
+                {/*            {isSaving ? 'Saving All...' : saveStatus === 'success' ? 'All Identities Updated' : 'Submit All Identities'}*/}
+                {/*        </span>*/}
+                {/*    </button>*/}
+                {/*</div>*/}
             </div>
         </BaseCheckLayout>
     );

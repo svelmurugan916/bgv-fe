@@ -32,8 +32,6 @@ const DigiLockerVerificationPage = ({ candidateDataResponse }) => {
     const [clientId, setClientId] = useState(null);
     const [isVerificationError, setIsVerificationError] = useState(false);
     const { authenticatedRequest, unAuthenticatedRequest, accessToken } = useAuthApi();
-    const API_BASE = import.meta.env.VITE_API_URL || "";
-    const sseEndpoint = `${API_BASE}/api/v1/sse/notifications`;
 
     const candidateName = `${candidateDataResponse?.firstName} ${candidateDataResponse?.lastName}`;
 
@@ -241,7 +239,7 @@ const DigiLockerVerificationPage = ({ candidateDataResponse }) => {
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <GlobalHeader candidateName={candidateName} appId="ID-9902" />
-            {accessToken && <SSEListener sseUrl={sseEndpoint} onNotification={handleNotificationReceived}  />}
+            {accessToken && <SSEListener onNotification={handleNotificationReceived}  />}
 
             <div className="flex flex-col lg:flex-row flex-1">
                 <aside className="hidden lg:flex w-80 bg-slate-50 border-r border-slate-100 p-12 flex-col gap-10">

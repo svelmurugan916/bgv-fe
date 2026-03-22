@@ -1,16 +1,18 @@
 // src/components/listener/SSEListener.jsx
 import React, { useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useNotification } from "../../context/NotificationContext.jsx";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 
-const SSEListener = ({ sseUrl, onNotification }) => {
+const SSEListener = ({ onNotification }) => {
     const { addToast } = useNotification();
     const { accessToken } = useAuthApi();
     const eventStreamReaderRef = useRef(null); // Ref to hold the active stream reader
     const reconnectTimeoutRef = useRef(null);
     const isComponentMounted = useRef(true); // To track component mount state
     const abortControllerRef = useRef(null); // To manage fetch cancellation
+
+    const API_BASE = import.meta.env.VITE_API_URL || "";
+    const sseUrl = `${API_BASE}/api/v1/sse/notifications`;
 
     const RECONNECT_DELAY_MS = 5000;
 

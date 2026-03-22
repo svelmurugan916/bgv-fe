@@ -33,8 +33,8 @@ export const FormProvider = ({ children }) => {
         },
         idVerification: {
             pan: { file: null, fileName: '', idNumber: '', dob: '', name: '', isExtracted: false },
-            aadhar: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
-            passport: { file: null, fileName: '', idNumber: '', dob: '', isExtracted: false },
+            aadhar: { file: null, fileName: '', idNumber: '', dob: '', name: '', isExtracted: false },
+            passport: { file: null, fileName: '', idNumber: '', dob: '', fileNumber: '', name: '', isExtracted: false },
             consent: false
         },
         // --- NEW ADDRESS VERIFICATION STATE ---
@@ -124,6 +124,7 @@ export const FormProvider = ({ children }) => {
                     fileName: data.idVerification?.pan?.fileName || '',
                     dob: data.idVerification?.pan?.dob || '',
                     name: data.idVerification?.pan?.name || '',
+                    fileUrl: data.idVerification?.pan?.fileUrl || '',
                     isExtracted: data.idVerification?.pan?.isExtracted || false,
                     fileId: data.idVerification?.pan?.fileId || '',
                 },
@@ -132,6 +133,8 @@ export const FormProvider = ({ children }) => {
                     idNumber: data.idVerification?.aadhar?.idNumber || '',
                     fileName: data.idVerification?.aadhar?.fileName || '',
                     dob: data.idVerification?.aadhar?.dob || '',
+                    name: data.idVerification?.aadhar?.name || '',
+                    fileUrl: data.idVerification?.aadhar?.fileUrl || '',
                     isExtracted: data.idVerification?.aadhar?.isExtracted || false,
                     fileId: data.idVerification?.aadhar?.fileId || '',
                 },
@@ -140,6 +143,7 @@ export const FormProvider = ({ children }) => {
                     idNumber: data.idVerification?.passport?.idNumber || '',
                     fileName: data.idVerification?.passport?.fileName || '',
                     dob: data.idVerification?.passport?.dob || '',
+                    fileUrl: data.idVerification?.passport?.fileUrl || '',
                     isExtracted: data.idVerification?.passport?.isExtracted || false,
                     fileId: data.idVerification?.passport?.fileId || '',
                 },

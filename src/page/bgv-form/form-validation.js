@@ -105,7 +105,9 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
         }
 
         if (hasPan && !idVerification.pan.idNumber) newErrors.id_required = "Please enter the PAN Number.";
-        if (hasAadhar && !idVerification.aadhar.idNumber) newErrors.id_required = "Please enter the Aadhar Number.";
+        if (hasPan && !idVerification.pan.name) newErrors.name = "Please enter the Name on Pan Extracted.";
+        if (hasAadhar && !idVerification.aadhar.idNumber) newErrors.id_required = "Please enter the Aadhaar Number.";
+        if (hasAadhar && !idVerification.aadhar.name) newErrors.name = "Please enter the Name on Aadhaar Extracted.";
 
         const identityConfig = checkConfigs?.IDENTITY;
         if(identityConfig) {

@@ -185,6 +185,7 @@ const CandidateShow = () => {
     }, [candidateData]);
 
     const formatHourDuration = (hours) => {
+        if (hours < 1 && hours >= 0) return "< 1 hr";
         const parts = [];
         const days = Math.floor(hours / 24);
         if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
@@ -225,7 +226,7 @@ const CandidateShow = () => {
                                         </div>
                                     </div>
 
-                                    {(consolidatedData?.totalTatHours !== undefined && consolidatedData?.totalTatHours > 0) && (
+                                    {(consolidatedData?.totalTatHours !== undefined && consolidatedData?.totalTatHours >= 0) && (
                                         <div className="flex items-center gap-4 lg:pl-6 lg:border-l lg:border-slate-200">
                                             <div className="flex flex-col gap-1">
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Turnaround</p>

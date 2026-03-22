@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     AlertCircle, User, Calendar,
     CreditCard, CheckCircle2, RefreshCw,
@@ -7,17 +7,38 @@ import {
 import { format } from 'date-fns';
 import { formatFullDateTime } from "../../../../utils/date-util.js";
 import DataComparisonField from "./DataComparisonField.jsx";
-import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
 
-const PanDetails = ({ data, onTriggerReVerify }) => {
+const PanDetails = ({ data, onTriggerReVerify, fetchIdentityDetails }) => {
     const { claimedDetails, overallStatus, uploadedDocuments } = data;
     const uploadedDocUrl = uploadedDocuments?.[0]?.url;
-    const { authenticatedRequest } = useAuthApi();
     const isVerified = overallStatus !== 'IN_PROGRESS' && overallStatus !== 'INITIATED';
 
     // --- RE-VERIFY STATE MANAGEMENT ---
     const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
     const [feedbackMessage, setFeedbackMessage] = useState('');
+
+    const [countdown, setCountdown] = useState(5);
+
+    useEffect(() => {
+        let timer;
+        if (status === 'success') {
+            setCountdown(5); // Reset to 5 when success hits
+
+            timer = setInterval(() => {
+                setCountdown((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        fetchIdentityDetails(); // Refresh the page
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+
+        // Cleanup the timer if the component unmounts
+        return () => clearInterval(timer);
+    }, [status]);
 
     const checkMatch = (field) => {
         if (!isVerified) return null;
@@ -33,9 +54,10 @@ const PanDetails = ({ data, onTriggerReVerify }) => {
         try {
             // Calling the asynchronous prop
             const response = await onTriggerReVerify();
-            if (response?.status === 200) {
+            console.log('response - ', response);
+            if (response.status === 200) {
                 setStatus('success');
-                setFeedbackMessage(response?.message || "PAN Re-verification initiated successfully.");
+                setFeedbackMessage(response?.message || "PAN Re-verification initiated successfully, Will notify you once it's done.");
             } else {
                 setStatus('error');
                 setFeedbackMessage(response?.message || "Failed to trigger re-verification. Please try again.");
@@ -45,6 +67,10 @@ const PanDetails = ({ data, onTriggerReVerify }) => {
             setFeedbackMessage("System error: Unable to reach the verification server.");
         }
     };
+
+    useEffect(() => {
+        console.log('status changed: ', status);
+    }, [status]);
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -102,7 +128,7 @@ const PanDetails = ({ data, onTriggerReVerify }) => {
                     systemVerifiedData={isVerified ? claimedDetails?.fullName?.systemVerifiedData : 'Pending Validation...'}
                     isMatch={checkMatch('fullName')}
                     icon={<User size={10}/>}
-                    comparisonScore={claimedDetails?.fullName?.similarityScore || 0}
+                    comparisonScore={data?.nameMatchScore || 0}
                 />
                 <DataComparisonField
                     label="Date of Birth"
@@ -120,19 +146,56 @@ const PanDetails = ({ data, onTriggerReVerify }) => {
                 />
             </div>
 
-            {/* --- API FEEDBACK MESSAGING --- */}
             {status !== 'idle' && (
                 <div className={`flex items-center gap-3 p-4 rounded-2xl border animate-in zoom-in-95 duration-300 ${
-                    status === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'
+                    status === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+                        status === 'loading' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' :
+                            'bg-rose-50 border-rose-100 text-rose-700'
                 }`}>
-                    {status === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+                    {/* Dynamic Icon */}
+                    <div className="shrink-0">
+                        {status === 'success' && <CheckCircle2 size={18} />}
+                        {status === 'loading' && <Loader2 size={18} className="animate-spin" />}
+                        {status === 'error' && <AlertCircle size={18} />}
+                    </div>
+
                     <div className="flex-1">
                         <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">
-                            {status === 'success' ? 'Sync Successful' : 'Verification Error'}
+                            {status === 'success' ? 'Sync Successful' :
+                                status === 'loading' ? 'Syncing Database' :
+                                    'Verification Error'}
                         </p>
-                        <p className="text-xs font-bold leading-tight">{feedbackMessage}</p>
+                        <p className="text-xs font-bold leading-tight">
+                            {status === 'loading'
+                                ? "Establishing connection to Income Tax Department records..."
+                                : status === 'success'
+                                    ? `${feedbackMessage} Page will refresh to show updated data.`
+                                    : feedbackMessage}
+                        </p>
                     </div>
-                    {status === 'success' && <div className="text-[9px] font-black bg-emerald-100 px-2 py-1 rounded-md uppercase">Updated</div>}
+
+                    {/* Status Indicators & Countdown */}
+                    {status === 'success' && (
+                        <div className="flex items-center gap-2">
+                            <div className="flex flex-col items-end">
+                                <span className="text-[8px] font-black uppercase tracking-tighter opacity-50">Refreshing In</span>
+                                <span className="text-xs font-black leading-none">{countdown}s</span>
+                            </div>
+                            <div className="w-8 h-8 rounded-full border-2 border-emerald-200 flex items-center justify-center relative">
+                                {/* Visual Progress Circle (Optional CSS Animation) */}
+                                <div className="absolute inset-0 border-2 border-emerald-500 rounded-full border-t-transparent animate-spin [animation-duration:5s] [animation-iteration-count:1]"></div>
+                                <RefreshCw size={12} className="text-emerald-500" />
+                            </div>
+                        </div>
+                    )}
+
+                    {status === 'loading' && (
+                        <div className="flex gap-1 items-center px-2">
+                            <span className="w-1 h-1 rounded-full bg-indigo-400 animate-bounce [animation-delay:-0.3s]"></span>
+                            <span className="w-1 h-1 rounded-full bg-indigo-400 animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="w-1 h-1 rounded-full bg-indigo-400 animate-bounce"></span>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -156,27 +219,31 @@ const PanDetails = ({ data, onTriggerReVerify }) => {
                             <Download size={14} /> Download Proof
                         </a>
                     )}
-                    <button
-                        onClick={onReVerify}
-                        disabled={status === 'loading'}
-                        className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-bold transition-all shadow-lg 
+                    {
+                        overallStatus !== "CLEARED" && (
+                            <button
+                                onClick={onReVerify}
+                                disabled={status === 'loading'}
+                                className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-bold transition-all shadow-lg 
                             ${status === 'loading'
-                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                            : 'bg-[#5D4591] text-white hover:bg-[#4a3675] shadow-purple-100 active:scale-95'
-                        }`}
-                    >
-                        {status === 'loading' ? (
-                            <>
-                                <Loader2 size={14} className="animate-spin" />
-                                <span className="uppercase tracking-wider">Processing...</span>
-                            </>
-                        ) : (
-                            <>
-                                <RefreshCw size={14} />
-                                <span className="uppercase tracking-wider">Trigger Re-verify</span>
-                            </>
-                        )}
-                    </button>
+                                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                                    : 'bg-[#5D4591] text-white hover:bg-[#4a3675] shadow-purple-100 active:scale-95'
+                                }`}
+                            >
+                                {status === 'loading' ? (
+                                    <>
+                                        <Loader2 size={14} className="animate-spin" />
+                                        <span className="uppercase tracking-wider">Processing...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <RefreshCw size={14} />
+                                        <span className="uppercase tracking-wider">Trigger Re-verify</span>
+                                    </>
+                                )}
+                            </button>
+                        )
+                    }
                 </div>
             </div>
         </div>

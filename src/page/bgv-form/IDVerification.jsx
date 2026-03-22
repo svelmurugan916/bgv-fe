@@ -43,7 +43,7 @@ const IDVerification = () => {
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
             if (response.status === 200) {
-                const { documentId, extractedData, fileName } = response.data;
+                const { documentId, extractedData, fileName, fileUrl } = response.data;
                 updateFormData('idVerification', {
                     ...data,
                     [type]: {
@@ -52,6 +52,8 @@ const IDVerification = () => {
                         fileName: fileName || file.name,
                         idNumber: extractedData?.extractedPiiData || '',
                         dob: formatToISO(extractedData?.dateOfBirth) || '',
+                        name: extractedData?.name,
+                        fileUrl: fileUrl,
                         isExtracted: !!extractedData
                     }
                 });
@@ -72,7 +74,7 @@ const IDVerification = () => {
         try {
             const response = await authenticatedRequest({}, `${REMOVE_DOCUMENT}/${fileId}`, METHOD.DELETE);
 
-            if (response.status === 200) {
+            if (response.status === 204) {
                 return true; // Success
             } else {
                 setUploadErrors(prev => ({
@@ -128,7 +130,13 @@ const IDVerification = () => {
 
             {errors.id_required && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600" id={"id_required"}>
-                    <AlertCircle size={20} /><p className="text-sm uppercase font-bold">{errors.id_required}</p>
+                    <AlertCircle size={20} /><p className="text-xs uppercase font-bold">{errors.id_required}</p>
+                </div>
+            )}
+
+            {errors.name && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600" id={"id_required"}>
+                    <AlertCircle size={20} /><p className="text-xs uppercase font-bold">{errors.name}</p>
                 </div>
             )}
 
@@ -149,6 +157,7 @@ const IDVerification = () => {
                 <DocCard
                     title="Upload PAN Card*"
                     file={data.pan.fileName}
+                    fileUrl={data.pan.fileUrl}
                     processing={uploadingType === 'pan'} // Fixed: Use uploadingType
                     error={uploadErrors.pan}
                     onFileSelect={(e) => handleFileChange('pan', e)}
@@ -159,8 +168,10 @@ const IDVerification = () => {
                         idLabel="PAN Number"
                         idValue={data.pan.idNumber}
                         dobValue={data.pan.dob}
+                        name={data.pan.name}
                         onIdChange={(v) => handleFieldChange('pan', 'idNumber', v)}
                         onDobChange={(v) => handleFieldChange('pan', 'dob', v)}
+                        onNameChange={(v) => handleFieldChange('pan', 'name', v)}
                     />
                 )}
 
@@ -168,6 +179,7 @@ const IDVerification = () => {
                 <DocCard
                     title="Upload Aadharcard Front Side*"
                     file={data.aadhar.fileName}
+                    fileUrl={data.aadhar.fileUrl}
                     error={uploadErrors.aadhar}
                     processing={uploadingType === 'aadhar'} // Fixed: Use uploadingType
                     onFileSelect={(e) => handleFileChange('aadhar', e)}
@@ -179,8 +191,10 @@ const IDVerification = () => {
                         idLabel="Aadhar Number"
                         idValue={data.aadhar.idNumber}
                         dobValue={data.aadhar.dob}
+                        name={data.aadhar.name}
                         onIdChange={(v) => handleFieldChange('aadhar', 'idNumber', v)}
                         onDobChange={(v) => handleFieldChange('aadhar', 'dob', v)}
+                        onNameChange={(v) => handleFieldChange('aadhar', 'name', v)}
                     />
                 )}
 
