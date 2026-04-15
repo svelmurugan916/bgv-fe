@@ -20,7 +20,7 @@ const Stepper = ({ activeStep, steps }) => {
 
     return (
         /* Reduced padding on mobile (py-4) vs laptop (p-10) */
-        <div className="w-full lg:w-80 bg-white border-b lg:border-r border-slate-100 shrink-0 z-20">
+        <div className="w-full lg:w-80 bg-white border-b lg:border-r border-slate-100 shrink-0 z-20 lg:sticky lg:top-[65px] lg:h-[calc(100vh-65px)] lg:overflow-y-auto no-scrollbar">
             <div
                 ref={scrollContainerRef}
                 className="flex lg:flex-col overflow-x-auto lg:overflow-x-hidden no-scrollbar py-4 px-4 lg:p-10"

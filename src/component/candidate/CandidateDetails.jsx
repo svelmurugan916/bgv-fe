@@ -1,22 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState, forwardRef } from 'react';
 import {
-    ChevronRightIcon, AlertTriangle, TimerIcon, GraduationCap
+    ChevronRightIcon, AlertTriangle, TimerIcon, GraduationCap, HistoryIcon, ShieldAlertIcon
 } from 'lucide-react';
 import CriminalDatabaseCheck from './checks/CriminalDatabaseCheck';
 import { useParams } from "react-router-dom";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 import {
+    DELETE_CANDIDATE_PII,
     DOWNLOAD_CANDIDATE_REPORT,
     GET_CANDIDATE_DETAILS,
     MARK_CANDIDATE_AS_STOP_CASE,
     RESUME_CANDIDATE_STATUS
 } from "../../constant/Endpoint.tsx";
-import { METHOD } from "../../constant/ApplicationConstant.js";
+import {METHOD, TASK_COMPLETED_STATUS} from "../../constant/ApplicationConstant.js";
 import SimpleLoader from "../common/SimpleLoader.jsx";
 import CandidateStatusLabel from "./CandidateStatusLabel.jsx";
 import CandidateDetailsPageHeaderLoader from "./CandidateDetailsPageHeaderLoader.jsx";
 import CheckAddress from "./checks/address-check/CheckAddress.jsx";
-import AssignPopOver from "../../page/case-assignment/AssignPopOver.jsx";
 import CaseActionDropdown from "./CaseActionDropdown.jsx";
 import EditAddressModal from "./checks/address-check/EditAddressModal.jsx";
 import CandidateCheckIconStatus from "../common/CandidateCheckIconStatus.jsx";
@@ -28,6 +28,10 @@ import CheckReferences from "./checks/CheckReferences.jsx";
 import CandidateChecksTab from "./CandidateChecksTab.jsx";
 import CaseTimelineTabContent from "./timeline/Timeline.jsx";
 import IDVerificationModal from "./checks/identity-check/IDVerificationModal.jsx";
+import CandidateNotFound from "./CandidateNotFound.jsx";
+import DpdpWipedPlaceholder from "./DpdpWipedPlaceholder.jsx";
+import DeleteCandidateModal from "./DeleteCandidateModal.jsx";
+import TaskReservationDrawer from "../transaction/TaskReservationDrawer.jsx";
 
 const CandidateShow = () => {
     const [activeTab, setActiveTab] = useState(null);
@@ -37,13 +41,13 @@ const CandidateShow = () => {
     const [candidateData, setCandidateData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [metrics, setMetrics] = useState({});
-    const [isPopOverOpen, setIsPopOverOpen] = useState(false);
-    const [activeCase, setActiveCase] = useState(null);
-    const [selectedIds, setSelectedIds] = useState([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isIDModalOpen, setIsIDModalOpen] = useState(false);
     const [selectedIDDocumentType, setSelectedIDDocumentType] = useState(null);
+    const [taskTypes, setTaskTypes] = useState([]);
+    const [notFound, setNotFound] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const handleOpenIDVerificationModal = (docType) => {
         setSelectedIDDocumentType(docType);
@@ -54,15 +58,6 @@ const CandidateShow = () => {
         setIsIDModalOpen(false);
         setSelectedIDDocumentType(null);
     };
-
-    const operationalUsers = [
-        { key: '1', value: 'Priya Kumar', email: 'priya@ford.com', wip: 2 },
-        { key: '2', value: 'Ankit Verma', email: 'ankit@ford.com', wip: 8 },
-        { key: '3', value: 'Deepika R', email: 'deepika@ford.com', wip: 5 },
-        { key: '4', value: 'Naveen', email: 'Naveen@ford.com', wip: 2 },
-        { key: '5', value: 'Prashanth', email: 'Prashanth@ford.com', wip: 8 },
-        { key: '6', value: 'Anil', email: 'Anil@ford.com', wip: 5 }
-    ];
 
     const tabsRef = useRef({});
     const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -77,9 +72,18 @@ const CandidateShow = () => {
         }
     }, [activeTab, loading]);
 
-    const handleAssignClick = (caseData) => {
-        setActiveCase(caseData);
-        setIsPopOverOpen(true);
+    const handleDeleteCandidateData = async () => {
+        // Assuming DELETE_CANDIDATE_PII is defined in your constants
+        const response = await authenticatedRequest(
+            { reason: "Manual deletion requested by Admin" },
+            `${DELETE_CANDIDATE_PII}/${id}`,
+            METHOD.DELETE
+        );
+
+        if (response.status !== 200) {
+            throw new Error(response.message || "Deletion failed");
+        }
+        return response;
     };
 
     const handleDownloadReport = async () => {
@@ -116,7 +120,6 @@ const CandidateShow = () => {
     };
 
     const handleToggleCaseStatus = async () => {
-        setIsPopOverOpen(false);
         try {
 
             const response = await authenticatedRequest({}, `${consolidatedData.status === 'STOP_CASE' ? RESUME_CANDIDATE_STATUS : MARK_CANDIDATE_AS_STOP_CASE}/${candidateData.candidateInfo?.candidateId}`, METHOD.PATCH);
@@ -139,6 +142,9 @@ const CandidateShow = () => {
             if (response.status === 200) {
                 setCandidateData(response.data);
                 const caseDetails = response.data?.caseDetails;
+                const taskTypes = caseDetails?.checks?.map(c => c.taskName);
+                setTaskTypes(taskTypes);
+                console.log(taskTypes);
                 setMetrics({
                     totalChecks: caseDetails?.totalChecks,
                     inProgressChecks: caseDetails?.inProgressChecks,
@@ -151,6 +157,8 @@ const CandidateShow = () => {
                 if (response.data?.caseDetails?.checks?.length > 0) {
                     setActiveTab(response.data.caseDetails.checks[0].taskId);
                 }
+            } else if (response.status === 404) {
+                setNotFound(true);
             }
         } catch (error) {
             console.error(error);
@@ -178,7 +186,10 @@ const CandidateShow = () => {
                 status: candidateData.caseDetails.status,
                 checks: candidateData?.caseDetails?.checks,
                 isSlaBreached: candidateData?.candidateInfo?.isSlaBreached,
-                totalTatHours: candidateData?.candidateInfo?.totalTatHours
+                totalTatHours: candidateData?.candidateInfo?.totalTatHours,
+                isWiped: false,
+                wipedAt: "2026-03-26",
+                wipeReason: "Data has been deleted as per the DPDP Act"
             };
         }
         return {};
@@ -191,6 +202,10 @@ const CandidateShow = () => {
         if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
         if (hours % 24 > 0) parts.push(`${hours % 24} hr${hours % 24 > 1 ? 's' : ''}`);
         return parts.join(', ');
+    }
+
+    if (notFound) {
+        return <CandidateNotFound id={id} />;
     }
 
     return (
@@ -206,18 +221,34 @@ const CandidateShow = () => {
                                     <ChevronRightIcon size={12} className="text-slate-300" />
                                     <span className="text-[#5D4591]">{consolidatedData?.caseNo}</span>
                                 </div>
+                                {consolidatedData.isWiped && (
+                                    <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100 animate-pulse">
+                                        <ShieldAlertIcon size={12} />
+                                        <span className="text-[10px] font-bold uppercase tracking-tighter">PII Purged (DPDP Compliant)</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* 2. TITLE & METRICS ROW - Fixed for Resolutions */}
                             <div className="flex flex-wrap items-start lg:items-center justify-between gap-6 mb-8">
                                 <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
                                     <div className="flex items-center gap-4">
-                                        <span className="text-xl sm:text-2xl font-bold text-slate-900 tabular-nums shrink-0">{consolidatedData?.caseNo}</span>
-                                        <div className="hidden sm:block w-[1px] h-6 bg-slate-200" />
-                                        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight truncate max-w-[200px] lg:max-w-xs" title={consolidatedData?.name}>
-                                            {consolidatedData?.name}
+                                        <span className="text-2xl font-bold text-slate-900 tabular-nums">{consolidatedData?.caseNo}</span>
+                                        <div className="w-[1px] h-6 bg-slate-200" />
+                                        <h1 className={`text-2xl font-bold tracking-tight ${consolidatedData.isWiped ? 'text-slate-400 italic' : 'text-slate-900'}`}>
+                                            {consolidatedData.isWiped ? "Data Purged (DPDP)" : consolidatedData?.name}
                                         </h1>
                                     </div>
+
+                                    {consolidatedData.isWiped && (
+                                        <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl">
+                                            <HistoryIcon size={14} className="text-slate-400" />
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Wiped On</span>
+                                                <span className="text-xs font-bold text-slate-600">{consolidatedData.wipedAt}</span>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="flex items-center gap-6">
                                         <div className="hidden lg:block w-[1px] h-6 bg-slate-200" />
@@ -265,12 +296,16 @@ const CandidateShow = () => {
 
                                 </div>
 
-                                <div className="shrink-0 ml-auto lg:ml-0">
-                                    <CaseActionDropdown setIsCreateModalOpen={setIsCreateModalOpen} handeStopCaseClick={handleToggleCaseStatus}
-                                                        candidateStatus={consolidatedData?.status} handleDownloadReport={handleDownloadReport} isDownloading={isDownloading}
+                                {!consolidatedData.isWiped && (
+                                    <div className="shrink-0 ml-auto lg:ml-0">
+                                        <CaseActionDropdown setIsCreateModalOpen={setIsCreateModalOpen} handeStopCaseClick={handleToggleCaseStatus}
+                                                            candidateStatus={consolidatedData?.status} handleDownloadReport={handleDownloadReport} isDownloading={isDownloading}
+                                                            onOpenIDVerificationModal={handleOpenIDVerificationModal} taskTypes={taskTypes} disableStopCase={TASK_COMPLETED_STATUS.includes(candidateData?.caseDetails?.taskStatus?.toUpperCase())}
+                                                            onDeleteClick={() => setIsDeleteModalOpen(true)}
+                                        />
+                                    </div>
+                                )}
 
-                                                        onOpenIDVerificationModal={handleOpenIDVerificationModal}/>
-                                </div>
                             </div>
 
                             {/* 3. ATTRIBUTES - Responsive Gaps */}
@@ -293,45 +328,47 @@ const CandidateShow = () => {
             {/* CONTENT AREA */}
             <div className="max-w-[1600px] mx-auto py-4">
                 {loading ? <SimpleLoader size="lg" className="py-20" /> : (
-                    <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-400">
-                        {(() => {
-                            const activeCheck = candidateData?.caseDetails?.checks.find(c => c.taskId === activeTab);
-                            switch (activeCheck?.taskName) {
-                                case 'address':
-                                    return <CheckAddress addressId={activeCheck.taskId} setIsPopOverOpen={setIsPopOverOpen} />;
-                                case 'education':
-                                    return <CheckEducation educationId={activeCheck.taskId}/>
-                                case 'employment':
-                                    return <CheckExperience employmentId={activeCheck.taskId}/>
-                                case 'criminal':
-                                    return <CriminalDatabaseCheck taskId={activeCheck.taskId}  />
-                                case 'database':
-                                    return <CheckDatabase taskId={activeCheck.taskId}/>
-                                case 'identity':
-                                case 'aadhaar':
-                                case 'pan':
-                                case 'passport':
-                                    return <CheckIdentity taskId={activeCheck.taskId}  />
-                                case 'reference':
-                                    return <CheckReferences taskId={activeCheck.taskId}  />
-                                default:
-                                    return <CaseTimelineTabContent candidateId={candidateData?.caseDetails?.candidateId} />;
-                            }
+                    consolidatedData.isWiped ? (
+                        <>
+                        <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-400">
+                            <DpdpWipedPlaceholder
+                                reason={consolidatedData.wipeReason}
+                                date={consolidatedData.wipedAt}
+                                checkType={candidateData?.caseDetails?.checks.find(c => c.taskId === activeTab)?.taskName}
+                            />
+                        </div>
+                        </>
+                        ) : (
+                            <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-2 duration-400">
+                                {(() => {
+                                    const activeCheck = candidateData?.caseDetails?.checks.find(c => c.taskId === activeTab);
+                                    switch (activeCheck?.taskName) {
+                                        case 'address':
+                                            return <CheckAddress addressId={activeCheck.taskId} />;
+                                        case 'education':
+                                            return <CheckEducation educationId={activeCheck.taskId}/>
+                                        case 'employment':
+                                            return <CheckExperience employmentId={activeCheck.taskId}/>
+                                        case 'criminal':
+                                            return <CriminalDatabaseCheck taskId={activeCheck.taskId}  />
+                                        case 'database':
+                                            return <CheckDatabase taskId={activeCheck.taskId}/>
+                                        case 'identity':
+                                        case 'aadhaar':
+                                        case 'pan':
+                                        case 'passport':
+                                            return <CheckIdentity taskId={activeCheck.taskId}  />
+                                        case 'reference':
+                                            return <CheckReferences taskId={activeCheck.taskId}  />
+                                        default:
+                                            return <CaseTimelineTabContent candidateId={candidateData?.caseDetails?.candidateId} />;
+                                    }
 
-                        })()}
-                    </div>
+                                })()}
+                            </div>
+                    )
                 )}
             </div>
-            {/* Popovers and Modals remain unchanged */}
-            <AssignPopOver
-                isOpen={isPopOverOpen}
-                onClose={() => {
-                    setIsPopOverOpen(false);
-                    setSelectedIds([]);
-                }}
-                activeCase={activeCase}
-                users={operationalUsers}
-            />
             <EditAddressModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
@@ -348,24 +385,15 @@ const CandidateShow = () => {
 
             />
 
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-8 rounded-lg">
-                        <h2 className="text-xl font-bold">Generic Create Modal</h2>
-                        <p>This modal would open for 'Address' or other non-ID related items.</p>
-                        <button onClick={() => setIsCreateModalOpen(false)} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Close</button>
-                    </div>
-                </div>
-            )}
-
+            <DeleteCandidateModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                caseNo={consolidatedData?.caseNo}
+                onDeleteConfirm={handleDeleteCandidateData}
+            />
         </div>
     );
 };
-
-/* --- SUB-COMPONENTS --- */
-
-
-
 
 const Attribute = ({ label, value }) => (
     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">

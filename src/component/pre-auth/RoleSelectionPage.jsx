@@ -42,7 +42,7 @@ const RoleSelectionPage = () => {
         if (!selectedRoleId) return;
         setIsLoading(true);
         try {
-            const response = await authenticatedRequest(undefined, `${ACTIVATE_ROLE}/${selectedRoleId}`, METHOD.GET);
+            const response = await authenticatedRequest(undefined, `${ACTIVATE_ROLE}/${selectedRoleId}`, METHOD.POST);
             if (response.data.success) {
                 setAuthData(response.data.responseData.accessToken);
                 navigate("/");
@@ -58,7 +58,7 @@ const RoleSelectionPage = () => {
         <div className="min-h-screen w-full bg-[#FDFDFF] flex items-center justify-center p-6">
             <div className="w-full max-w-md">
                 <div className="text-center mb-10">
-                    <h1 className="text-3xl font-bold text-slate-900 mb-3">Welcome to TraceU</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-3">Welcome to Vantira</h1>
                     <p className="text-slate-500 text-sm leading-relaxed">
                         Empowering businesses to connect, grow, & collaborate effortlessly.
                     </p>

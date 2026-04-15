@@ -5,7 +5,7 @@ import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 
 const SSEListener = ({ onNotification }) => {
     const { addToast } = useNotification();
-    const { accessToken } = useAuthApi();
+    const { getCurrentAccessToken } = useAuthApi();
     const eventStreamReaderRef = useRef(null); // Ref to hold the active stream reader
     const reconnectTimeoutRef = useRef(null);
     const isComponentMounted = useRef(true); // To track component mount state
@@ -59,7 +59,7 @@ const SSEListener = ({ onNotification }) => {
         // so any old ones must be properly shut down first.
         closeSSEConnection();
 
-        if (!accessToken) {
+        if (!getCurrentAccessToken) {
             console.warn("SSEListener: No authentication token found. Cannot establish authenticated SSE connection.");
             // Schedule a reconnect attempt if token is missing, assuming it might become available later
             if (isComponentMounted.current) {
@@ -76,6 +76,7 @@ const SSEListener = ({ onNotification }) => {
         const signal = abortControllerRef.current.signal;
 
         try {
+            let accessToken = await getCurrentAccessToken();
             console.log("SSE connection attempt initiated via fetch.");
             const response = await fetch(sseUrl, {
                 method: 'GET',
@@ -176,7 +177,7 @@ const SSEListener = ({ onNotification }) => {
             eventStreamReaderRef.current = null; // Ensure reader ref is cleared on error
             abortControllerRef.current = null; // Clear controller
         }
-    }, [sseUrl, accessToken, addToast, closeSSEConnection]); // Dependencies for useCallback
+    }, [sseUrl, getCurrentAccessToken, addToast, closeSSEConnection]); // Dependencies for useCallback
 
     const processEvent = useCallback((eventObj) => {
         if (eventObj.event === 'newNotification' && eventObj.data) {
@@ -230,7 +231,7 @@ const SSEListener = ({ onNotification }) => {
             console.log("SSEListener unmounting, closing connection and clearing reconnects.");
             closeSSEConnection(); // Clean up on unmount or before re-running the effect
         };
-    }, [sseUrl, accessToken, connectSSE, closeSSEConnection]); // Dependencies for useEffect
+    }, [sseUrl, getCurrentAccessToken, connectSSE, closeSSEConnection]); // Dependencies for useEffect
 
     return null;
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Loader2, CheckCircle2, AlertCircle, X,
-    PaperclipIcon
+    PaperclipIcon, Upload
 } from 'lucide-react';
 import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
 import { SUBMIT_TASK_FEEDBACK_DETAILS } from "../../../../constant/Endpoint.tsx"; // Added placeholder for upload endpoint
@@ -93,7 +93,7 @@ const FeedbackForm = ({ taskId, onSuccessSubmitFeedback, onSuccessFileUpload }) 
                         onClick={() => setIsUploadModalOpen(true)}
                         className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all cursor-pointer shadow-sm"
                     >
-                        <PaperclipIcon size={16} className="text-[#5D4591]" /> Internal Proof
+                        <Upload size={16} className="text-[#5D4591]" /> Internal Proof
                     </button>
 
                     <button

@@ -25,7 +25,7 @@ const RoleManagement = () => {
         enabled: true
     });
 
-    const { authenticatedRequest } = useAuthApi();
+    const { authenticatedRequest, user } = useAuthApi();
     const initComponentRef = useRef(false);
 
     const fetchRoles = async () => {
@@ -115,9 +115,13 @@ const RoleManagement = () => {
                             className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-12 pr-10 text-sm focus:ring-4 ring-[#5D4591]/5 focus:border-[#5D4591] outline-none transition-all"
                         />
                     </div>
-                    <button onClick={handleOpenCreate} className="flex items-center gap-2 bg-[#5D4591] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-[#5D4591]/20 hover:opacity-90 transition-all ml-2">
-                        <Plus size={18} /> Create new role
-                    </button>
+                    {
+                        user?.userScope === "SYSTEM_USER" && (
+                            <button onClick={handleOpenCreate} className="flex items-center gap-2 bg-[#5D4591] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-[#5D4591]/20 hover:opacity-90 transition-all ml-2">
+                                <Plus size={18} /> Create new role
+                            </button>
+                        )
+                    }
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

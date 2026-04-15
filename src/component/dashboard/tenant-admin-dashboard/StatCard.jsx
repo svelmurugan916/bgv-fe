@@ -28,14 +28,14 @@ const StatCard = ({ icon: Icon, label, value, subText, trend, trendType, color, 
 
                 {/* Header Actions Area: Trend + Info */}
                 <div className="flex items-center gap-2">
-                    {trend && (
+                    {trend ? (
                         <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black tracking-tight ${
                             trendType === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
                         }`}>
                             {trendType === 'up' ? <ArrowUpRight size={12} strokeWidth={3}/> : <ArrowDownRight size={12} strokeWidth={3}/>}
                             {trend}
                         </div>
-                    )}
+                    ) : (<></>)}
 
                     {/* NEW: Info Text Element */}
                     {infoText && (

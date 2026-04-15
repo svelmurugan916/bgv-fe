@@ -19,8 +19,10 @@ import GlobalHeader from "../bgv-form/GlobalHeader.jsx";
 import MyBrandedSpinner from "../../component/common/MyBrandedSpinner.jsx";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 import {INITIATE_DIGILOCKER_VERIFICATION, VERIFY_DIGILOCKER_STATUS} from "../../constant/Endpoint.tsx";
-import { METHOD } from "../../constant/ApplicationConstant.js";
+import {FAQ_DATA, METHOD} from "../../constant/ApplicationConstant.js";
 import SSEListener from "../../component/listener/SSEListener.jsx";
+import CandidateFormFooter from "../../component/footer/CandidateFormFooter.jsx";
+import SupportDrawer from "../../component/app-basic-page/SupportDrawer.jsx";
 
 const DigiLockerVerificationPage = ({ candidateDataResponse }) => {
     // --- STATES ---
@@ -32,6 +34,7 @@ const DigiLockerVerificationPage = ({ candidateDataResponse }) => {
     const [clientId, setClientId] = useState(null);
     const [isVerificationError, setIsVerificationError] = useState(false);
     const { authenticatedRequest, unAuthenticatedRequest, accessToken } = useAuthApi();
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     const candidateName = `${candidateDataResponse?.firstName} ${candidateDataResponse?.lastName}`;
 
@@ -238,7 +241,7 @@ const DigiLockerVerificationPage = ({ candidateDataResponse }) => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            <GlobalHeader candidateName={candidateName} appId="ID-9902" />
+            <GlobalHeader candidateName={candidateName} appId="ID-9902" profilePictureUrl={candidateDataResponse?.profilePictureUrl} showAutoSaving={false} isHelpOpen={isHelpOpen} setIsHelpOpen={setIsHelpOpen} />
             {accessToken && <SSEListener onNotification={handleNotificationReceived}  />}
 
             <div className="flex flex-col lg:flex-row flex-1">
@@ -256,7 +259,7 @@ const DigiLockerVerificationPage = ({ candidateDataResponse }) => {
                             <Lock size={28} />
                         </div>
                         <h4 className="font-black text-slate-800 text-sm uppercase tracking-widest pt-2">Privacy First</h4>
-                        <p className="text-xs text-slate-500 leading-relaxed">TraceU only accesses required XML fields. No biometric data is stored.</p>
+                        <p className="text-xs text-slate-500 leading-relaxed">Vantira only accesses required XML fields. No biometric data is stored.</p>
                     </div>
                 </aside>
 
@@ -272,6 +275,12 @@ const DigiLockerVerificationPage = ({ candidateDataResponse }) => {
                     </footer>
                 </main>
             </div>
+            <SupportDrawer
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+                faqs={FAQ_DATA["AADHAAR_DIGILOCKER"]}
+            />
+            <CandidateFormFooter setIsHelpOpen={setIsHelpOpen} />
         </div>
     );
 };
@@ -337,6 +346,7 @@ const VerifyingView = ({ timeLeft, formatTime, onCancel, onManualVerify, isManua
         >
             <XCircle size={18} /> Cancel Verification
         </button>
+
     </div>
 );
 

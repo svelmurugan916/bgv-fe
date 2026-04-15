@@ -12,7 +12,7 @@ import {
     PauseCircle,
     SearchIcon
 } from 'lucide-react';
-import {Skeleton} from "../admin-dashboard/SkeletonLoading.jsx";
+import {Skeleton} from "../tenant-admin-dashboard/SkeletonLoading.jsx";
 
 const ActionableCheckList = ({
                                  title,

@@ -16,6 +16,7 @@ import {
     GET_CANDIDATES_TASKS_FOR_ORGANIZATION, ORGANIZATION_STATISTICS
 } from "../../constant/Endpoint.tsx"; // Assuming GET_ORG_CASES is defined in your constants
 import {METHOD} from "../../constant/ApplicationConstant.js";
+import OrganizationNotFound from "./OrganizationNotFound.jsx";
 
 const OrganizationCases = () => {
     const [loading, setLoading] = useState(true);
@@ -36,6 +37,7 @@ const OrganizationCases = () => {
     const componentInitRef = useRef(false);
     const { authenticatedRequest } = useAuthApi();
     const [formNonSubmittedAndStopCaseCount, setFormNonSubmittedAndStopCaseCount] = useState({});
+    const [notFound, setNotFound] = useState(false);
 
     useEffect(() => {
         const fetchCases = async (organizationId) => {
@@ -76,11 +78,13 @@ const OrganizationCases = () => {
                 setOrganizationDetails({
                     name: apiData?.organizationName,
                 })
-            } else {
-                console.log("Error getting organization statistics: ", response);
-
+            } else if (response.status === 404) {
+                setNotFound(true);
             }
         } catch (err) {
+            if (err.response?.status === 404) {
+                setNotFound(true);
+            }
             console.error("Error getting organization details:", err);
         } finally {
             setStatisticLoading(false);
@@ -102,6 +106,10 @@ const OrganizationCases = () => {
         } catch (err) {
             console.error(err);
         }
+    }
+
+    if (notFound) {
+        return <OrganizationNotFound id={id} />;
     }
 
     return (
@@ -165,8 +173,6 @@ const OrganizationCases = () => {
                     setSearchTerm={setSearchTerm}
                     checkTypeFilter={checkTypeFilter}
                     setCheckTypeFilter={setCheckTypeFilter}
-                    selectedClient={undefined}
-                    setSelectedClient={undefined}
                     candidates={cases}
                     parentRoute="/organisation-dashboard"
                 />}

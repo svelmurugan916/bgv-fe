@@ -4,6 +4,9 @@ import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 const ProtectedRoute = ({ allowedRoles }) => {
     const { user, loggedInRole, loading } = useAuthApi();
 
+    console.log('loggedInRole ========', loggedInRole);
+    console.log("allowedRoles -- ", allowedRoles);
+
     // 1. While loading is true, stay here and show spinner
     if (loading) {
         return (

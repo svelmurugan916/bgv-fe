@@ -1,6 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Briefcase, Building, User, Mail, Phone, Calendar, Hash, Check, SaveIcon, Loader2, CheckIcon, AlertCircle, FileText, MessageSquare // Added MessageSquare icon
+    Briefcase,
+    Building,
+    User,
+    Mail,
+    Phone,
+    Calendar,
+    Hash,
+    Check,
+    SaveIcon,
+    Loader2,
+    CheckIcon,
+    AlertCircle,
+    FileText,
+    MessageSquare,
+    CheckCircle2, X // Added MessageSquare icon
 } from 'lucide-react';
 import BaseCheckLayout from "../base-check-layout/BaseCheckLayout.jsx";
 import {GET_TASK_DETAILS, UPDATE_EMPLOYMENT_CHECK} from "../../../../constant/Endpoint.tsx";
@@ -9,7 +23,8 @@ import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
 import SimpleLoader from "../../../common/SimpleLoader.jsx";
 import VerificationCard from "../common-page/VerificationCard.jsx";
 import SingleSelectDropdown from "../../../dropdown/SingleSelectDropdown.jsx";
-import UploadedDocumentsDisplay from "../common-page/UploadedDocumentsDisplay.jsx"; // Import the new component
+import UploadedDocumentsDisplay from "../common-page/UploadedDocumentsDisplay.jsx";
+import FileUploadModal from "../FileUploadModal.jsx"; // Import the new component
 
 const CheckExperience = ({ employmentId }) => {
     const [loading, setLoading] = useState(true);
@@ -22,8 +37,18 @@ const CheckExperience = ({ employmentId }) => {
     const [findings, setFindings] = useState({});
     const componentInitRef = useRef(false);
     const [verificationMethod, setVerificationMethod] = useState(null);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [uploadedDocuments, setUploadedDocuments] = useState([]);
 
     const hasNegativeFindings = Object.values(findings).some(f => f.status === 'negative');
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    useEffect(() => {
+        if (toast.show) {
+            const timer = setTimeout(() => setToast({ ...toast, show: false }), 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast.show]);
 
     const fieldIcons = {
         companyName: <Building size={18} />,
@@ -45,6 +70,10 @@ const CheckExperience = ({ employmentId }) => {
         managerContact: 'tel',
     };
 
+    const showNotification = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+    };
+
     const fetchEmploymentDetails = async () => {
         setLoading(true);
         try {
@@ -53,6 +82,7 @@ const CheckExperience = ({ employmentId }) => {
             if (response.status === 200) {
                 const data = response.data;
                 setEmploymentData(data);
+                setUploadedDocuments(data?.uploadedDocuments);
                 const initialFindings = {};
                 if (data.fieldDetails) {
                     Object.keys(data.fieldDetails).forEach(key => {
@@ -73,31 +103,21 @@ const CheckExperience = ({ employmentId }) => {
         } catch (err) {
             console.error(err);
         } finally {
-            // --- Using mockData for demonstration ---
-            // In a real application, remove these lines and rely on the API response.
-            // setEmploymentData(mockData);
-            // setVerificationMethod(mockData?.verificationMethod || "");
-            //
-            // const initialFindingsFromMock = {};
-            // if (mockData.fieldDetails) {
-            //     Object.keys(mockData.fieldDetails).forEach(key => {
-            //         const fieldInfo = mockData.fieldDetails[key];
-            //         const status = fieldInfo.status ? fieldInfo.status.toLowerCase() : 'pending';
-            //         initialFindingsFromMock[key] = {
-            //             status: status,
-            //             value: status !== 'pending' ? fieldInfo.verifiedValue || fieldInfo.candidateEnteredData || '' : '',
-            //             verificationMethod: fieldInfo.verificationMethod || '',
-            //             sourceLink: fieldInfo.sourceLink || ''
-            //         };
-            //     });
-            // }
-            // setFindings(initialFindingsFromMock);
-            // setDiscrepancyReason(mockData.discrepancyReason || "");
-            // --- End mockData usage ---
-
             setLoading(false);
         }
     };
+
+    const onSuccessFileUpload = (data) => {
+        setUploadedDocuments(prevState => {
+            return [...prevState, data];
+        });
+    }
+
+    const onRemoveFile = (id) => {
+        setUploadedDocuments(prevState => {
+            return prevState.filter(f => f.fileId !== id);
+        });
+    }
 
     const validateFindings = () => {
         const newErrors = {};
@@ -257,6 +277,7 @@ const CheckExperience = ({ employmentId }) => {
             title="Employment Verification"
             description="Primary source verification of employment against candidate claims."
             checkId={employmentId}
+            onStatusUpdateSuccess={fetchEmploymentDetails}
         >
             <div className="mx-auto p-10 pt-6 space-y-8">
 
@@ -321,6 +342,25 @@ const CheckExperience = ({ employmentId }) => {
                     </div>
                 )}
 
+                {/* Existing HR / Manager Point of Contact Card */}
+                <div className="p-6 bg-[#F9F7FF]/50 border border-[#5D4591]/10 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-3 flex items-center gap-2 mb-2">
+                        <Briefcase size={16} className="text-[#5D4591]" />
+                        <h4 className="text-[11px] font-bold text-[#241B3B] uppercase tracking-widest">HR / Manager Point of Contact</h4>
+                        {
+                            employmentData?.hrDetails?.isDoNotDisturb && (
+                                <span className="flex items-center gap-1.5 text-[11px] text-rose-600 font-black bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 animate-pulse">
+                                    <AlertCircle size={12} strokeWidth={3} />
+                                    Do not Disturb
+                                </span>
+                            )
+                        }
+                    </div>
+                    <HRInfo label="HR Name" value={employmentData?.hrDetails?.name} />
+                    <HRInfo label="HR Email" value={employmentData?.hrDetails?.email} />
+                    <HRInfo label="HR Contact" value={employmentData?.hrDetails?.phone} />
+                </div>
+
                 <div className="flex items-center justify-between pb-6 border-b border-slate-100">
                     <div className="flex items-center gap-3">
                         {saveStatus === 'success' && (
@@ -356,27 +396,35 @@ const CheckExperience = ({ employmentId }) => {
                     </button>
                 </div>
                 {/* NEW: Uploaded Documents Section using the new component */}
-                {employmentData?.uploadedDocuments && employmentData.uploadedDocuments.length > 0 && (
-                    <UploadedDocumentsDisplay documents={employmentData.uploadedDocuments} />
-                )}
+                <UploadedDocumentsDisplay documents={uploadedDocuments} setIsUploadModalOpen={setIsUploadModalOpen} onRemoveFile={onRemoveFile} type={"employment"} taskId={employmentId} />
 
-                {/* Existing HR / Manager Point of Contact Card */}
-                <div className="p-6 bg-[#F9F7FF]/50 border border-[#5D4591]/10 rounded-[2rem] grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-3 flex items-center gap-2 mb-2">
-                        <Briefcase size={16} className="text-[#5D4591]" />
-                        <h4 className="text-[11px] font-bold text-[#241B3B] uppercase tracking-widest">HR / Manager Point of Contact</h4>
-                        {
-                            employmentData?.hrDetails?.isDoNotDisturb && (
-                                <span className="flex items-center gap-1.5 text-[11px] text-rose-600 font-black bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 animate-pulse">
-                                    <AlertCircle size={12} strokeWidth={3} />
-                                    Do not Disturb
-                                </span>
-                            )
-                        }
+                <FileUploadModal
+                    taskId={employmentId}
+                    isOpen={isUploadModalOpen}
+                    onClose={() => setIsUploadModalOpen(false)}
+                    onUploadComplete={() => showNotification("All files uploaded successfully!")}
+                    onSuccessFileUpload={onSuccessFileUpload}
+                    uploadType={"candidatedocument"}
+                    type={"employment"}
+                />
+
+                <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-4 transition-all duration-500 ease-out ${
+                    toast.show ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0 pointer-events-none'
+                }`}>
+                    <div className={`flex items-center justify-between gap-4 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border ${
+                        toast.type === 'success' ? 'bg-slate-900 border-emerald-500/30' : 'bg-slate-900 border-rose-500/30'
+                    }`}>
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-xl ${toast.type === 'success' ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
+                                {toast.type === 'success' ? <CheckCircle2 className="text-emerald-400" size={20} /> : <AlertCircle className="text-rose-400" size={20} />}
+                            </div>
+                            <div className="flex flex-col">
+                                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">{toast.type === 'success' ? 'System Success' : 'System Error'}</p>
+                                <p className="text-sm font-medium text-white">{toast.message}</p>
+                            </div>
+                        </div>
+                        <button onClick={() => setToast({ ...toast, show: false })} className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400 hover:text-white"><X size={18} /></button>
                     </div>
-                    <HRInfo label="HR Name" value={employmentData?.hrDetails?.name} />
-                    <HRInfo label="HR Email" value={employmentData?.hrDetails?.email} />
-                    <HRInfo label="HR Contact" value={employmentData?.hrDetails?.phone} />
                 </div>
             </div>
         </BaseCheckLayout>

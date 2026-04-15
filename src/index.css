@@ -21,7 +21,7 @@
 
     /* Note: In v4, you can often use standard CSS variables or @apply */
     input[type="range"]::-webkit-slider-thumb {
-        @apply appearance-none w-5 h-5 bg-[#F9F7FF] rounded-full cursor-pointer hover:bg-[#5D4591] transition-colors;
+        @apply appearance-none w-5 h-5 bg-[#5D4591] rounded-full cursor-pointer hover:bg-[#5D4591] transition-colors;
     }
 
     input[type="range"]::-moz-range-thumb {

@@ -1,14 +1,21 @@
 import React from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Loader2 } from 'lucide-react';
 
-const MyBrandedSpinner = ({ message = "Verifying your details..." }) => {
+const MyBrandedSpinner = ({
+                              message = "Verifying your details...",
+                              subtext = "Please wait while we prepare your workspace.",
+                              brandLabel = "Security Engine"
+                          }) => {
     return (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-50/90 backdrop-blur-md">
-            <div className="relative flex items-center justify-center">
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white">
+            {/* Subtle background pattern for Enterprise feel */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                 style={{ backgroundImage: `radial-gradient(#5D4591 1px, transparent 1px)`, backgroundSize: '32px 32px' }}>
+            </div>
 
+            <div className="relative flex items-center justify-center">
                 {/* 1. THE SMOOTH TAIL SPINNER */}
-                {/* This uses a conic gradient and a blur filter to create the 'shadow tail' effect */}
-                <div className="relative w-24 h-24">
+                <div className="relative w-28 h-28">
                     <div
                         className="absolute inset-0 rounded-full animate-spin blur-[1px]"
                         style={{
@@ -17,41 +24,44 @@ const MyBrandedSpinner = ({ message = "Verifying your details..." }) => {
                             WebkitMaskImage: 'radial-gradient(transparent 58%, black 60%)'
                         }}
                     ></div>
-
-                    {/* Secondary soft glow tail for extra smoothness */}
                     <div
-                        className="absolute inset-0 rounded-full animate-spin opacity-30 blur-md"
-                        style={{
-                            background: 'conic-gradient(from 0deg, transparent 30%, #5D4591 100%)',
-                        }}
+                        className="absolute inset-0 rounded-full animate-spin opacity-20 blur-xl"
+                        style={{ background: 'conic-gradient(from 0deg, transparent 30%, #5D4591 100%)' }}
                     ></div>
                 </div>
 
-                {/* 2. CENTER SHIELD ICON */}
-                <div className="absolute flex items-center justify-center bg-white rounded-full w-12 h-12 shadow-sm border border-slate-100">
+                {/* 2. CENTER ICON */}
+                <div className="absolute flex items-center justify-center bg-white rounded-full w-14 h-14 shadow-xl border border-slate-50">
                     <ShieldCheck
-                        size={24}
+                        size={28}
                         className="text-[#5D4591] animate-pulse"
-                        strokeWidth={2.5}
+                        strokeWidth={1.5}
                     />
                 </div>
 
                 {/* Decorative outer static ring */}
-                <div className="absolute w-24 h-24 border-[1px] border-slate-200 rounded-full opacity-50"></div>
+                <div className="absolute w-28 h-28 border-[1px] border-slate-100 rounded-full"></div>
             </div>
 
             {/* Loading Text Section */}
-            <div className="mt-10 flex flex-col items-center text-center px-6">
-                <p className="text-sm text-slate-500 font-bold mt-2 max-w-[250px] leading-relaxed">
+            <div className="mt-12 flex flex-col items-center text-center px-6 max-w-sm">
+                <h2 className="text-lg font-bold text-slate-800 tracking-tight">
                     {message}
+                </h2>
+                <p className="text-xs text-slate-400 font-medium mt-2 leading-relaxed italic">
+                    {subtext}
                 </p>
             </div>
 
             {/* Brand subtle footer */}
-            <div className="absolute bottom-10 flex flex-col items-center gap-2">
-                <div className="h-[1px] w-12 bg-slate-200 mb-2"></div>
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
-                    Trace-U Verification Engine
+            <div className="absolute bottom-12 flex flex-col items-center">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="h-[1px] w-8 bg-slate-200"></div>
+                    <Loader2 size={14} className="animate-spin text-slate-300" />
+                    <div className="h-[1px] w-8 bg-slate-200"></div>
+                </div>
+                <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">
+                    Vantira {brandLabel}
                 </div>
             </div>
         </div>

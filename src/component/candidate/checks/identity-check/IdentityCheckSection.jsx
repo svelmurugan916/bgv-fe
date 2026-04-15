@@ -7,7 +7,7 @@ import AadhaarDetails from './AadhaarDetails.jsx';
 import PassportDetails from './PassportDetails.jsx';
 import {formatFullDateTime} from '../../../../utils/date-util.js';
 import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
-import {PAN_VERIFY, SEND_DIGI_LOCKER_LINK_FOR_AADHAAR} from "../../../../constant/Endpoint.tsx";
+import {PAN_VERIFY, PASSPORT_VERIFY, SEND_DIGI_LOCKER_LINK_FOR_AADHAAR} from "../../../../constant/Endpoint.tsx";
 import {METHOD} from "../../../../constant/ApplicationConstant.js";
 
 const IdentityCheckSection = ({
@@ -19,6 +19,8 @@ const IdentityCheckSection = ({
                               }) => {
 
     const { authenticatedRequest } = useAuthApi();
+
+    console.log('documentType- ', documentType)
 
     const getOverallStatusColor = () => {
         switch (data.overallStatus) {
@@ -65,7 +67,7 @@ const IdentityCheckSection = ({
         }
     };
 
-    const handleOnTriggerReVerify = async () => {
+    const handleOnTriggerReVerify = async (type) => {
         try {
             console.log("Triggering DigiLocker Link Service...");
 
@@ -73,7 +75,7 @@ const IdentityCheckSection = ({
                 candidateId: data.candidateId,
                 task_id: taskId,
             };
-            return await authenticatedRequest(payload, PAN_VERIFY, METHOD.POST);
+            return await authenticatedRequest(payload, type === "PAN" ? PAN_VERIFY : PASSPORT_VERIFY, METHOD.POST);
         } catch (error) {
             // Re-throw so AadhaarDetails can catch it
             throw error;
@@ -82,14 +84,14 @@ const IdentityCheckSection = ({
 
     const renderDetailsComponent = () => {
         switch (documentType) {
-            case 'PAN': return <PanDetails data={data} onTriggerReVerify={handleOnTriggerReVerify} fetchIdentityDetails={fetchIdentityDetails} />;
+            case 'PAN': return <PanDetails data={data} onTriggerReVerify={() => handleOnTriggerReVerify("PAN")} fetchIdentityDetails={fetchIdentityDetails} />;
             case 'AADHAAR': return (
                 <AadhaarDetails
                     data={data}
                     onSendDigilockerLink={handleSendDigilockerLink}
                 />
             );
-            case 'PASSPORT': return <PassportDetails data={data} />;
+            case 'PASSPORT': return <PassportDetails data={data} onTriggerReVerify={() => handleOnTriggerReVerify("PASSPORT")} fetchIdentityDetails={fetchIdentityDetails} />;
             default: return null;
         }
     };

@@ -9,7 +9,7 @@ import { REMOVE_INTERNAL_PROOF, FILE_GET } from "../../../../constant/Endpoint.t
 import { METHOD } from "../../../../constant/ApplicationConstant.js";
 import SecureImage from "../../../secure-document-api/SecureImage.jsx";
 
-const EvidenceVault = ({ evidences, taskId, onRemoveSuccess }) => {
+const EvidenceVault = ({ evidences, taskId, onRemoveSuccess, isReadOnly }) => {
     const { authenticatedRequest } = useAuthApi();
     const [deletingId, setDeletingId] = useState(null);
     const [downloadingId, setDownloadingId] = useState(null);
@@ -51,6 +51,7 @@ const EvidenceVault = ({ evidences, taskId, onRemoveSuccess }) => {
 
 
     const handleRemoveFile = async (fileId) => {
+        if(isReadOnly) return;
         setDeletingId(fileId);
         setActiveDeleteId(null);
         setError({ id: null, message: '' });
@@ -96,7 +97,7 @@ const EvidenceVault = ({ evidences, taskId, onRemoveSuccess }) => {
                 <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {evidences.map((file, index) => {
                         const isThisDeleting = deletingId === file.fileId;
-                        const isThisDownloading = downloadingId === file.verificationProofUrl;
+                        const isThisDownloading = downloadingId === file.verificationRelativeUrl;
                         const isConfirming = activeDeleteId === file.fileId;
                         const hasError = error.id === file.fileId;
 
@@ -106,44 +107,50 @@ const EvidenceVault = ({ evidences, taskId, onRemoveSuccess }) => {
                                 <div className="relative aspect-square bg-slate-50 flex items-center justify-center overflow-hidden">
                                     <div className="transition-transform duration-500 group-hover:scale-110 w-full h-full flex items-center justify-center">
                                         {file.proofFileType?.includes("image") ? (
-                                                <SecureImage fileUrl={file?.verificationProofUrl} />
+                                                <a href={file?.verificationProofUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                                                    <img src={file?.verificationProofUrl} alt={file.name} className="w-full h-full object-cover" />
+                                                </a>
                                             ) :
                                             file.proofFileType?.includes('pdf') ? <FileTextIcon className="text-rose-400/50" size={48} strokeWidth={1} /> :
                                                 <FileIcon className="text-slate-300" size={48} strokeWidth={1} />}
                                     </div>
 
-                                    <div className="absolute top-3 right-3 flex items-center justify-end">
-                                        {isThisDeleting ? (
-                                            <div className="w-8 h-8 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm">
-                                                <Loader2 size={14} className="animate-spin text-[#5D4591]" />
-                                            </div>
-                                        ) : isConfirming ? (
-                                            <div className="flex items-center gap-2 px-2 py-1 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-slate-100 animate-in fade-in zoom-in duration-200">
-                                                <span className="text-[10px] font-black uppercase text-red-500 tracking-tighter">Are you sure?</span>
-                                                <div className="flex gap-1">
+                                    {
+                                        !isReadOnly && (
+                                            <div className="absolute top-3 right-3 flex items-center justify-end">
+                                                {isThisDeleting ? (
+                                                    <div className="w-8 h-8 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm">
+                                                        <Loader2 size={14} className="animate-spin text-[#5D4591]" />
+                                                    </div>
+                                                ) : isConfirming ? (
+                                                    <div className="flex items-center gap-2 px-2 py-1 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-slate-100 animate-in fade-in zoom-in duration-200">
+                                                        <span className="text-[10px] font-black uppercase text-red-500 tracking-tighter">Are you sure?</span>
+                                                        <div className="flex gap-1">
+                                                            <button
+                                                                onClick={() => handleRemoveFile(file.fileId)}
+                                                                className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors cursor-pointer"
+                                                            >
+                                                                <Check className="w-3 h-3" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setActiveDeleteId(null)}
+                                                                className="p-1.5 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 transition-colors cursor-pointer"
+                                                            >
+                                                                <X className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
                                                     <button
-                                                        onClick={() => handleRemoveFile(file.fileId)}
-                                                        className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors cursor-pointer"
+                                                        onClick={() => setActiveDeleteId(file.fileId)}
+                                                        className="w-8 h-8 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-white shadow-sm transition-all cursor-pointer"
                                                     >
-                                                        <Check className="w-3 h-3" />
+                                                        <Trash2 size={14} />
                                                     </button>
-                                                    <button
-                                                        onClick={() => setActiveDeleteId(null)}
-                                                        className="p-1.5 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 transition-colors cursor-pointer"
-                                                    >
-                                                        <X className="w-3 h-3" />
-                                                    </button>
-                                                </div>
+                                                )}
                                             </div>
-                                        ) : (
-                                            <button
-                                                onClick={() => setActiveDeleteId(file.fileId)}
-                                                className="w-8 h-8 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-white shadow-sm transition-all cursor-pointer"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        )}
-                                    </div>
+                                        )
+                                    }
 
                                     {hasError && (
                                         <div className="absolute inset-x-0 bottom-0 bg-rose-500 text-white p-2 flex items-center gap-2 animate-in slide-in-from-bottom-full">
@@ -183,7 +190,7 @@ const EvidenceVault = ({ evidences, taskId, onRemoveSuccess }) => {
 
                                     {/* Download Action - Styled as a ghost button */}
                                     <button
-                                        onClick={() => handleDownload(file.verificationProofUrl, file.proofFileName)}
+                                        onClick={() => handleDownload(file.verificationRelativeUrl, file.proofFileName)}
                                         disabled={isThisDownloading}
                                         className="absolute top-1/2 -translate-y-1/2 right-3 w-8 h-8 flex items-center justify-center text-slate-300 hover:text-[#5D4591] hover:bg-slate-50 rounded-full transition-all cursor-pointer disabled:opacity-50"
                                     >

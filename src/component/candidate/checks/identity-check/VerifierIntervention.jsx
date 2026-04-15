@@ -5,10 +5,6 @@ import SingleSelectDropdown from "../../../dropdown/SingleSelectDropdown.jsx";
 const VerifierIntervention = ({
                                   discrepancyReason,
                                   onDiscrepancyReasonChange,
-                                  verifierComments,
-                                  onVerifierCommentsChange,
-                                  finalVerifierStatus,
-                                  onFinalVerifierStatusChange,
                                   hasDiscrepancy, // Boolean to control visibility
                                   errors = {} // For validation errors
                               }) => {

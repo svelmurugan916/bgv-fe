@@ -13,10 +13,11 @@ const RootRedirect = () => {
     console.log('loggedInRole -- ', loggedInRole);
     // Redirect based on Role
     switch (loggedInRole) {
+        case 'ROLE_TENANT_ADMIN':
+        case 'ROLE_TENANT_OPERATIONS_MANAGER':
         case 'ROLE_ADMIN':
-        case 'ROLE_OPERATIONS_MANAGER':
             return <Navigate to="/dashboard" replace />;
-        case 'ROLE_OPERATIONS':
+        case 'ROLE_TENANT_OPERATIONS':
             return <Navigate to="/ops-dashboard" replace />;
         default:
             return <Navigate to="/unauthorized" replace />;

@@ -12,7 +12,7 @@ const PageWrapper = ({ children, checkName, headerData }) => (
                     <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-[#5D4591] tracking-tighter">TraceU</h3>
+                    <h3 className="text-xl font-black text-[#5D4591] tracking-tighter">Vantira</h3>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Security First</p>
                 </div>
             </div>
@@ -34,7 +34,7 @@ const PageWrapper = ({ children, checkName, headerData }) => (
 
         {/* Footer */}
         <div className="mt-8 pt-4 border-t border-slate-50 flex justify-between text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-            <span>www.traceu.ai</span>
+            <span>www.vantira.ai</span>
             <span>Confidential Report</span>
         </div>
     </div>

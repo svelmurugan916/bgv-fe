@@ -20,7 +20,6 @@ const Candidates = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStatus, setSelectedStatus] = useState([]);
     const [checkTypeFilter, setCheckTypeFilter] = useState('All');
-    const [selectedClient, setSelectedClient] = useState('All');
     const navigate = useNavigate();
     const { authenticatedRequest } = useAuthApi();
     const pageInitRef = useRef(false);
@@ -102,8 +101,6 @@ const Candidates = () => {
                             setSearchTerm={setSearchTerm}
                             checkTypeFilter={checkTypeFilter}
                             setCheckTypeFilter={setCheckTypeFilter}
-                            selectedClient={selectedClient}
-                            setSelectedClient={setSelectedClient}
                             candidates={candidates}
                             parentRoute="/candidate-list"
                         />

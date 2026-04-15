@@ -5,7 +5,7 @@ import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import TopBarLoader from "./component/common/TopBarLoader.jsx";
 import {VERIFY_ADDRESS_TOKEN, VERIFY_CANDIDATE_TOKEN, VERIFY_DIGI_LOCKER_TOKEN} from "./constant/Endpoint.tsx";
 import NotificationSystem from "./component/notification/NotificationSystem.jsx";
-import { NotificationProvider } from './context/NotificationContext.jsx'; // Import NotificationProvider
+import { NotificationProvider } from './context/NotificationContext.jsx';
 
 // --- LAZY IMPORTS ---
 const BGVForm = lazy(() => import("./page/bgv-form/BGVForm.jsx"));
@@ -19,7 +19,9 @@ const BulkCreateCandidates = lazy(() => import("./component/candidate/BulkCreate
 const CandidateDetails = lazy(() => import("./component/candidate/CandidateDetails.jsx"));
 const LoginPage = lazy(() => import("./page/login/LoginPage.jsx"));
 const RootRedirect = lazy(() => import("./RootRedirect.jsx"));
-const AdminDashboard = lazy(() => import("./component/dashboard/admin-dashboard/AdminDashboard.jsx"));
+const AdminDashboard = lazy(() => import("./component/dashboard/tenant-admin-dashboard/AdminDashboard.jsx"));
+const TenantManager = lazy(() => import("./component/tenant-manager/TenantManager.jsx"));
+const RevenueBillingManager = lazy(() => import("./component/revenue-billing/RevenueBillingManager.jsx"));
 const ReportAnalyticsPage = lazy(() => import("./component/report-analytics/ReportAnalyticsPage.jsx"));
 const DashboardPage = lazy(() => import("./component/dashboard/DashboardPage.jsx"));
 const ProtectedRoute = lazy(() => import("./component/routes/ProtectedRoute.jsx"));
@@ -35,6 +37,10 @@ const PendingInvitations = lazy(() => import("./component/candidate/pending-invi
 const CaseAssignmentPage = lazy(() => import("./page/case-assignment/CaseAssignmentPage.jsx"));
 const UserManagement = lazy(() => import("./page/user-management/UserManagement.jsx"));
 const RoleManagement = lazy(() => import("./page/role-management/RoleManagement.jsx"));
+const PrivacyPolicy = lazy(() => import("./component/app-basic-page/PrivacyPolicy.jsx"));
+const TermsOfUse = lazy(() => import("./component/app-basic-page/TermsOfUse.jsx"));
+const TransactionActivities = lazy(() => import("./component/transaction/TransactionActivities.jsx"));
+const DigiLockerVerification = lazy(() => import("./page/digi-locker-verification/DigiLockerVerification.jsx"));
 
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
@@ -47,14 +53,18 @@ function App() {
             <NotificationProvider>
                 <div className="flex min-h-screen bg-[#F8F9FC] font-sans text-slate-700">
                     <div className="flex-1 flex flex-col min-w-0">
-                        <main className="flex-1 overflow-y-auto">
+                        <main className="flex-1">
                             <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
                                 <div className={`flex-grow`}>
                                     <Suspense fallback={<TopBarLoader />}>
                                         <Routes>
                                             <Route path="/" element={<RootRedirect />} />
+                                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                                            <Route path="/terms" element={<TermsOfUse />} />
                                             <Route path="/login" element={<LoginPage />} />
                                             <Route path="/reset-password" element={<LoginPage />} />
+                                            <Route path="/verify-digilocker-session/:id" element={<DigiLockerVerification />} />
+
                                             <Route
                                                 path="/fill-candidate-form/:token?"
                                                 element={
@@ -93,25 +103,38 @@ function App() {
                                                 <Route path="/select-role" element={<RoleSelectionPage />} />
                                             </Route>
 
-                                            <Route element={<ProtectedRoute allowedRoles={['ROLE_OPERATIONS']} />}>
+                                            <Route element={<ProtectedRoute allowedRoles={['ROLE_TENANT_OPERATIONS']} />}>
                                                 <Route element={<MainLayout />}>
                                                     <Route path="/ops-dashboard" element={<OperationsDashboard />} />
                                                     <Route path="/candidate-case-details/:id?" element={<CandidateDetails />} />
                                                 </Route>
                                             </Route>
 
-                                            {/* --- DASHBOARD ROUTES --- */}
-                                            <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN', 'ROLE_OPERATIONS_MANAGER']} />}>
+                                            <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN']} />}>
+                                                <Route element={<MainLayout />}>
+                                                    <Route path="/tenant-manager" element={<TenantManager />} />
+                                                    <Route path="/revenue-analytics" element={<RevenueBillingManager />} />
+                                                </Route>
+                                            </Route>
+
+                                            <Route element={<ProtectedRoute allowedRoles={['ROLE_TENANT_ADMIN', 'ROLE_TENANT_OPERATIONS_MANAGER', 'ROLE_ADMIN', 'ROLE_TENANT_OPERATIONS']} />}>
                                                 <Route element={<MainLayout />}>
                                                     <Route path="/dashboard" element={<DashboardPage />} />
+                                                    <Route path="/user-management" element={<UserManagement />} />
+                                                    <Route path="/role-management" element={<RoleManagement />} />
+                                                </Route>
+                                            </Route>
+                                            {/* --- DASHBOARD ROUTES --- */}
+                                            <Route element={<ProtectedRoute allowedRoles={['ROLE_TENANT_ADMIN', 'ROLE_TENANT_OPERATIONS_MANAGER']} />}>
+                                                <Route element={<MainLayout />}>
                                                     <Route path="/organisation-dashboard" element={<OrganizationDashboard />} />
                                                     <Route path="/organisation-dashboard/organisation-form/:id?" element={<CreateOrganization />} />
                                                     <Route path="/organisation-dashboard/organisation-details/:id?" element={<OrganizationDetail />} />
                                                     <Route path="/organisation-dashboard/organisation-cases/:id?" element={<OrganizationCases />} />
                                                     <Route path="/case-assignment" element={<CaseAssignmentPage />} />
-                                                    <Route path="/user-management" element={<UserManagement />} />
-                                                    <Route path="/role-management" element={<RoleManagement />} />
                                                     <Route path="/blocklist-college" element={<BlocklistCollegePage />} />
+                                                    <Route path="/transaction-activities" element={<TransactionActivities />} />
+
 
                                                     <Route path="/candidate/pending-invitation/:id?" element={<PendingInvitations />} />
                                                     <Route path="/report-analytics" element={<ReportAnalyticsPage />} />

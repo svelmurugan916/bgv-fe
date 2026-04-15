@@ -1,21 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
-    Download, MoreVertical, MapPin, GraduationCap,
-    Briefcase, Fingerprint, Users, Database,
-    ShieldAlert, CircleStop, Plus, Loader2, PlayCircle,
-    ChevronRight // Added for sub-menu indicator
+    Briefcase,
+    ChevronRight,
+    CircleStop,
+    Database,
+    Download,
+    Fingerprint,
+    GraduationCap,
+    Loader2,
+    MapPin,
+    MoreVertical,
+    PlayCircle,
+    Plus,
+    ShieldAlert, Trash2Icon,
+    Users
 } from 'lucide-react';
 
-const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidateStatus, handleDownloadReport, isDownloading, onOpenIDVerificationModal }) => { // Added onOpenIDVerificationModal
+const CaseActionDropdown = ({
+                                setIsCreateModalOpen,
+                                handeStopCaseClick,
+                                candidateStatus,
+                                handleDownloadReport,
+                                isDownloading,
+                                onOpenIDVerificationModal,
+                                taskTypes = [], // Added taskTypes prop
+                                disableStopCase = false,
+                                onDeleteClick
+                            }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
-    const identityMenuItemRef = useRef(null); // Ref for the Identity menu item
+    const identityMenuItemRef = useRef(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [identitySubMenuOpen, setIdentitySubMenuOpen] = useState(false);
-    const [openSubMenuLeft, setOpenSubMenuLeft] = useState(false); // New state for sub-menu direction
+    const [openSubMenuLeft, setOpenSubMenuLeft] = useState(false);
 
-    // Derived State
     const isStopped = candidateStatus === 'STOP_CASE';
+
+    // Helper to check if a task is already created
+    const isTaskDisabled = (type) => taskTypes?.map(t => t.toLowerCase()).includes(type.toLowerCase());
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -28,52 +50,77 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Effect to calculate sub-menu position based on available space
     useEffect(() => {
         if (identitySubMenuOpen && identityMenuItemRef.current) {
             const menuItemRect = identityMenuItemRef.current.getBoundingClientRect();
-            // Assuming sub-menu width is w-48 (192px) + 2 units of margin (8px) = 200px
             const subMenuEstimatedWidth = 200;
             const rightSpace = window.innerWidth - menuItemRect.right;
 
-            if (rightSpace < subMenuEstimatedWidth + 30) { // Add a buffer of 30px
+            if (rightSpace < subMenuEstimatedWidth + 30) {
                 setOpenSubMenuLeft(true);
             } else {
                 setOpenSubMenuLeft(false);
             }
         }
-    }, [identitySubMenuOpen]); // Recalculate when sub-menu opens
+    }, [identitySubMenuOpen]);
 
     const handleIdentitySubItemClick = (documentType) => {
-        // This is the key change: call the new prop to open the IDVerification modal
         if (onOpenIDVerificationModal) {
             onOpenIDVerificationModal(documentType);
         }
-        setIsOpen(false); // Close main dropdown
-        setIdentitySubMenuOpen(false); // Close sub-dropdown
+        setIsOpen(false);
+        setIdentitySubMenuOpen(false);
     };
 
     const menuItems = [
-        { icon: <MapPin size={16} />, label: 'Address', onClick: () => { setIsCreateModalOpen(true); setIsOpen(false); } },
-        { icon: <GraduationCap size={16} />, label: 'Education', onClick: () => setIsOpen(false) },
-        { icon: <Briefcase size={16} />, label: 'Employment', onClick: () => setIsOpen(false) },
         {
-            icon: <Fingerprint size={16} />,
+            icon: <MapPin size={16}/>, label: 'Address', onClick: () => {
+                setIsCreateModalOpen(true);
+                setIsOpen(false);
+            }
+        },
+        {icon: <GraduationCap size={16}/>, label: 'Education', onClick: () => setIsOpen(false)},
+        {icon: <Briefcase size={16}/>, label: 'Employment', onClick: () => setIsOpen(false)},
+        {
+            icon: <Fingerprint size={16}/>,
             label: 'Identity',
-            isSubMenu: true, // Mark this item as having a sub-menu
+            isSubMenu: true,
             onClick: (e) => {
-                e.stopPropagation(); // Prevent closing the main dropdown immediately
+                e.stopPropagation();
                 setIdentitySubMenuOpen(prev => !prev);
             },
             subItems: [
-                { label: 'PAN', onClick: () => handleIdentitySubItemClick('PAN') },
-                { label: 'AADHAAR', onClick: () => handleIdentitySubItemClick('AADHAAR') },
-                { label: 'Passport', onClick: () => handleIdentitySubItemClick('PASSPORT') },
+                {label: 'PAN', onClick: () => handleIdentitySubItemClick('PAN'), isDisabled: isTaskDisabled('pan')},
+                {
+                    label: 'AADHAAR',
+                    onClick: () => handleIdentitySubItemClick('aadhaar'),
+                    isDisabled: isTaskDisabled('aadhaar')
+                },
+                {
+                    label: 'Passport',
+                    onClick: () => handleIdentitySubItemClick('PASSPORT'),
+                    isDisabled: isTaskDisabled('passport')
+                },
             ]
         },
-        { icon: <Users size={16} />, label: 'Reference', onClick: () => setIsOpen(false) },
-        { icon: <Database size={16} />, label: 'Database check', onClick: () => setIsOpen(false) },
-        { icon: <ShieldAlert size={16} />, label: 'Criminal check', onClick: () => setIsOpen(false) },
+        {
+            icon: <Users size={16}/>,
+            label: 'Reference',
+            onClick: () => setIsOpen(false),
+            isDisabled: isTaskDisabled('reference')
+        },
+        {
+            icon: <Database size={16}/>,
+            label: 'Database check',
+            onClick: () => setIsOpen(false),
+            isDisabled: isTaskDisabled('database')
+        },
+        {
+            icon: <ShieldAlert size={16}/>,
+            label: 'Criminal check',
+            onClick: () => setIsOpen(false),
+            isDisabled: isTaskDisabled('criminal')
+        },
     ];
 
     const handleToggleCaseStatus = async () => {
@@ -83,32 +130,30 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
         } finally {
             setActionLoading(false);
             setIsOpen(false);
-            setIdentitySubMenuOpen(false); // Close sub-menu if case status is toggled
+            setIdentitySubMenuOpen(false);
         }
     }
 
     return (
         <div className="flex items-center gap-3 relative" ref={dropdownRef}>
-            {/* Download Button */}
-            <button onClick={handleDownloadReport} className="bg-[#5D4591] text-white px-6 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm hover:bg-[#4a3675] transition-all active:scale-95 cursor-pointer">
-                {
-                    isDownloading ? (
-                        <>
-                            <Loader2 className={"animate-spin"} size={16} /> Download report
-                        </>
-                    ) : (
-                        <>
-                            <Download size={16} /> Download report
-                        </>
-                    )
-                }
+            <button
+                onClick={handleDownloadReport}
+                className="bg-[#5D4591] text-white h-10 px-5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm hover:bg-[#4a3675] transition-all active:scale-95 cursor-pointer shrink-0"
+            >
+                {isDownloading ? (
+                    <Loader2 className="animate-spin" size={16}/>
+                ) : (
+                    <Download size={16}/>
+                )}
+                <span className="whitespace-nowrap">
+                    Report
+                </span>
             </button>
 
-            {/* More Button */}
             <button
                 onClick={() => {
                     setIsOpen(!isOpen);
-                    setIdentitySubMenuOpen(false); // Close sub-menu if main dropdown is toggled
+                    setIdentitySubMenuOpen(false);
                 }}
                 className={`p-2.5 rounded-xl transition-all duration-300 cursor-pointer border ${
                     isOpen
@@ -116,10 +161,9 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
                         : 'text-slate-400 border-transparent hover:bg-slate-50'
                 }`}
             >
-                <MoreVertical size={20} className={`transition-transform duration-500 ${isOpen ? 'rotate-90' : ''}`} />
+                <MoreVertical size={20} className={`transition-transform duration-500 ${isOpen ? 'rotate-90' : ''}`}/>
             </button>
 
-            {/* DROPDOWN */}
             <div className={`
                 absolute right-0 top-full mt-3 w-64 bg-white/95 backdrop-blur-md border border-slate-200/60 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[100] py-2
                 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] origin-top-right
@@ -130,36 +174,49 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
 
                 <div className="px-4 py-2 mb-1 flex items-center justify-between">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Quick Actions</p>
-                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isStopped ? 'bg-slate-300' : 'bg-[#5D4591]'}`} />
+                    <div
+                        className={`w-1.5 h-1.5 rounded-full animate-pulse ${isStopped ? 'bg-slate-300' : 'bg-[#5D4591]'}`}/>
                 </div>
 
                 <div className="space-y-0.5 px-1">
                     {menuItems.map((item, index) => (
                         <div
                             key={index}
-                            className="relative"
+                            className="relative group/item"
                             ref={item.isSubMenu ? identityMenuItemRef : null}
                         >
+                            {/* CUSTOM TOOLTIP */}
+                            {item.isDisabled && (
+                                <div
+                                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider rounded-lg opacity-0 group-hover/item:opacity-100 pointer-events-none transition-all duration-300 z-[120] whitespace-nowrap shadow-xl border border-slate-700 translate-y-1 group-hover/item:translate-y-0">
+                                    This check is already created
+                                    <div
+                                        className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"/>
+                                </div>
+                            )}
+
                             <button
-                                disabled={isStopped}
+                                disabled={isStopped || item.isDisabled}
                                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all group text-left
-                                ${isStopped
+                                ${isStopped || item.isDisabled
                                     ? 'opacity-40 cursor-not-allowed grayscale'
                                     : 'text-slate-600 hover:bg-[#F9F7FF] hover:text-[#5D4591] cursor-pointer'}`}
                                 onClick={item.onClick}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#5D4591] group-hover:shadow-sm transition-all duration-300">
+                                    <div
+                                        className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-[#5D4591] group-hover:shadow-sm transition-all duration-300">
                                         {item.icon}
                                     </div>
                                     <span className="text-xs font-bold tracking-tight">{item.label}</span>
                                 </div>
-                                {!isStopped && item.isSubMenu && <ChevronRight size={14} className={`transition-transform duration-300 ${identitySubMenuOpen ? 'rotate-90' : ''}`} />}
-                                {!isStopped && !item.isSubMenu && <Plus size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />}
+                                {!isStopped && !item.isDisabled && item.isSubMenu && <ChevronRight size={14}
+                                                                                                   className={`transition-transform duration-300 ${identitySubMenuOpen ? 'rotate-90' : ''}`}/>}
+                                {!isStopped && !item.isDisabled && !item.isSubMenu && <Plus size={14}
+                                                                                            className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"/>}
                             </button>
 
-                            {/* Nested Dropdown for Identity */}
-                            {item.isSubMenu && identitySubMenuOpen && (
+                            {item.isSubMenu && identitySubMenuOpen && !item.isDisabled && (
                                 <div className={`
                                     absolute top-0 w-48 bg-white/95 backdrop-blur-md border border-slate-200/60 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[101] py-2
                                     transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]
@@ -167,20 +224,32 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
                                     opacity-100 scale-100 translate-x-0 pointer-events-auto
                                 `}>
                                     {item.subItems.map((subItem, subIndex) => (
-                                        <button
-                                            key={subIndex}
-                                            disabled={isStopped}
-                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all group text-left
-                                                ${isStopped
-                                                ? 'opacity-40 cursor-not-allowed grayscale'
-                                                : 'text-slate-600 hover:bg-[#F9F7FF] hover:text-[#5D4591] cursor-pointer'}`}
-                                            onClick={subItem.onClick}
-                                        >
-                                            <div className="flex items-center justify-center text-slate-400 group-hover:text-[#5D4591] transition-all duration-300">
-                                                <Fingerprint size={16} />
-                                            </div>
-                                            <span className="text-xs font-bold tracking-tight">{subItem.label}</span>
-                                        </button>
+                                        <div key={subIndex} className="relative group/subitem px-1">
+                                            {/* SUB-ITEM TOOLTIP */}
+                                            {subItem.isDisabled && (
+                                                <div
+                                                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider rounded-lg opacity-0 group-hover/subitem:opacity-100 pointer-events-none transition-all duration-300 z-[120] whitespace-nowrap shadow-xl border border-slate-700">
+                                                    Check already created
+                                                    <div
+                                                        className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"/>
+                                                </div>
+                                            )}
+                                            <button
+                                                disabled={isStopped || subItem.isDisabled}
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all group text-left
+                                                    ${isStopped || subItem.isDisabled
+                                                    ? 'opacity-40 cursor-not-allowed grayscale'
+                                                    : 'text-slate-600 hover:bg-[#F9F7FF] hover:text-[#5D4591] cursor-pointer'}`}
+                                                onClick={subItem.onClick}
+                                            >
+                                                <div
+                                                    className="flex items-center justify-center text-slate-400 group-hover:text-[#5D4591] transition-all duration-300">
+                                                    <Fingerprint size={16}/>
+                                                </div>
+                                                <span
+                                                    className="text-xs font-bold tracking-tight">{subItem.label}</span>
+                                            </button>
+                                        </div>
                                     ))}
                                 </div>
                             )}
@@ -188,15 +257,23 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
                     ))}
                 </div>
 
-                {/* Separator */}
-                <div className="h-px bg-slate-100 my-2 mx-3" />
+                <div className="px-1 relative group/stop">
+                    {disableStopCase && (
+                        <div
+                            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider rounded-lg opacity-0 group-hover/stop:opacity-100 pointer-events-none transition-all duration-300 z-[120] whitespace-nowrap shadow-xl border border-slate-700 translate-y-1 group-hover/stop:translate-y-0">
+                            Case status modification disabled
+                            <div
+                                className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"/>
+                        </div>
+                    )}
 
-                {/* Conditional Action: Stop or Resume */}
-                <div className="px-1">
                     <button
-                        disabled={actionLoading}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group text-left cursor-pointer
-                            ${isStopped
+                        disabled={actionLoading || disableStopCase}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group text-left
+                        ${disableStopCase
+                            ? 'opacity-40 cursor-not-allowed grayscale'
+                            : 'cursor-pointer'}
+                        ${isStopped
                             ? 'text-emerald-600 hover:bg-emerald-50'
                             : 'text-rose-600 hover:bg-rose-50'}`}
                         onClick={handleToggleCaseStatus}
@@ -206,11 +283,11 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
                             ? 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white'
                             : 'bg-rose-100 text-rose-600 group-hover:bg-rose-600 group-hover:text-white'}`}>
                             {actionLoading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <Loader2 className="w-4 h-4 animate-spin"/>
                             ) : isStopped ? (
-                                <PlayCircle size={16} />
+                                <PlayCircle size={16}/>
                             ) : (
-                                <CircleStop size={16} />
+                                <CircleStop size={16}/>
                             )}
                         </div>
 
@@ -218,11 +295,31 @@ const CaseActionDropdown = ({ setIsCreateModalOpen, handeStopCaseClick, candidat
                             <span className="text-xs font-black uppercase tracking-tight">
                                 {isStopped ? 'Resume Case' : 'Stop Case'}
                             </span>
-                            <span className={`text-[9px] font-bold uppercase ${isStopped ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            <span
+                                className={`text-[9px] font-bold uppercase ${isStopped ? 'text-emerald-400' : 'text-rose-400'}`}>
                                 {actionLoading
                                     ? (isStopped ? 'Resuming...' : 'Terminating...')
                                     : (isStopped ? 'Continue Verification' : 'Terminate Case')}
                             </span>
+                        </div>
+                    </button>
+                </div>
+                <div className="h-px bg-slate-100 mx-4 my-2" />
+
+                <div className="px-1">
+                    <button
+                        onClick={() => {
+                            setIsOpen(false);
+                            onDeleteClick(); // New Prop
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group text-left text-rose-600 hover:bg-rose-50 cursor-pointer"
+                    >
+                        <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
+                            <Trash2Icon size={16} />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-xs font-black uppercase tracking-tight">Delete Candidate</span>
+                            <span className="text-[9px] font-bold uppercase text-rose-400">Erase PII (DPDP)</span>
                         </div>
                     </button>
                 </div>

@@ -1,3 +1,5 @@
+import { parseISO, format, isValid } from 'date-fns';
+
 export const formatToISO = (dateStr) => {
     if (!dateStr || !dateStr.includes('/')) return dateStr;
     // Converts DD/MM/YYYY to YYYY-MM-DD
@@ -33,3 +35,31 @@ export const formatDate = (date) => {
         .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
         .replace(' ', ', ');
 }
+
+
+export const isDateMatch = (dateA, dateB) => {
+    if (!dateA || !dateB) return false;
+
+    const normalize = (d) => {
+        try {
+            // 1. Create a Date object (handles ISO, Timestamps, and standard strings)
+            const dateObj = new Date(d);
+
+            // 2. Check if the date is actually valid
+            if (!isValid(dateObj)) return null;
+
+            // 3. Return a standardized string (Year-Month-Day only)
+            return format(dateObj, 'yyyy-MM-dd');
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const cleanA = normalize(dateA);
+    const cleanB = normalize(dateB);
+
+    // If either is invalid, we can't confirm a match
+    if (!cleanA || !cleanB) return false;
+
+    return cleanA === cleanB;
+};

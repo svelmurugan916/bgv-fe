@@ -1,18 +1,46 @@
 import { useAuthApi } from "../../../provider/AuthApiProvider.jsx";
 import React, { useRef, useState, useEffect } from "react";
-import { UPLOAD_INTERNAL_PROOF } from "../../../constant/Endpoint.tsx";
+// Import the relevant endpoints
+import { UPLOAD_INTERNAL_PROOF, UPLOAD_CANDIDATE_DOCUMENT } from "../../../constant/Endpoint.tsx";
 import { METHOD } from "../../../constant/ApplicationConstant.js";
 import {
     Check, CloudUpload, File, Loader2, Trash2,
-    Upload, X, AlertCircle, Plus, ImageIcon, FileTextIcon
+    Upload, X, AlertCircle, Plus, FileTextIcon, Paperclip, ShieldCheckIcon
 } from "lucide-react";
 
-const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessFileUpload }) => {
+const FileUploadModal = ({
+                             isOpen,
+                             onClose,
+                             onUploadComplete,
+                             taskId,
+                             uploadType = 'proof', // 'proof' or 'candidatedocument'
+                             onSuccessFileUpload,
+                            type,
+                            isReadOnly = false,
+                         }) => {
     const { authenticatedRequest } = useAuthApi();
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadingFiles, setUploadingFiles] = useState({});
     const [previews, setPreviews] = useState({});
     const fileInputRef = useRef(null);
+
+    // --- CONTEXT CONFIGURATION ---
+    const isProof = uploadType === 'proof';
+
+    const contextConfig = {
+        proof: {
+            title: "Internal Proof Vault",
+            subtitle: "Select and upload supporting evidence for verification",
+            endpoint: UPLOAD_INTERNAL_PROOF?.replace("{taskId}", taskId),
+            icon: <ShieldCheckIcon size={20} className="text-[#5D4591]" />
+        },
+        candidatedocument: {
+            title: "Candidate Document Upload",
+            subtitle: "Upload additional documents provided by the candidate",
+            endpoint: UPLOAD_CANDIDATE_DOCUMENT?.replace("{taskId}", taskId)?.replace("{type}", type), // Adjust based on your actual API structure
+            icon: <Paperclip size={20} className="text-[#5D4591]" />
+        }
+    }[uploadType];
 
     useEffect(() => {
         const newPreviews = {};
@@ -55,11 +83,15 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
     };
 
     const uploadFilesOneByOne = async () => {
+        if(isReadOnly) return;
         const initialState = {};
         selectedFiles.forEach((_, i) => {
             initialState[i] = { progress: 0, status: 'waiting', message: '' };
         });
         setUploadingFiles(initialState);
+
+        // --- FIX: Use a local variable to track success ---
+        let atLeastOneSuccess = false;
 
         for (let i = 0; i < selectedFiles.length; i++) {
             const file = selectedFiles[i];
@@ -72,17 +104,14 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                 continue;
             }
 
-            // Start Uploading state
             setUploadingFiles(prev => ({
                 ...prev,
                 [i]: { ...prev[i], status: 'uploading', progress: 5 }
             }));
 
-            // Realistic Progress Simulation
             let progress = 5;
             const interval = setInterval(() => {
                 if (progress < 90) {
-                    // Slow down as it gets higher
                     const increment = Math.max(1, Math.floor((90 - progress) / 10));
                     progress += increment;
                     setUploadingFiles(prev => ({
@@ -98,17 +127,20 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
 
                 const response = await authenticatedRequest(
                     formData,
-                    UPLOAD_INTERNAL_PROOF?.replace("{taskId}", taskId),
+                    contextConfig.endpoint,
                     METHOD.POST
                 );
 
                 clearInterval(interval);
 
-                if (response.status === 200) {
+                if (response.status === 200 || response.status === 201) {
                     setUploadingFiles(prev => ({
                         ...prev,
                         [i]: { progress: 100, status: 'success', message: '' }
                     }));
+
+                    atLeastOneSuccess = true;
+
                     if (onSuccessFileUpload) onSuccessFileUpload(response.data);
                 } else {
                     throw new Error(response.message || "Upload failed");
@@ -117,39 +149,41 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                 clearInterval(interval);
                 setUploadingFiles(prev => ({
                     ...prev,
-                    [i]: { progress: 0, status: 'error', message: error.message || "Failed" }
+                    [i]: { progress: 0, status: 'error', message: error.response?.data?.message || "Failed" }
                 }));
             }
         }
 
-        const allSuccessful = selectedFiles.length > 0 &&
-            Object.values(uploadingFiles).every(f => f.status === 'success');
-
-        if (allSuccessful) {
+        // --- FIX: Check the local variable instead of the stale state ---
+        if (atLeastOneSuccess) {
             setTimeout(() => {
-                onUploadComplete();
-                onClose();
-                setUploadingFiles({});
-                setSelectedFiles([]);
+                if (onUploadComplete) onUploadComplete();
+                handleCloseButton();
             }, 1000);
         }
     };
+
 
     const handleCloseButton = () => {
         onClose();
         setSelectedFiles([]);
         setUploadingFiles({});
-    }
+    };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 mb-0 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
 
-                {/* Header */}
+                {/* Header - Dynamic based on uploadType */}
                 <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
-                    <div>
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Internal Proof Vault</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Select and upload supporting evidence</p>
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-[#5D4591]">
+                            {uploadType === 'proof' ? <ShieldCheckIcon size={20}/> : <Paperclip size={20}/>}
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">{contextConfig.title}</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">{contextConfig.subtitle}</p>
+                        </div>
                     </div>
                     <button onClick={handleCloseButton} className="p-2 hover:bg-slate-200 rounded-full transition-colors cursor-pointer">
                         <X size={20} className="text-slate-500" />
@@ -166,7 +200,7 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                             <div className="w-20 h-20 bg-white text-[#5D4591] rounded-3xl flex items-center justify-center mb-6 shadow-xl group-hover:scale-110 transition-transform">
                                 <CloudUpload size={40} />
                             </div>
-                            <p className="text-sm font-black text-slate-700 uppercase tracking-widest">Drop files here</p>
+                            <p className="text-sm font-black text-slate-700 uppercase tracking-widest">Drop {isProof ? 'proof' : 'documents'} here</p>
                             <p className="text-[11px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">PDF, Images, or Documents up to 5MB</p>
                         </div>
                     ) : (
@@ -177,8 +211,6 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
 
                                 return (
                                     <div key={idx} className="group relative aspect-square rounded-[2rem] border border-slate-100 bg-slate-50 overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-all">
-
-                                        {/* Preview / Icon Area */}
                                         <div className="flex-1 flex items-center justify-center overflow-hidden bg-slate-100/50">
                                             {isImage && previews[idx] ? (
                                                 <img src={previews[idx]} alt="preview" className="w-full h-full object-cover" />
@@ -190,7 +222,6 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                                             )}
                                         </div>
 
-                                        {/* Metadata Overlay (Bottom) */}
                                         <div className="p-3 bg-white border-t border-slate-50">
                                             <p className="text-[10px] font-bold text-slate-700 truncate mb-0.5">{file.name}</p>
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{formatFileSize(file.size)}</p>
@@ -204,12 +235,8 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                                                     <span className="absolute text-[12px] font-black">{state.progress}%</span>
                                                 </div>
                                                 <span className="text-[10px] font-black uppercase tracking-widest mb-3">Uploading</span>
-                                                {/* Mini Progress Bar */}
                                                 <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-white transition-all duration-300"
-                                                        style={{ width: `${state.progress}%` }}
-                                                    />
+                                                    <div className="h-full bg-white transition-all duration-300" style={{ width: `${state.progress}%` }} />
                                                 </div>
                                             </div>
                                         )}
@@ -230,7 +257,6 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                                             </div>
                                         )}
 
-                                        {/* Delete Button */}
                                         {(!state || state.status === 'error') && (
                                             <button
                                                 onClick={() => removeFile(idx)}
@@ -243,7 +269,6 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                                 );
                             })}
 
-                            {/* "ADD MORE" Placeholder */}
                             <div
                                 onClick={() => fileInputRef.current.click()}
                                 className="aspect-square rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 group hover:border-[#5D4591]/30 hover:bg-[#F9F7FF] transition-all cursor-pointer"
@@ -270,7 +295,7 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                 <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end items-center gap-6 shrink-0">
                     {selectedFiles.length > 0 && (
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-auto">
-                            {selectedFiles.length} Files Selected
+                            {selectedFiles.length} {isProof ? 'Proof' : 'Document'} Files
                         </p>
                     )}
                     <button
@@ -287,7 +312,7 @@ const FileUploadModal = ({ isOpen, onClose, onUploadComplete, taskId, onSuccessF
                         {Object.values(uploadingFiles).some(f => f.status === 'uploading') ? (
                             <><Loader2 size={14} className="animate-spin" /> Processing...</>
                         ) : (
-                            <><Upload size={14} /> Confirm Upload</>
+                            <><Upload size={14} /> Start Upload</>
                         )}
                     </button>
                 </div>

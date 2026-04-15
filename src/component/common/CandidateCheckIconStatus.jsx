@@ -8,7 +8,7 @@ const CandidateCheckIconStatus = ({checks = [], candidateStatus}) => {
                 let category = check.taskName.toUpperCase();
                 console.log("category -- ", category)
                 if (category.includes('ADDRESS')) category = 'ADDRESS';
-                else if (category.includes('IDENTITY') || category.includes('PAN') || category.includes('AADHAAR')) category = 'IDENTITY';
+                else if (category.includes('IDENTITY') || category.includes('PAN') || category.includes('PASSPORT') || category.includes('AADHAAR')) category = 'IDENTITY';
                 else if (category.includes('EDUCATION')) category = 'EDUCATION';
                 else if (category.includes('EMPLOYMENT') || category.includes('EXPERIENCE')) category = 'EMPLOYMENT';
                 else if (category.includes('CRIMINAL')) category = 'CRIMINAL';

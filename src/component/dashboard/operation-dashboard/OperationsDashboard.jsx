@@ -13,12 +13,8 @@ import {
 import SummaryStatCardData from "./SummaryStatCardData.jsx";
 import ActionableCheckList from "./ActionableCheckList.jsx";
 import mockDashboardData from "./mockDashboardData.js";
-import PriorityActionComponent from "../admin-dashboard/PriorityActionComponent.jsx";
-import CaseVelocityChart from "../admin-dashboard/CaseVelocityChart.jsx";
-import BottleneckData from "../admin-dashboard/BottleneckData.jsx";
-import RiskProfileChart from "../admin-dashboard/RiskProfileChart.jsx";
-import PortfolioHealth from "../admin-dashboard/PortfolioHealth.jsx";
-import SystemOverviewHeader from "../admin-dashboard/SystemOverviewHeader.jsx"; // NEW: Import ActionableCheckList
+import PriorityActionComponent from "../tenant-admin-dashboard/PriorityActionComponent.jsx";
+import SystemOverviewHeader from "../tenant-admin-dashboard/SystemOverviewHeader.jsx"; // NEW: Import ActionableCheckList
 
 const OperationsDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);

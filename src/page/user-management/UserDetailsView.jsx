@@ -1,4 +1,7 @@
-import { ArrowLeft, Edit2, Lock, Mail, Phone, Shield, User, Save, X, Loader2, CheckCircle2, AlertCircle, AlertTriangle } from "lucide-react";
+import {
+    ArrowLeft, Edit2, Lock, Mail, Phone, Shield, User, Save, X, Loader2, CheckCircle2, AlertCircle, AlertTriangle,
+    HashIcon, Building2Icon
+} from "lucide-react";
 import React, { useState, useEffect, useRef } from "react"; // Added useRef
 import { motion, AnimatePresence } from "framer-motion";
 import AssignedRoles from "./AssignedRoles.jsx";
@@ -8,8 +11,9 @@ import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 import {EMAIL_RESET_URL, MANUAL_RESET_PASSWORD, TOGGLE_USER_ACTIVE, UPDATE_USER} from "../../constant/Endpoint.tsx";
 import { METHOD } from "../../constant/ApplicationConstant.js";
 import PasswordResetModal from "./PasswordResetModal.jsx";
+import SingleSelectDropdown from "../../component/dropdown/SingleSelectDropdown.jsx";
 
-const UserDetailsView = ({ user, activeTab, setActiveTab, availableRoles, onUpdateSuccess, isEditing, setIsEditing, handleBack }) => {
+const UserDetailsView = ({ user, activeTab, setActiveTab, availableRoles, onUpdateSuccess, isEditing, setIsEditing, handleBack, tenants }) => {
     const [formData, setFormData] = useState({ ...user });
     const [saving, setSaving] = useState(false);
     const [isToggling, setIsToggling] = useState(false);
@@ -20,7 +24,24 @@ const UserDetailsView = ({ user, activeTab, setActiveTab, availableRoles, onUpda
     const [newPassword, setNewPassword] = useState('');
     const [isResetting, setIsResetting] = useState(false);
 
-    const { authenticatedRequest } = useAuthApi();
+
+    console.log("tenants -- ", tenants)
+
+    const { authenticatedRequest, loggedInRole, user:loggedInUser } = useAuthApi();
+
+    const tenantOptions = tenants?.map((tenant) => ({
+        text: tenant.name,
+        value: tenant.id,
+    }))
+
+    const onSelectTenant = (tenantId) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,      // 1. Copy all existing user data (firstName, email, etc.)
+            tenantId: tenantId  // 2. Overwrite or add the tenantId
+        }));
+    };
+
+
 
     // 1. Add a ref to track the previous User ID
     const prevUserIdRef = useRef(user?.id);
@@ -118,7 +139,10 @@ const UserDetailsView = ({ user, activeTab, setActiveTab, availableRoles, onUpda
     const handleEmailReset = async () => {
         setIsResetting(true);
         try {
-            const response = await authenticatedRequest(undefined, `${EMAIL_RESET_URL}/${user.email}`, METHOD.POST);
+            const payload = {
+                email: user.email,
+            }
+            const response = await authenticatedRequest(payload, `${EMAIL_RESET_URL}`, METHOD.POST);
             if(response.status === 200) {
                 setMessage({ type: 'success', text: 'Reset link sent to user email!' });
                 setShowResetModal(false);
@@ -265,7 +289,40 @@ const UserDetailsView = ({ user, activeTab, setActiveTab, availableRoles, onUpda
                                 <InfoField label="Username" name="username" value={formData.username} isEditing={isEditing} onChange={handleInputChange} icon={<User size={14} />} copyable />
                                 <InfoField label="Email Address" name="email" value={formData.email} isEditing={isEditing} onChange={handleInputChange} icon={<Mail size={14} />} copyable />
                                 <InfoField label="Phone Number" name="phoneNumber" value={formData.phoneNumber} isEditing={isEditing} onChange={handleInputChange} icon={<Phone size={14} />} />
-                                <InfoField label="Primary Role" value={user.roleSet[0]?.name} isEditing={false} icon={<Shield size={14} />} />
+                                <InfoField label="Primary Role" value={user.roleSet[0]?.name?.replaceAll("_", " ")} isEditing={false} icon={<Shield size={14} />} />
+                                {
+                                    loggedInRole === "ROLE_ADMIN" && loggedInUser?.userScope === "SYSTEM_USER" && (
+                                        <>
+                                            <InfoField
+                                                label="Tenant Code"
+                                                value={formData?.tenantCode}
+                                                isEditing={false}
+                                                icon={<HashIcon size={14} />} // Best for codes/IDs
+                                            />
+                                            <InfoField
+                                                label="Tenant Name"
+                                                value={formData?.tenantName}
+                                                isEditing={false}
+                                                icon={<Building2Icon size={14} />} // Best for organizations
+                                            />
+
+                                            {
+                                                isEditing && (
+                                                    <>
+                                                        <SingleSelectDropdown label={"Select Tenant"}
+                                                              options={tenantOptions}
+                                                              isOccupyFullWidth={true}
+                                                              selected={formData?.tenantId || ''}
+                                                              onSelect={onSelectTenant}
+                                                        />
+                                                    </>
+                                                )
+                                            }
+
+                                        </>
+                                    )
+                                }
+
                             </div>
                         </section>
 

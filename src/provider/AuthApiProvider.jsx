@@ -3,6 +3,7 @@ import { RequestConfig, useAxios } from "../hooks/use-axios.js";
 import { AUTH_TYPE, METHOD } from "../constant/ApplicationConstant.js";
 import { jwtDecode } from "jwt-decode";
 import { LOGOUT, REFRESH_TOKEN, USER_PROFILE, VERIFY_CREDENTIALS } from "../constant/Endpoint.tsx";
+import {useTenant} from "./TenantProvider.jsx";
 
 const AuthApiContext = createContext(undefined);
 
@@ -18,9 +19,10 @@ export const AuthApiProvider = ({ children }) => {
     const gettingToken = useRef(false);
     const initialized = useRef(false);
     const isAuthenticated = !!accessToken;
+    const { tenantConfig } = useTenant();
 
     // Helper to identify if current user is a candidate on the form
-    const isCandidatePath = window.location.pathname.includes('/fill-candidate-form') || window.location.pathname.includes('/address-verification-form') || window.location.pathname.includes('/digilocker-verification') || window.location.pathname.includes('/login') ;
+    const isCandidatePath = window.location.pathname.includes('/fill-candidate-form') || window.location.pathname.includes('/address-verification-form') || window.location.pathname.includes('/digilocker-verification') || window.location.pathname.includes('/login') ||  window.location.pathname.includes('/verify-digilocker-session');
 
     const clearAuthStates = useCallback(() => {
         setAccessToken("");
@@ -53,9 +55,13 @@ export const AuthApiProvider = ({ children }) => {
 
         gettingToken.current = true;
         try {
+            const headers = {
+                'X-Tenant-ID': tenantConfig.tenantCode,
+            }
             const config = new RequestConfig()
                 .setUrl(REFRESH_TOKEN)
                 .setMethod(METHOD.POST)
+                .setHeaders(headers)
                 .setType(AUTH_TYPE.AUTH);
 
             const response = await apiCallHit(config);
@@ -145,6 +151,18 @@ export const AuthApiProvider = ({ children }) => {
         return response;
     }, [accessToken, refreshAccessToken, apiCallHit, isCandidatePath]);
 
+    const getCurrentAccessToken = async () => {
+        let currentToken = accessToken;
+
+        // 2. Only attempt refresh if currentToken is missing/expired AND we aren't on candidate path
+        if (!currentToken || isTokenExpired(currentToken)) {
+            if (!isCandidatePath) {
+                currentToken = await refreshAccessToken();
+            }
+        }
+        return currentToken;
+    }
+
     const isTokenExpired = (token) => {
         if (!token) return true;
         try {
@@ -155,11 +173,15 @@ export const AuthApiProvider = ({ children }) => {
 
     const unAuthenticatedRequest = useCallback(async (request, url, method = METHOD.POST) => {
         const startTime = Date.now();
+        const headers = {
+            'X-Tenant-ID': tenantConfig.tenantCode,
+        }
         const config = new RequestConfig()
             .setUrl(url)
             .setMethod(method)
             .setType(AUTH_TYPE.AUTH)
             .setData(request);
+        config.setHeaders(headers);
         const response = await apiCallHit(config);
 
         const duration = Date.now() - startTime;
@@ -173,10 +195,14 @@ export const AuthApiProvider = ({ children }) => {
     const login = useCallback(async (credentials, setError) => {
         setLoading(true);
         try {
+            const headers = {
+                'X-Tenant-ID': tenantConfig.tenantCode,
+            }
             const config = new RequestConfig()
                 .setUrl(VERIFY_CREDENTIALS)
                 .setMethod(METHOD.POST)
                 .setType(AUTH_TYPE.AUTH)
+                .setHeaders(headers)
                 .setData(credentials);
 
             const response = await apiCallHit(config);
@@ -223,11 +249,11 @@ export const AuthApiProvider = ({ children }) => {
     }, [refreshAccessToken, isCandidatePath]);
 
     const value = useMemo(() => ({
-        accessToken, user, loading, login, logout, isAuthenticated,
+        accessToken, user, loading, login, logout, isAuthenticated, getCurrentAccessToken,
         authenticatedRequest, unAuthenticatedRequest,
         setAuthData: handleTokenUpdate, availableRoles, setAvailableRoles,
         loggedInRole, userType, tokenType, setUser, setLoading
-    }), [accessToken, user, loading, login, logout, isAuthenticated, authenticatedRequest, unAuthenticatedRequest, handleTokenUpdate, availableRoles, loggedInRole, userType, tokenType]);
+    }), [accessToken, user, loading, login, logout, isAuthenticated, getCurrentAccessToken, authenticatedRequest, unAuthenticatedRequest, handleTokenUpdate, availableRoles, loggedInRole, userType, tokenType]);
 
     return <AuthApiContext.Provider value={value}>{children}</AuthApiContext.Provider>;
 };

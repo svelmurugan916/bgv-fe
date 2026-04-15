@@ -1,63 +1,111 @@
 import React, { useState } from 'react';
-import { Check, Loader2, AlertCircle } from 'lucide-react';
+import {Check, Loader2, AlertCircle, GlobeIcon, FingerprintIcon, CreditCardIcon} from 'lucide-react';
 import FormPageHeader from "./FormPageHeader.jsx";
 import { useForm } from "../../provider/FormProvider.jsx";
 import DocCard from "./DocCard.jsx";
 import ExtractedData from "./DocumentExtractedData.jsx";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
-import {OCR_AADHAAR_UPLOAD, OCR_PAN_UPLOAD, REMOVE_DOCUMENT} from "../../constant/Endpoint.tsx";
+import {
+    OCR_AADHAAR_UPLOAD,
+    OCR_PAN_UPLOAD,
+    PASSPORT_BACK_OCR,
+    PASSPORT_FRONT_OCR,
+    REMOVE_DOCUMENT
+} from "../../constant/Endpoint.tsx";
 import { METHOD } from "../../constant/ApplicationConstant.js";
 import {formatToISO} from "../../utils/date-util.js";
+import DataNoticeModal from "../../component/common/DataNoticeModal.jsx";
+import DocumentSection from "./DocumentSection.jsx";
 
 const IDVerification = () => {
     const { formData, updateFormData, errors, clearError, candidateId } = useForm();
     const data = formData.idVerification;
+    const passportFrontData = formData.idVerification?.['passport_FRONT'] || {};
+    const passportBackData = formData.idVerification?.['passport_BACK'] || {};
     const { authenticatedRequest } = useAuthApi();
     const documentFaceJson = {
         pan: "SINGLE",
         aadhar: "FRONT",
         passport: 'SINGLE'
     }
+    const [uploading, setUploading] = useState(false);
+    const [currentSide, setCurrentSide] = useState(null);
 
     // This is the state that controls the loaders in DocCard
     const [uploadingType, setUploadingType] = useState(null);
     const [uploadErrors, setUploadErrors] = useState({});
+    const [dataNoticeModalOpen, setDataNoticeModalOpen] = useState(false);
 
-    const handleFileChange = async (type, e) => {
+    const handleFileChange = async (type, e, side) => {
         const file = e.target.files[0];
         if (!file) return;
+        if(type === 'passport') {
+            setCurrentSide(side);
+        }
+
+        setUploadingType(type);
 
         setUploadErrors(prev => ({ ...prev, [type]: null }));
-        setUploadingType(type);
+        setUploading(true); // Set general uploading state
 
         try {
             const filePayload = new FormData();
             filePayload.append('file', file);
             filePayload.append('documentSide', documentFaceJson[type]);
-            let ocrUrl = type.includes("aadhar") ? OCR_AADHAAR_UPLOAD : OCR_PAN_UPLOAD;
-            let url = `${ocrUrl}/${candidateId}`;
+
+            let ocrUrl;
+            if (type === 'aadhar') ocrUrl = OCR_AADHAAR_UPLOAD;
+            else if (type === 'pan') ocrUrl = OCR_PAN_UPLOAD;
+            else if (type === 'passport') {
+                type = type + "_" + side;
+                ocrUrl = side === 'FRONT' ? PASSPORT_FRONT_OCR : PASSPORT_BACK_OCR;
+            } else {
+                setUploadErrors(prev => ({ ...prev, [type]: "Unsupported document type for OCR." }));
+                setUploading(false);
+                return;
+            }
+
+            const url = `${ocrUrl}/${candidateId}`; // Use the determined OCR URL
+
             const response = await authenticatedRequest(
                 filePayload,
                 url,
                 METHOD.POST,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
+
             if (response.status === 200) {
                 const { documentId, extractedData, fileName, fileUrl } = response.data;
                 updateFormData('idVerification', {
-                    ...data,
-                    [type]: {
-                        ...data[type],
+                    ...formData.idVerification, // Keep other document types
+                    [type]: { // Update only the current document type
+                        ...formData.idVerification[type] || {}, // Keep existing fields for this type
                         fileId: documentId,
                         fileName: fileName || file.name,
-                        idNumber: extractedData?.extractedPiiData || '',
-                        dob: formatToISO(extractedData?.dateOfBirth) || '',
-                        name: extractedData?.name,
                         fileUrl: fileUrl,
+                        idNumber: extractedData?.extractedPiiData || extractedData?.passportNumber || '',
+                        surName: extractedData?.surName || '',
+                        givenName: extractedData?.givenName || '',
+                        dob: formatToISO(extractedData?.dateOfBirth) || '',
+                        dateOfIssue: extractedData?.dateOfIssue ? formatToISO(extractedData?.dateOfIssue) : '',
+                        dateOfExpiry: extractedData?.dateOfExpiry ? formatToISO(extractedData?.dateOfExpiry) : '',
+                        name: extractedData?.name || extractedData?.fullName || '',
+                        gender: extractedData?.gender || extractedData?.sex || '',
+                        placeOfIssue: extractedData?.placeOfIssue || '',
+                        nationality: extractedData?.nationality || '',
+                        birthPlace: extractedData?.placeOfBirth || '',
+                        mrzLine1: extractedData?.mrzLine1 || '',
+                        mrzLine2: extractedData?.mrzLine2 || '',
+                        address: extractedData?.address || '',
+                        fileNumber: extractedData?.fileNumber || '',
+                        permanentAddress: extractedData?.permanentAddress || '',
+                        spouseName: extractedData?.spouseName || '',
+                        fatherName: extractedData?.fatherName || '',
+                        motherName: extractedData?.motherName || '',
                         isExtracted: !!extractedData
                     }
                 });
-                clearError('id_required');
+                clearError('id_required'); // Clear general ID required error
             } else {
                 setUploadErrors(prev => ({ ...prev, [type]: "Failed to process document. Please try again." }));
             }
@@ -66,6 +114,7 @@ const IDVerification = () => {
             setUploadErrors(prev => ({ ...prev, [type]: errorMessage }));
             console.error("Upload/Replace failed", error);
         } finally {
+            setUploading(false);
             setUploadingType(null);
         }
     };
@@ -94,18 +143,20 @@ const IDVerification = () => {
         }
     };
 
-    const handleRemoveFile = async (type) => {
-        const existingFileId = data[type].fileId;
+    const handleRemoveFile = async (type, side = undefined) => {
+        console.log(type + " -- " + side);
+        const docType = type === 'passport' ? type + "_" + side : type;
+        const existingFileId = data[docType].fileId;
         setUploadErrors(prev => ({ ...prev, [type]: null }));
         if (existingFileId) {
-            setUploadingType(type); // Show loader
+            setUploadingType(docType); // Show loader
             const isDeleted = await deleteFileFromServer(existingFileId, type);
             setUploadingType(null); // Stop loader
             if (!isDeleted) return;
         }
         updateFormData('idVerification', {
             ...data,
-            [type]: {
+            [docType]: {
                 fileId: null,
                 fileName: '',
                 idNumber: '',
@@ -119,6 +170,20 @@ const IDVerification = () => {
         updateFormData('idVerification', {
             ...data,
             [type]: { ...data[type], [field]: value }
+        });
+    };
+
+    const handlePassportFieldChange = (side, field, value) => {
+        // side will be 'front' or 'back'
+        const key = `passport_${side}`;
+        const currentPassportData = formData.idVerification[key] || {};
+
+        updateFormData('idVerification', {
+            ...formData.idVerification,
+            [key]: {
+                ...currentPassportData,
+                [field]: value
+            }
         });
     };
 
@@ -152,60 +217,125 @@ const IDVerification = () => {
                 </div>
             )}
 
-            <div className="space-y-4">
-                {/* --- PAN CARD --- */}
-                <DocCard
-                    title="Upload PAN Card*"
-                    file={data.pan.fileName}
-                    fileUrl={data.pan.fileUrl}
-                    processing={uploadingType === 'pan'} // Fixed: Use uploadingType
-                    error={uploadErrors.pan}
-                    onFileSelect={(e) => handleFileChange('pan', e)}
-                    onRemove={() => handleRemoveFile('pan')}
-                />
-                {data.pan.isExtracted && (
-                    <ExtractedData
-                        idLabel="PAN Number"
-                        idValue={data.pan.idNumber}
-                        dobValue={data.pan.dob}
-                        name={data.pan.name}
-                        onIdChange={(v) => handleFieldChange('pan', 'idNumber', v)}
-                        onDobChange={(v) => handleFieldChange('pan', 'dob', v)}
-                        onNameChange={(v) => handleFieldChange('pan', 'name', v)}
+            <div className="mt-8">
+                {/* --- SECTION 1: PAN CARD --- */}
+                <DocumentSection
+                    title="PAN Card"
+                    icon={CreditCardIcon}
+                    description="Permanent Account Number for financial verification"
+                    isCompleted={data.pan.isExtracted}
+                >
+                    <DocCard
+                        title="Front Side (Identity)*"
+                        file={data.pan.fileName}
+                        fileUrl={data.pan.fileUrl}
+                        processing={uploadingType === 'pan'}
+                        error={uploadErrors.pan}
+                        onFileSelect={(e) => handleFileChange('pan', e)}
+                        onRemove={() => handleRemoveFile('pan')}
                     />
-                )}
+                    {data.pan.isExtracted && (
+                        <ExtractedData
+                            idLabel="PAN Number"
+                            idValue={data.pan.idNumber}
+                            dobValue={data.pan.dob}
+                            name={data.pan.name}
+                            onIdChange={(v) => handleFieldChange('pan', 'idNumber', v)}
+                            onDobChange={(v) => handleFieldChange('pan', 'dob', v)}
+                            onNameChange={(v) => handleFieldChange('pan', 'name', v)}
+                            documentType="PAN"
+                        />
+                    )}
+                </DocumentSection>
 
-                {/* --- AADHAR FRONT --- */}
-                <DocCard
-                    title="Upload Aadharcard Front Side*"
-                    file={data.aadhar.fileName}
-                    fileUrl={data.aadhar.fileUrl}
-                    error={uploadErrors.aadhar}
-                    processing={uploadingType === 'aadhar'} // Fixed: Use uploadingType
-                    onFileSelect={(e) => handleFileChange('aadhar', e)}
-                    onRemove={() => handleRemoveFile('aadhar')}
-                />
-
-                {data.aadhar.isExtracted && (
-                    <ExtractedData
-                        idLabel="Aadhar Number"
-                        idValue={data.aadhar.idNumber}
-                        dobValue={data.aadhar.dob}
-                        name={data.aadhar.name}
-                        onIdChange={(v) => handleFieldChange('aadhar', 'idNumber', v)}
-                        onDobChange={(v) => handleFieldChange('aadhar', 'dob', v)}
-                        onNameChange={(v) => handleFieldChange('aadhar', 'name', v)}
+                {/* --- SECTION 2: AADHAAR CARD --- */}
+                <DocumentSection
+                    title="Aadhaar Card"
+                    icon={FingerprintIcon}
+                    description="Unique identification for residency verification"
+                    isCompleted={data.aadhar.isExtracted}
+                >
+                    <DocCard
+                        title="Front Side (Identity)*"
+                        file={data.aadhar.fileName}
+                        fileUrl={data.aadhar.fileUrl}
+                        error={uploadErrors.aadhar}
+                        processing={uploadingType === 'aadhar'}
+                        onFileSelect={(e) => handleFileChange('aadhar', e)}
+                        onRemove={() => handleRemoveFile('aadhar')}
                     />
-                )}
+                    {data.aadhar.isExtracted && (
+                        <ExtractedData
+                            idLabel="Aadhar Number"
+                            idValue={data.aadhar.idNumber}
+                            dobValue={data.aadhar.dob}
+                            name={data.aadhar.name}
+                            onIdChange={(v) => handleFieldChange('aadhar', 'idNumber', v)}
+                            onDobChange={(v) => handleFieldChange('aadhar', 'dob', v)}
+                            onNameChange={(v) => handleFieldChange('aadhar', 'name', v)}
+                            documentType="AADHAAR"
+                        />
+                    )}
+                </DocumentSection>
 
-                {/* --- PASSPORT --- */}
-                <DocCard
-                    title="Upload Passport (Optional)"
-                    file={data.passport.fileName}
-                    processing={uploadingType === 'passport'} // Fixed: Use uploadingType
-                    onFileSelect={(e) => handleFileChange('passport', e)}
-                    onRemove={() => handleRemoveFile('passport')}
-                />
+                {/* --- SECTION 3: PASSPORT (Consolidated) --- */}
+                <DocumentSection
+                    title="International Passport"
+                    icon={GlobeIcon}
+                    description="Required for global identity and address verification"
+                    isCompleted={passportFrontData?.isExtracted && passportBackData?.isExtracted}
+                >
+                    <div className="grid grid-cols-1 gap-6">
+                        {/* Front Page Group */}
+                        <div className="space-y-4">
+                            <DocCard
+                                title="Front Page (Identity)*"
+                                file={passportFrontData?.fileName}
+                                fileUrl={passportFrontData?.fileUrl}
+                                processing={uploading && currentSide === 'FRONT'}
+                                error={uploadErrors["passport_FRONT"]}
+                                onFileSelect={(e) => handleFileChange('passport', e, 'FRONT')}
+                                onRemove={() => handleRemoveFile('passport', 'FRONT')}
+                            />
+                            {passportFrontData?.isExtracted && (
+                                <ExtractedData
+                                    idLabel={'Passport Number'}
+                                    section="FRONT"
+                                    documentType="PASSPORT"
+                                    passportData={passportFrontData}
+                                    onFieldChange={(f, v) => handlePassportFieldChange('FRONT', f, v)}
+                                    onIdChange={(v) => handlePassportFieldChange('FRONT', "idNumber", v)}
+                                    onDobChange={(v) => handlePassportFieldChange('FRONT', 'dob', v)}
+                                    onNameChange={(v) => handlePassportFieldChange('FRONT', 'name', v)}
+                                />
+                            )}
+                        </div>
+
+                        {/* Divider Line */}
+                        <div className="border-t border-slate-200/60 my-2"></div>
+
+                        {/* Back Page Group */}
+                        <div className="space-y-4">
+                            <DocCard
+                                title="Back Page (Address)*"
+                                file={passportBackData?.fileName}
+                                fileUrl={passportBackData?.fileUrl}
+                                error={uploadErrors["passport_BACK"]}
+                                processing={uploading && currentSide === 'BACK'}
+                                onFileSelect={(e) => handleFileChange('passport', e, 'BACK')}
+                                onRemove={() => handleRemoveFile('passport', 'BACK')}
+                            />
+                            {passportBackData?.isExtracted && (
+                                <ExtractedData
+                                    section="BACK"
+                                    documentType="PASSPORT"
+                                    passportData={passportBackData}
+                                    onFieldChange={(f, v) => handlePassportFieldChange('BACK', f, v)}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </DocumentSection>
             </div>
 
             {/* Consent Checkbox */}
@@ -226,8 +356,12 @@ const IDVerification = () => {
                     </div>
                     <label htmlFor="consent-check" className="cursor-pointer">
                         <p className={`text-xs lg:text-sm leading-relaxed font-medium ${errors.consent ? 'text-red-700' : 'text-slate-600'}`}>
-                            I confirm that I uploaded a valid government-issued photo ID.
+                            I hereby consent to the processing of my ID for identity verification and background screening purposes.
+                            I confirm this is a valid government-issued ID.
                         </p>
+                        <button onClick={() => setDataNoticeModalOpen(true)} className="text-[10px] text-[#5D4591] font-bold underline text-left">
+                            View Data Processing Notice
+                        </button>
                     </label>
                 </div>
                 {errors.consent && (
@@ -237,6 +371,10 @@ const IDVerification = () => {
                     </div>
                 )}
             </div>
+            <DataNoticeModal
+                isOpen={dataNoticeModalOpen}
+                onClose={() => setDataNoticeModalOpen(false)}
+            />
         </div>
     );
 };

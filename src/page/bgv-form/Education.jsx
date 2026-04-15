@@ -415,14 +415,19 @@ const Education = () => {
 
                     <div id={`edu_${edu.id}_degree`}>
                         <InputComponent
-                            label="Degree / Specialization"
+                            label={schoolGrade.includes(edu?.level) ? "Stream / Subjects" : "Degree / Specialization"}
                             isMandatory={true}
-                            placeholder={"e.g. B.E Computer Science"}
+                            placeholder={
+                                schoolGrade.includes(edu?.level)
+                                    ? "e.g. Science, Commerce or General"
+                                    : "e.g. B.E Computer Science"
+                            }
                             value={edu.degree}
                             error={errors[`edu_${edu.id}_degree`]}
                             onChange={(value) => handleChange(edu.id, 'degree', value)}
                         />
                     </div>
+
 
                     <div id={`edu_${edu.id}_university`}>
                         <InputComponent

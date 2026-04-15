@@ -3,42 +3,135 @@ import { useLocation, useNavigate } from 'react-router-dom'; // Import useLocati
 import {
     Home, BarChart2, Settings, UserPlus, UserCheck,
     ChevronLeft, ChevronRight, UserIcon, BuildingIcon,
-    ShieldAlert, FilePlus, ShieldCheckIcon
+    ShieldAlert, FilePlus, ShieldCheckIcon, ActivityIcon, CreditCardIcon, GlobeIcon, DatabaseIcon, HistoryIcon,
+    BarChart2Icon, UserPlusIcon, SettingsIcon
 } from 'lucide-react';
 import SidebarItem from "./SidebarItem.jsx";
+import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 
 const Sidebar = () => {
     const [isExpanded, setIsExpanded] = React.useState(true);
     const navigate = useNavigate();
+    const { loggedInRole } = useAuthApi();
+
     const location = useLocation(); // This gives us the current URL path
 
-    const menuSections = [
-        {
-            title: 'OPERATIONS',
-            items: [
-                { icon: <Home size={20} />, label: 'Dashboard', route: '/dashboard' },
-                { icon: <BuildingIcon size={20} />, label: 'Organizations', route: '/organisation-dashboard' },
-                { icon: <UserIcon size={20} />, label: 'Candidate List', route: '/candidate-list' },
-                { icon: <UserCheck size={20} />, label: 'Case Assignment', route: '/case-assignment' },
-            ]
-        },
-        {
-            title: 'MASTERS / DATA',
-            items: [
-                { icon: <ShieldAlert size={20} />, label: 'Blocklist Colleges', route: '/blocklist-college' },
-                { icon: <FilePlus size={20} />, label: 'Check Creation', route: '/check-creation' },
-            ]
-        },
-        {
-            title: 'SYSTEM',
-            items: [
-                { icon: <BarChart2 size={20} />, label: 'Analytics', route: '/report-analytics' },
-                { icon: <UserPlus size={20} />, label: 'User Management', route: '/user-management' },
-                { icon: <ShieldCheckIcon size={20} />, label: 'Role Management', route: '/role-management' },
-                { icon: <Settings size={20} />, label: 'Settings', route: '/settings' },
-            ]
+    let dashboardRoute = "/dashboard";
+    if(loggedInRole === "ROLE_TENANT_OPERATIONS") dashboardRoute = "/ops-dashboard";
+
+    const IS_ADMIN = loggedInRole === "ROLE_ADMIN";
+    const IS_TENANT_ADMIN = loggedInRole === "ROLE_TENANT_ADMIN";
+    const IS_OPS = loggedInRole === "ROLE_TENANT_OPERATIONS";
+
+    const getMenuSections = () => {
+        // --- 1. ADMIN / SALES MANAGER MENU ---
+        if (IS_ADMIN) {
+            return [
+                {
+                    title: 'COMMAND CENTER',
+                    items: [
+                        { icon: <ActivityIcon size={20} />, label: 'Admin Dashboard', route: '/dashboard' },
+                        { icon: <BuildingIcon size={20} />, label: 'Tenant Manager', route: '/tenant-manager' },
+                        { icon: <CreditCardIcon size={20} />, label: 'Revenue & Billing', route: '/revenue-analytics' },
+                    ]
+                },
+                {
+                    title: 'PLATFORM OPS',
+                    items: [
+                        { icon: <GlobeIcon size={20} />, label: 'Vendor API Monitor', route: '/vendor-api-monitor' },
+                        { icon: <DatabaseIcon size={20} />, label: 'Global Masters', route: '/global-masters' },
+                        { icon: <ShieldAlert size={20} />, label: 'System Audit Logs', route: '/system-audit' },
+                    ]
+                },
+                {
+                    title: 'SYSTEM',
+                    items: [
+                        { icon: <UserPlus size={20} />, label: 'User Management', route: '/user-management' },
+                        { icon: <ShieldCheckIcon size={20} />, label: 'Role Management', route: '/role-management' },
+                        { icon: <Settings size={20} />, label: 'Global Settings', route: '/settings' },
+                    ]
+                }
+            ];
         }
-    ];
+
+        if(IS_TENANT_ADMIN) {
+            return [
+                {
+                    title: 'OPERATIONS',
+                    items: [
+                        { icon: <Home size={20} />, label: 'Dashboard', route: dashboardRoute },
+                        { icon: <BuildingIcon size={20} />, label: 'Organizations', route: '/organisation-dashboard' },
+                        { icon: <UserIcon size={20} />, label: 'Candidate List', route: '/candidate-list' },
+                        { icon: <UserCheck size={20} />, label: 'Case Assignment', route: '/case-assignment' },
+                    ]
+                },
+                {
+                    title: 'MASTERS / DATA',
+                    items: [
+                        { icon: <ShieldAlert size={20} />, label: 'Blocklist Colleges', route: '/blocklist-college' },
+                        { icon: <FilePlus size={20} />, label: 'Check Creation', route: '/check-creation' },
+                    ]
+                },
+                /* --- NEW SECTION: FINANCE & ANALYTICS --- */
+                {
+                    title: 'FINANCE & REPORTS',
+                    items: [
+                        {
+                            icon: <HistoryIcon size={20} />,
+                            label: 'Wallet Activities', // This is the Ledger we built
+                            route: '/transaction-activities'
+                        },
+                        {
+                            icon: <BarChart2Icon size={20} />,
+                            label: 'Operational Analytics', // Moved from SYSTEM
+                            route: '/report-analytics'
+                        },
+                    ]
+                },
+                {
+                    title: 'SYSTEM',
+                    items: [
+                        { icon: <UserPlusIcon size={20} />, label: 'User Management', route: '/user-management' },
+                        { icon: <ShieldCheckIcon size={20} />, label: 'Role Management', route: '/role-management' },
+                        { icon: <SettingsIcon size={20} />, label: 'Settings', route: '/settings' },
+                    ]
+                }
+            ];
+        }
+
+        // --- 2. OPERATIONS TEAM MENU ---
+        if (IS_OPS) {
+            return [
+                {
+                    title: 'OPERATIONS',
+                    items: [
+                        { icon: <Home size={20} />, label: 'Ops Dashboard', route: '/ops-dashboard' },
+                        { icon: <Users size={20} />, label: 'Candidate List', route: '/candidate-list' },
+                        { icon: <UserCheck size={20} />, label: 'Case Assignment', route: '/case-assignment' },
+                    ]
+                },
+                {
+                    title: 'DATA MASTERS',
+                    items: [
+                        { icon: <ShieldAlert size={20} />, label: 'Blocklist Colleges', route: '/blocklist-college' },
+                        { icon: <FilePlus size={20} />, label: 'Check Creation', route: '/check-creation' },
+                    ]
+                },
+                {
+                    title: 'SYSTEM',
+                    items: [
+                        { icon: <BarChart2 size={20} />, label: 'Reports', route: '/report-analytics' },
+                        { icon: <Settings size={20} />, label: 'My Settings', route: '/settings' },
+                    ]
+                }
+            ];
+        }
+
+        // Fallback for other roles (e.g. Client Admin)
+        return [];
+    };
+
+    const menuSections = getMenuSections();
 
     const handleSidebarClick = (item) => {
         if(item.route) navigate(item.route);

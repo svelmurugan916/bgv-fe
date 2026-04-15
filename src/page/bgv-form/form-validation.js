@@ -95,7 +95,27 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
 
         const hasPan = !!idVerification?.pan?.file || !!idVerification?.pan?.fileName;
         const hasAadhar = !!idVerification?.aadhar?.file || !!idVerification?.aadhar?.fileName;
-        const hasPassport = !!idVerification?.passport?.file || !!idVerification?.passport?.fileName;
+        const hasPassport = !!idVerification?.passport_FRONT?.file || !!idVerification?.passport_FRONT?.fileName;
+
+        if(hasPassport) {
+            const front = idVerification?.["passport_FRONT"] || {};
+            const back = idVerification?.["passport_BACK"] || {};
+            validateField('idNumber', front.idNumber, 'Passport Number', 'passport_FRONT_idNumber', newErrors);
+            validateField('dob', front.dob, 'Date of Birth', 'passport_FRONT_dob', newErrors);
+            validateField('name', front.name, 'Name', 'passport_FRONT_name', newErrors);
+            validateField('birthPlace', front.birthPlace, 'Birth Place', 'passport_FRONT_birthPlace', newErrors);
+            validateField('dateOfIssue', front.dateOfIssue, 'Issue Date', 'passport_FRONT_dateOfIssue', newErrors);
+            validateField('dateOfExpiry', front.dateOfExpiry, 'Expiry Date', 'passport_FRONT_dateOfExpiry', newErrors);
+            validateField('gender', front.gender, 'Gender', 'passport_FRONT_gender', newErrors);
+            validateField('nationality', front.nationality, 'Nationality', 'passport_FRONT_nationality', newErrors);
+
+            // Back Fields
+            validateField('fileNumber', back.fileNumber, 'File Number', 'passport_BACK_fileNumber', newErrors);
+            validateField('fatherName', back.fatherName, 'Father Name', 'passport_BACK_fatherName', newErrors);
+            validateField('motherName', back.motherName, 'Mother Name', 'passport_BACK_motherName', newErrors);
+            validateField('permanentAddress', back.permanentAddress, 'Permanent Address', 'passport_BACK_permanentAddress', newErrors);
+        }
+
         if (!hasPan && !hasAadhar && !hasPassport) {
             newErrors.id_required = "At least one Government ID (PAN, Aadhar, or Passport) is required.";
         }
@@ -103,13 +123,20 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
         if (!idVerification?.consent) {
             newErrors.consent = "You must confirm the document validity to proceed.";
         }
+        console.log("idVerification", idVerification);
+        if (hasPan && !(idVerification.pan?.extractedData?.extractedPiiData || idVerification.pan?.idNumber)) newErrors.pan_idNumber = "Please enter the PAN Number.";
+        if (hasPan && !(idVerification.pan?.extractedData?.name || idVerification.pan?.name)) newErrors.pan_name = "Please enter the Name on Pan Extracted.";
+        if (hasAadhar && !(idVerification.aadhar?.extractedData?.extractedPiiData || idVerification.aadhar?.idNumber)) newErrors.aadhaar_idNumber = "Please enter the Aadhaar Number.";
+        if (hasAadhar && !(idVerification.aadhar?.extractedData?.name || idVerification.aadhar?.name)) newErrors.aadhaar_name = "Please enter the Name on Aadhaar Extracted.";
 
-        if (hasPan && !idVerification.pan.idNumber) newErrors.id_required = "Please enter the PAN Number.";
-        if (hasPan && !idVerification.pan.name) newErrors.name = "Please enter the Name on Pan Extracted.";
-        if (hasAadhar && !idVerification.aadhar.idNumber) newErrors.id_required = "Please enter the Aadhaar Number.";
-        if (hasAadhar && !idVerification.aadhar.name) newErrors.name = "Please enter the Name on Aadhaar Extracted.";
+        console.log("!idVerification.aadhar?.extractedData?.extractedPiiData", !(idVerification.aadhar?.extractedData?.extractedPiiData || idVerification.aadhar?.idNumber));
+        console.log("idVerification.aadhar?.extractedData?.extractedPiiData", idVerification.aadhar?.extractedData?.extractedPiiData);
 
         const identityConfig = checkConfigs?.IDENTITY;
+        console.log("identity config: ", identityConfig);
+        console.log("has pan: ", hasPan);
+        console.log("has aadhar: ", hasAadhar);
+        console.log("has passport: ", hasPassport);
         if(identityConfig) {
             const { mandatory = [] } = identityConfig;
 
@@ -117,8 +144,8 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
                 if(mandatory.includes("PAN") && !hasPan) {
                     newErrors.id_general = 'PAN is Mandatory.';
                 }
-                if(mandatory.includes("Aadhar") && !hasAadhar) {
-                    newErrors.id_general = 'Aadhar is Mandatory.';
+                if(mandatory.includes("AADHAR") && !hasAadhar) {
+                    newErrors.id_general = 'Aadhaar is Mandatory.';
                 }
                 if(mandatory.includes("Passport") && !hasPassport) {
                     newErrors.id_general = 'Passport is Mandatory.';
@@ -214,6 +241,18 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
     setErrors(newErrors);
     console.log(newErrors);
     return newErrors;
+};
+
+
+let firstErrorId = null;
+const validateField = (key, value, label, errorId, newErrors) => {
+    console.log("validateField passport field", key, value, label, errorId);
+    if (!value || value.trim() === "") {
+        newErrors[errorId] = `${label} is required`;
+        if (!firstErrorId) firstErrorId = errorId;
+        return false;
+    }
+    return true;
 };
 
 export const validateEmployment = (employmentData, checkConfigs) => {

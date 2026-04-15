@@ -8,7 +8,8 @@ const CustomDatePicker = ({
                               error,
                               isMandatory,
                               placeholder = "Select date",
-                              disableFuture = false // New Prop
+                              disableFuture = false, // New Prop
+                              icon: Icon,
                           }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [showMonthPicker, setShowMonthPicker] = useState(false);
@@ -112,9 +113,9 @@ const CustomDatePicker = ({
     };
 
     return (
-        <div className="relative w-full" ref={containerRef}>
-            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                {label} {isMandatory && <span className="text-rose-500">*</span>}
+        <div className={`relative w-full ${isOpen ? 'z-[110]' : 'z-10'}`}  ref={containerRef}>
+            <label className={`text-[11px] font-black uppercase tracking-widest flex items-center gap-2 transition-colors ${error ? 'text-red-500' : 'text-[#5D4591] mb-2'}`}>
+                {Icon && <Icon size={14} />} {label} {isMandatory && <span className="text-rose-500">*</span>}
             </label>
 
             <div
@@ -129,7 +130,7 @@ const CustomDatePicker = ({
             </div>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-[2rem] z-[100] w-[340px] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute top-full left-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-[2rem] z-[110] w-[340px] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                     <div className="p-6 relative min-h-[340px]">
 
                         <div className="flex items-center justify-between mb-6 px-2">

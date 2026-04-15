@@ -91,7 +91,8 @@ const CreateUserView = ({ availableRoles, onCancel, onCreateSuccess }) => {
             if (response.status === 200 || response.status === 201) {
                 onCreateSuccess(response.data);
             } else {
-                setApiError(response.data?.message || 'Failed to create user.');
+                console.error(response);
+                setApiError(response.data || 'Failed to create user.');
             }
         } catch (err) {
             setApiError('A server error occurred.');
@@ -185,7 +186,7 @@ const CreateUserView = ({ availableRoles, onCancel, onCreateSuccess }) => {
                                 ) : (
                                     <Plus size={12} strokeWidth={3} />
                                 )}
-                                {role.name?.replace('_', ' ')}
+                                {role.name?.replaceAll('_', ' ')}
                             </button>
                         ))}
                     </div>

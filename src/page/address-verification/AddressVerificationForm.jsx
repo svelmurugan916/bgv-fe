@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import GeoLocationStep from "./GeoLocationStep.jsx";
 import PhotoEvidenceStep from "./PhotoEvidenceStep.jsx";
-import AddressIdStep from "./AddressIdStep.jsx";
 import AVReviewStep from "./AVReviewStep.jsx";
 import {ChevronLeftIcon, ChevronRight, CheckCircle2, AlertCircle, RefreshCcw, Home, Loader2} from "lucide-react";
 import { useForm } from "../../provider/FormProvider.jsx";
@@ -52,6 +51,10 @@ const AddressVerificationForm = ({ candidateDataResponse }) => {
             data.append('lat', formData.addressVerification.location.lat);
             data.append('lon', formData.addressVerification.location.long);
             data.append('accuracy', formData.addressVerification.location.accuracy);
+
+            data.append('respondentName', formData.addressVerification.respondentName);
+            data.append('respondentRelationship', formData.addressVerification.relationship);
+            data.append('ownershipType', formData.addressVerification.houseOwnership);
 
             // 5. Add Multipart Files
             if (formData.addressVerification.photos.frontDoor) {
@@ -113,7 +116,7 @@ const AddressVerificationForm = ({ candidateDataResponse }) => {
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
-            <GlobalHeader candidateName={`${candidateDataResponse.firstName} ${candidateDataResponse.lastName}`} appId="AV-7721" />
+            <GlobalHeader candidateName={`${candidateDataResponse.firstName} ${candidateDataResponse.lastName}`} appId="AV-7721" showAutoSaving={false} />
             <div className="flex flex-col lg:flex-row flex-1">
                 <Stepper activeStep={activeStep} steps={stepsArray} hideOnSuccess={status === 'success'} />
                 <main className="flex-1 flex flex-col">

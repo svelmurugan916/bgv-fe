@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import {Plus, Trash2, Upload, Check, Loader2, FileText, AlertCircle, Briefcase, Sparkles} from 'lucide-react';
+import {
+    Plus,
+    Trash2,
+    Upload,
+    Check,
+    Loader2,
+    FileText,
+    AlertCircle,
+    Briefcase,
+    Sparkles,
+    AlertCircleIcon
+} from 'lucide-react';
 import FormPageHeader from "./FormPageHeader.jsx";
 import { useForm } from "../../provider/FormProvider.jsx";
 import InputComponent from "./InputComponent.jsx";
@@ -19,6 +30,16 @@ const Employment = () => {
 
     const [uploadProgress, setUploadProgress] = useState({});
     const [lastAddedId, setLastAddedId] = useState(null);
+
+    const FREE_EMAIL_DOMAINS = [
+        'gmail.com', 'yahoo.com', 'hotmail.com',
+        'outlook.com', 'rediffmail.com', 'ymail.com'
+    ];
+
+    const isPersonalEmail = (email) => {
+        const domain = email.split('@')[1]?.toLowerCase();
+        return FREE_EMAIL_DOMAINS.includes(domain);
+    };
 
     useEffect(() => {
         if (lastAddedId) {
@@ -314,7 +335,22 @@ const Employment = () => {
                                             <InputComponent label="HR Name" isMandatory={true} placeholder="e.g. John Doe" value={emp.hrName} error={errors[`emp_${emp.id}_hrName`]} onChange={(v) => handleChange(emp.id, 'hrName', v)} />
                                         </div>
                                         <div id={`emp_${emp.id}_hrEmail`}>
-                                            <InputComponent label="HR Email ID" isValid={EMAIL_REGEX.test(emp.hrEmail)} isMandatory={true} placeholder="hr@company.com" value={emp.hrEmail} error={errors[`emp_${emp.id}_hrEmail`]} onChange={(v) => handleChange(emp.id, 'hrEmail', v)} />
+                                            <InputComponent
+                                                label="HR Email ID"
+                                                isValid={EMAIL_REGEX.test(emp.hrEmail)}
+                                                isMandatory={true}
+                                                placeholder="hr@company.com"
+                                                value={emp.hrEmail}
+                                                error={errors[`emp_${emp.id}_hrEmail`]}
+                                                onChange={(v) => handleChange(emp.id, 'hrEmail', v)}
+                                            />
+                                            {/* Soft warning — doesn't block submission */}
+                                            {EMAIL_REGEX.test(emp.hrEmail) && isPersonalEmail(emp.hrEmail) && (
+                                                <p className="mt-1.5 text-[10px] font-bold text-amber-500 uppercase tracking-wide flex items-center gap-1">
+                                                    <AlertCircleIcon size={11} />
+                                                    Prefer a corporate email (e.g. hr@company.com) for faster verification.
+                                                </p>
+                                            )}
                                         </div>
                                         <div id={`emp_${emp.id}_hrContact`}>
                                             <InputComponent label="HR Contact No" isMandatory={true} placeholder="10 Digit Mobile" value={emp.hrContact} error={errors[`emp_${emp.id}_hrContact`]} tooltip="Verification contact." isValid={PHONE_NUMBER_REGEX.test(emp.hrContact)} onChange={(v) => handleChange(emp.id, 'hrContact', v)} />

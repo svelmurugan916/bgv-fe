@@ -6,7 +6,7 @@ import {
     Briefcase, GraduationCap // For popover icons
 } from "lucide-react";
 import React from "react";
-import StatCard from "../admin-dashboard/StatCard.jsx";
+import StatCard from "../tenant-admin-dashboard/StatCard.jsx";
 
 const SummaryStatCardData = ({dashboardData, isLoading, density}) => {
 

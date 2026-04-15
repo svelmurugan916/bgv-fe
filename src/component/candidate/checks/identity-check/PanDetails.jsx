@@ -1,66 +1,75 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    AlertCircle, User, Calendar,
-    CreditCard, CheckCircle2, RefreshCw,
-    Hash, Clock, ZoomIn, ZoomOut, RotateCw, Download, Search, Loader2
+    AlertCircle, User, Calendar, CreditCard, CheckCircle2, RefreshCw,
+    Hash, Clock, ZoomIn, ZoomOut, RotateCw, Search, Loader2,
+    ShieldCheck, Target, Fingerprint, Award, XCircle, Globe, LandmarkIcon
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { formatFullDateTime } from "../../../../utils/date-util.js";
+import { isDateMatch } from "../../../../utils/date-util.js";
 import DataComparisonField from "./DataComparisonField.jsx";
 
 const PanDetails = ({ data, onTriggerReVerify, fetchIdentityDetails }) => {
-    const { claimedDetails, overallStatus, uploadedDocuments } = data;
+    const {
+        claimedDetails,
+        overallStatus,
+        uploadedDocuments,
+        nameMatchScore,
+        profileNameMatchScore,
+        candidateProfileName,
+        candidateProfileDob,
+        overallPassPercentage,
+        panCategory
+    } = data;
+
     const uploadedDocUrl = uploadedDocuments?.[0]?.url;
+
+    // Logic Constants
+    const trustScore = Math.round(overallPassPercentage) || 0;
+    const isHighTrust = trustScore >= 90;
+
+    const profileScore = Math.round(profileNameMatchScore * 100) || 0;
+    const isProfileMatch = profileScore >= 80;
+
+    const ocrScore = Math.round(nameMatchScore * 100) || 0;
+    const isOcrMatch = ocrScore >= 90;
+
     const isVerified = overallStatus !== 'IN_PROGRESS' && overallStatus !== 'INITIATED';
 
     // --- RE-VERIFY STATE MANAGEMENT ---
-    const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
+    const [status, setStatus] = useState('idle');
     const [feedbackMessage, setFeedbackMessage] = useState('');
-
     const [countdown, setCountdown] = useState(5);
 
     useEffect(() => {
         let timer;
         if (status === 'success') {
-            setCountdown(5); // Reset to 5 when success hits
-
+            setCountdown(5);
             timer = setInterval(() => {
                 setCountdown((prev) => {
                     if (prev <= 1) {
                         clearInterval(timer);
-                        fetchIdentityDetails(); // Refresh the page
+                        fetchIdentityDetails();
                         return 0;
                     }
                     return prev - 1;
                 });
             }, 1000);
         }
-
-        // Cleanup the timer if the component unmounts
         return () => clearInterval(timer);
     }, [status]);
 
-    const checkMatch = (field) => {
-        if (!isVerified) return null;
-        return claimedDetails[field]?.doesMatch;
-    };
-
     const onReVerify = async () => {
         if (status === 'loading') return;
-
         setStatus('loading');
         setFeedbackMessage('');
-
         try {
-            // Calling the asynchronous prop
             const response = await onTriggerReVerify();
-            console.log('response - ', response);
-            if (response.status === 200) {
+            if (response.status === 200 || response?.data?.status === 200) {
                 setStatus('success');
-                setFeedbackMessage(response?.message || "PAN Re-verification initiated successfully, Will notify you once it's done.");
+                setFeedbackMessage(response?.message || "ITD Database Sync Successful.");
             } else {
                 setStatus('error');
-                setFeedbackMessage(response?.message || "Failed to trigger re-verification. Please try again.");
+                setFeedbackMessage(response?.message || "PAN Record Not Found or Sync Failed.");
             }
         } catch (error) {
             setStatus('error');
@@ -68,182 +77,211 @@ const PanDetails = ({ data, onTriggerReVerify, fetchIdentityDetails }) => {
         }
     };
 
-    useEffect(() => {
-        console.log('status changed: ', status);
-    }, [status]);
-
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-12 animate-in fade-in duration-700 pb-16">
 
-            {/* --- PHASE 1: IMAGE & PROFILE HEADER --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* --- SECTION 1: VISUAL EVIDENCE --- */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <PANImageViewer url={uploadedDocUrl} />
 
-                <div className="flex flex-col items-start gap-5 p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-                    <div className="flex items-start w-full z-10">
-                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-[#5D4591] shadow-sm border border-slate-100 shrink-0">
-                            <CreditCard size={32} />
-                        </div>
-                        <div className="ml-4 flex-1">
-                            <div className="flex items-center gap-2">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Document Type</p>
-                                <StatusBadge status={overallStatus} />
+                {/* Command Header Card */}
+                {/* --- SECTION 2: UNIFIED COMMAND HEADER --- */}
+                <div className={`relative p-8 rounded-[2.5rem] border shadow-2xl overflow-hidden text-white transition-all duration-500 ${isProfileMatch ? 'bg-slate-900 border-slate-800' : 'bg-rose-950 border-rose-900'}`}>
+                    <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
+                        <CreditCard size={400} className="absolute -right-20 -top-10 -rotate-12" />
+                    </div>
+
+                    <div className="relative z-10 h-full flex flex-col justify-between space-y-8">
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <StatusBadge status={overallStatus} />
+                                    {!isProfileMatch && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-rose-500/20 rounded-full border border-rose-500/30 backdrop-blur-md animate-pulse">
+                                            <AlertCircle size={12} className="text-rose-400" />
+                                            <span className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Identity Mismatch</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* PAN Category Badge (Derived or API) */}
+                                <div className="flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
+                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">
+                        {panCategory}
+                    </span>
+                                </div>
                             </div>
-                            <h4 className="text-xl font-black text-slate-800">Permanent Account Number</h4>
-                            <div className="flex items-center gap-2 text-slate-500 mt-1">
-                                <Hash size={14} />
-                                <span className="text-xs font-bold uppercase tracking-wider">
-                                    {claimedDetails?.idNumber?.candidateClaimedData || 'Not Provided'}
+
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] ml-1">Income Tax Dept Record</p>
+                                <h4 className="text-3xl font-black text-white tracking-tight leading-tight uppercase">
+                                    {claimedDetails?.fullName?.systemVerifiedData || "Pending Sync"}
+                                </h4>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-4">
+                                {/* PAN Number Block */}
+                                <div className="px-5 py-3 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-sm group/pan">
+                                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/pan:text-indigo-400 transition-colors">PAN Number</p>
+                                    <p className="text-xl font-mono font-bold text-white tracking-[0.2em]">
+                                        {claimedDetails?.idNumber?.candidateClaimedData || '—'}
+                                    </p>
+                                </div>
+
+                                {/* PAN Category Block */}
+                                <div className="px-5 py-3 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-sm group/cat">
+                                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover/cat:text-indigo-400 transition-colors">Taxpayer Category</p>
+                                    <div className="flex items-center gap-2">
+                                        <LandmarkIcon size={14} className="text-slate-500" />
+                                        <p className="text-sm font-bold text-white uppercase tracking-wider">
+                                            {panCategory}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Trust Gauge */}
+                        <div className="flex items-center gap-6 p-4 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-sm">
+                            <div className="relative flex items-center justify-center w-20 h-20">
+                                <svg className="w-full h-full transform -rotate-90">
+                                    <circle cx="40" cy="40" r="35" fill="transparent" stroke="currentColor" strokeWidth="5" className="text-slate-800" />
+                                    <circle cx="40" cy="40" r="35" fill="transparent" stroke="currentColor" strokeWidth="5" strokeDasharray={220} strokeDashoffset={220 - (220 * trustScore) / 100} strokeLinecap="round" className={`transition-all duration-1000 ${isHighTrust ? 'text-emerald-500' : 'text-rose-500'}`} />
+                                </svg>
+                                <span className="absolute text-sm font-black">{trustScore}%</span>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trust Score</p>
+                                <p className="text-[9px] text-slate-500 font-medium leading-relaxed">Algorithmic reconciliation across profile, OCR, and ITD database.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* --- SECTION 2: FORENSIC IDENTITY RECONCILIATION --- */}
+            <div className="space-y-12">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                        <div className="p-1.5 bg-indigo-50 rounded-lg"><Target size={14} className="text-[#5D4591]"/></div>
+                        Identity Reconciliation Logic
+                    </h3>
+                    <span className="text-[10px] font-bold text-slate-400 italic">Forensic Analysis Mode</span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-10">
+                    {/* Step 1: Name Ownership */}
+                    <div className={`relative pl-8 border-l-4 transition-colors duration-500 ${isProfileMatch ? 'border-emerald-500' : 'border-rose-500'}`}>
+                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isProfileMatch ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <div className="bg-white/50 p-6 rounded-[2rem] border border-slate-100 hover:shadow-md transition-all duration-300">
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h4 className="text-sm font-bold text-slate-800 uppercase">01. Name Ownership Check</h4>
+                                    <p className="text-[10px] text-slate-400 font-medium">Profile vs. ITD Database Reconciliation</p>
+                                </div>
+                                <span className={`px-3 py-1 rounded-xl text-[10px] font-black ${isProfileMatch ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                    {profileScore}% {isProfileMatch ? 'MATCHED' : 'MISMATCHED'}
                                 </span>
                             </div>
+                            <DataComparisonField label="Registered Profile Name" candidateClaim={candidateProfileName || "NOT_PROVIDED"} systemVerifiedData={claimedDetails?.fullName?.systemVerifiedData} isMatch={isProfileMatch} icon={<User size={10}/>} />
                         </div>
                     </div>
 
-                    <div className="w-full pt-4 border-t border-slate-200 mt-auto z-10">
-                        <div className="flex justify-between items-end">
-                            <div>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Verification Method</p>
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                                    <Search size={12} className="text-indigo-500" />
-                                    <span>Direct NSDL/ITD Database Sync</span>
+                    {/* Step 2: Document Integrity */}
+                    <div className={`relative pl-8 border-l-4 transition-colors duration-500 ${isOcrMatch ? 'border-emerald-500' : 'border-rose-500'}`}>
+                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isOcrMatch ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <div className="bg-white/50 p-6 rounded-[2rem] border border-slate-100 hover:shadow-md transition-all duration-300">
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h4 className="text-sm font-bold text-slate-800 uppercase">02. Document Integrity Check</h4>
+                                    <p className="text-[10px] text-slate-400 font-medium">OCR Extraction vs. ITD Record Integrity</p>
                                 </div>
+                                <span className={`px-3 py-1 rounded-xl text-[10px] font-black ${isOcrMatch ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                    {ocrScore}% AUTHENTIC
+                                </span>
                             </div>
-                            {!isVerified && (
-                                <div className="flex items-center gap-2 text-amber-600 animate-pulse">
-                                    <Loader2 size={14} className="animate-spin" />
-                                    <span className="text-[10px] font-black uppercase">System Checking...</span>
-                                </div>
-                            )}
+                            <DataComparisonField label="Document OCR Name" candidateClaim={claimedDetails?.fullName?.candidateClaimedData} systemVerifiedData={claimedDetails?.fullName?.systemVerifiedData} isMatch={isOcrMatch} icon={<Fingerprint size={10}/>} />
                         </div>
                     </div>
-                    <CreditCard className="absolute -right-6 -bottom-6 text-slate-200/30 -rotate-12" size={140} />
                 </div>
             </div>
 
-            {/* --- PHASE 2: DATA COMPARISON GRID --- */}
-            <div className="space-y-4">
-                <DataComparisonField
-                    label="Full Name"
-                    candidateClaim={claimedDetails?.fullName?.candidateClaimedData || 'Not Provided'}
-                    systemVerifiedData={isVerified ? claimedDetails?.fullName?.systemVerifiedData : 'Pending Validation...'}
-                    isMatch={checkMatch('fullName')}
-                    icon={<User size={10}/>}
-                    comparisonScore={data?.nameMatchScore || 0}
-                />
-                <DataComparisonField
-                    label="Date of Birth"
-                    candidateClaim={claimedDetails?.dateOfBirth?.candidateClaimedData ? format(new Date(claimedDetails.dateOfBirth.candidateClaimedData), 'dd-MM-yyyy') : 'Not Provided'}
-                    systemVerifiedData={isVerified ? (claimedDetails?.dateOfBirth?.systemVerifiedData ? format(new Date(claimedDetails.dateOfBirth.systemVerifiedData), 'dd-MM-yyyy') : 'N/A') : 'Checking Database...'}
-                    isMatch={checkMatch('dateOfBirth')}
-                    icon={<Calendar size={10}/>}
-                />
-                <DataComparisonField
-                    label="PAN Number"
-                    candidateClaim={claimedDetails?.idNumber?.candidateClaimedData}
-                    systemVerifiedData={isVerified ? (claimedDetails?.idNumber?.systemVerifiedData || 'VALID') : 'Verifying Number...'}
-                    isMatch={checkMatch('idNumber')}
-                    icon={<Hash size={10}/>}
-                />
+            {/* --- SECTION 3: CHRONOLOGICAL RECONCILIATION --- */}
+            <div className="space-y-8 mt-12">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                        <div className="p-1.5 bg-indigo-50 rounded-lg"><Calendar size={14} className="text-[#5D4591]"/></div>
+                        Chronological Reconciliation
+                    </h3>
+                </div>
+                <div className="grid grid-cols-1 gap-8">
+                    {/* DOB Ownership */}
+                    <div className={`relative pl-8 border-l-4 ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'border-emerald-500' : 'border-rose-500'}`}>
+                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                            <div className="flex items-center justify-between mb-6">
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-tight">DOB Ownership Check</h4>
+                                <span className={`text-[10px] font-black px-3 py-1 rounded-xl ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                    {isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'VERIFIED' : 'DOB MISMATCH'}
+                                </span>
+                            </div>
+                            <DataComparisonField
+                                label="Registered Profile DOB"
+                                candidateClaim={candidateProfileDob ? format(new Date(candidateProfileDob), 'dd-MM-yyyy') : '—'}
+                                systemVerifiedData={claimedDetails?.dateOfBirth?.systemVerifiedData ? format(new Date(claimedDetails.dateOfBirth.systemVerifiedData), 'dd-MM-yyyy') : '—'}
+                                isMatch={isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData)}
+                                icon={<Calendar size={10}/>}
+                            />
+                        </div>
+                    </div>
+                    <div className={`relative pl-8 border-l-4 ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'border-emerald-500' : 'border-rose-500'}`}>
+                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                            <div className="flex items-center justify-between mb-6">
+                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-tight">DOB Document Integrity</h4>
+                                <span className={`text-[10px] font-black px-3 py-1 rounded-xl ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                    {isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'AUTHENTIC' : 'TAMPERED'}
+                                </span>
+                            </div>
+                            <DataComparisonField label="Extracted Document DOB" candidateClaim={claimedDetails?.dateOfBirth?.candidateClaimedData} systemVerifiedData={claimedDetails?.dateOfBirth?.systemVerifiedData} isMatch={isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData)} icon={<Fingerprint size={10}/>} />
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            {/* --- SECTION 4: STATUS FEEDBACK --- */}
             {status !== 'idle' && (
-                <div className={`flex items-center gap-3 p-4 rounded-2xl border animate-in zoom-in-95 duration-300 ${
+                <div className={`flex items-center gap-3 p-5 rounded-[2rem] border shadow-lg animate-in slide-in-from-bottom-4 duration-500 ${
                     status === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
                         status === 'loading' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' :
                             'bg-rose-50 border-rose-100 text-rose-700'
                 }`}>
-                    {/* Dynamic Icon */}
-                    <div className="shrink-0">
-                        {status === 'success' && <CheckCircle2 size={18} />}
-                        {status === 'loading' && <Loader2 size={18} className="animate-spin" />}
-                        {status === 'error' && <AlertCircle size={18} />}
-                    </div>
-
+                    <div className="shrink-0">{status === 'success' ? <CheckCircle2 size={20} /> : status === 'loading' ? <Loader2 size={20} className="animate-spin" /> : <AlertCircle size={20} />}</div>
                     <div className="flex-1">
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">
-                            {status === 'success' ? 'Sync Successful' :
-                                status === 'loading' ? 'Syncing Database' :
-                                    'Verification Error'}
-                        </p>
-                        <p className="text-xs font-bold leading-tight">
-                            {status === 'loading'
-                                ? "Establishing connection to Income Tax Department records..."
-                                : status === 'success'
-                                    ? `${feedbackMessage} Page will refresh to show updated data.`
-                                    : feedbackMessage}
-                        </p>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">{status === 'success' ? 'ITD Sync Successful' : status === 'loading' ? 'Syncing Database' : 'Verification Error'}</p>
+                        <p className="text-xs font-bold leading-tight">{status === 'loading' ? "Establishing connection to Income Tax Department records..." : status === 'success' ? `${feedbackMessage} UI will refresh in ${countdown}s.` : feedbackMessage}</p>
                     </div>
-
-                    {/* Status Indicators & Countdown */}
-                    {status === 'success' && (
-                        <div className="flex items-center gap-2">
-                            <div className="flex flex-col items-end">
-                                <span className="text-[8px] font-black uppercase tracking-tighter opacity-50">Refreshing In</span>
-                                <span className="text-xs font-black leading-none">{countdown}s</span>
-                            </div>
-                            <div className="w-8 h-8 rounded-full border-2 border-emerald-200 flex items-center justify-center relative">
-                                {/* Visual Progress Circle (Optional CSS Animation) */}
-                                <div className="absolute inset-0 border-2 border-emerald-500 rounded-full border-t-transparent animate-spin [animation-duration:5s] [animation-iteration-count:1]"></div>
-                                <RefreshCw size={12} className="text-emerald-500" />
-                            </div>
-                        </div>
-                    )}
-
-                    {status === 'loading' && (
-                        <div className="flex gap-1 items-center px-2">
-                            <span className="w-1 h-1 rounded-full bg-indigo-400 animate-bounce [animation-delay:-0.3s]"></span>
-                            <span className="w-1 h-1 rounded-full bg-indigo-400 animate-bounce [animation-delay:-0.15s]"></span>
-                            <span className="w-1 h-1 rounded-full bg-indigo-400 animate-bounce"></span>
-                        </div>
-                    )}
+                    {status === 'success' && <div className="w-10 h-10 rounded-full border-2 border-emerald-200 flex items-center justify-center relative"><div className="absolute inset-0 border-2 border-emerald-500 rounded-full border-t-transparent animate-spin [animation-duration:5s]"></div><RefreshCw size={14} className="text-emerald-500" /></div>}
                 </div>
             )}
 
-            {/* --- PHASE 3: AUDIT & ACTIONS --- */}
-            <div className="p-5 rounded-3xl border bg-slate-50 border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex gap-3 items-center">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm">
-                        <Clock size={18} />
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Proof Uploaded At</p>
-                        <p className="text-xs font-bold text-slate-700">
-                            {uploadedDocuments?.[0]?.proofUploadedAt ? formatFullDateTime(uploadedDocuments[0].proofUploadedAt) : 'N/A'}
-                        </p>
-                    </div>
+            {/* --- ACTION FOOTER --- */}
+            <div className="p-6 rounded-[2.5rem] border bg-white border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
+                <div className="flex gap-3 items-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                    <ShieldCheck size={20} className="text-emerald-500" /> ITD Secure Gateway Active
                 </div>
-
-                <div className="flex gap-2">
-                    {uploadedDocUrl && (
-                        <a href={uploadedDocUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all">
-                            <Download size={14} /> Download Proof
-                        </a>
-                    )}
-                    {
-                        overallStatus !== "CLEARED" && (
-                            <button
-                                onClick={onReVerify}
-                                disabled={status === 'loading'}
-                                className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-bold transition-all shadow-lg 
-                            ${status === 'loading'
-                                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                                    : 'bg-[#5D4591] text-white hover:bg-[#4a3675] shadow-purple-100 active:scale-95'
-                                }`}
-                            >
-                                {status === 'loading' ? (
-                                    <>
-                                        <Loader2 size={14} className="animate-spin" />
-                                        <span className="uppercase tracking-wider">Processing...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <RefreshCw size={14} />
-                                        <span className="uppercase tracking-wider">Trigger Re-verify</span>
-                                    </>
-                                )}
-                            </button>
-                        )
-                    }
+                <div className="flex gap-3">
+                    <button
+                        onClick={onReVerify}
+                        disabled={status === 'loading' || overallStatus === 'CLEARED'}
+                        className={`px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50 
+                        ${status === 'loading' ? 'bg-slate-200 text-slate-500' : 'bg-[#5D4591] text-white hover:bg-[#4a3675]'}`}
+                    >
+                        {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                        {status === 'loading' ? 'Processing Sync...' : 'Trigger ITD Sync'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -260,22 +298,17 @@ const PANImageViewer = ({ url }) => {
         <div className="relative bg-slate-800 rounded-[2.5rem] overflow-hidden shadow-xl flex items-center justify-center p-4 min-h-[300px] lg:min-h-[400px]">
             {url ? (
                 <>
-                    <img
-                        src={url}
-                        alt="PAN Document"
-                        className="object-contain max-h-full max-w-full transition-all duration-200"
-                        style={{ transform: `scale(${scale}) rotate(${rotation}deg)` }}
-                    />
+                    <img src={url} alt="PAN Document" className="object-contain max-h-full max-w-full transition-all duration-200" style={{ transform: `scale(${scale}) rotate(${rotation}deg)` }} />
                     <div className="absolute top-6 right-6 flex flex-col gap-2">
-                        <button onClick={() => setScale(s => Math.min(s + 0.2, 3))} className="p-2.5 bg-white/90 backdrop-blur rounded-full shadow-lg text-slate-700 hover:bg-white"><ZoomIn size={18} /></button>
-                        <button onClick={() => setScale(s => Math.max(s - 0.2, 0.5))} className="p-2.5 bg-white/90 backdrop-blur rounded-full shadow-lg text-slate-700 hover:bg-white"><ZoomOut size={18} /></button>
-                        <button onClick={() => setRotation(r => (r + 90) % 360)} className="p-2.5 bg-white/90 backdrop-blur rounded-full shadow-lg text-slate-700 hover:bg-white"><RotateCw size={18} /></button>
+                        <button onClick={() => setScale(s => Math.min(s + 0.2, 3))} className="p-2.5 bg-white/90 backdrop-blur rounded-full shadow-lg text-slate-700 hover:bg-white transition-colors"><ZoomIn size={18} /></button>
+                        <button onClick={() => setScale(s => Math.max(s - 0.2, 0.5))} className="p-2.5 bg-white/90 backdrop-blur rounded-full shadow-lg text-slate-700 hover:bg-white transition-colors"><ZoomOut size={18} /></button>
+                        <button onClick={() => setRotation(r => (r + 90) % 360)} className="p-2.5 bg-white/90 backdrop-blur rounded-full shadow-lg text-slate-700 hover:bg-white transition-colors"><RotateCw size={18} /></button>
                     </div>
                 </>
             ) : (
-                <div className="text-white/50 text-center">
+                <div className="text-white/30 text-center">
                     <AlertCircle size={48} className="mx-auto mb-2 opacity-20" />
-                    <p className="text-sm font-bold uppercase tracking-widest">No Document Preview</p>
+                    <p className="text-sm font-bold uppercase tracking-widest">No Document Preview Available</p>
                 </div>
             )}
         </div>
@@ -284,9 +317,9 @@ const PANImageViewer = ({ url }) => {
 
 const StatusBadge = ({ status }) => {
     const s = status?.toUpperCase();
-    if (s === 'IN_PROGRESS' || s === 'INITIATED') return <div className="bg-amber-50 text-amber-600 border border-amber-100 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter flex items-center gap-1"><Clock size={10} /> In Progress</div>;
-    if (s === 'COMPLETED' || s === 'VERIFIED') return <div className="bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter flex items-center gap-1"><CheckCircle2 size={10} /> Verified</div>;
-    return <div className="bg-slate-50 text-slate-500 border border-slate-100 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter">{status}</div>;
+    if (s === 'IN_PROGRESS' || s === 'INITIATED') return <div className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-3 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1"><Clock size={10} /> In Progress</div>;
+    if (s === 'COMPLETED' || s === 'VERIFIED' || s === 'CLEARED') return <div className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-3 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1"><CheckCircle2 size={10} /> Verified</div>;
+    return <div className="bg-slate-700 text-slate-400 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter">{status}</div>;
 };
 
 export default PanDetails;

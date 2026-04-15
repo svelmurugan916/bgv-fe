@@ -17,12 +17,13 @@ export const validateAVStep = (step, formData, setErrors) => {
 
     // Step 2: Photo Proofs Validation
     if (step === AV_PHOTOS_PAGE_IDX) {
-        if (!addressVerification.photos.frontDoor) {
-            newErrors.av_frontDoor = "Front door picture is mandatory.";
-        }
-        if (!addressVerification.photos.landmark) {
-            newErrors.av_landmark = "Landmark picture is mandatory.";
-        }
+        if (!addressVerification.photos.frontDoor) newErrors.av_frontDoor = "Front door picture is mandatory.";
+        if (!addressVerification.photos.landmark) newErrors.av_landmark = "Landmark picture is mandatory.";
+
+        // New Validations
+        if (!addressVerification.respondentName?.trim()) newErrors.av_respondentName = "Respondent name is required.";
+        if (!addressVerification.houseOwnership) newErrors.av_houseOwnership = "Ownership status is required.";
+        if (!addressVerification.relationship) newErrors.av_relationship = "Relationship status is required.";
     }
 
     // Step 3: Identity Document Validation

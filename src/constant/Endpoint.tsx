@@ -14,8 +14,20 @@ export const RESET_PASSWORD = '/auth/reset-password'
 export const MANUAL_RESET_PASSWORD = '/auth/manual-reset-password'
 export const VALIDATE_RESET_TOKEN = '/auth/validate-reset-token'
 
+export const ADMIN_DASHBOARD = '/admin/dashboard'
+export const TENANT_MANAGER_DASHBOARD = '/admin/tenants'
+export const GET_TENANT_BALANCE = "/wallet/get-balance"
+export const GET_TRANSACTION_ACTIVITIES = "/wallet/transactions"
+export const GET_TRANSACTION_RESERVATION_ITEMS = "/wallet/get-reservation-items"
+export const RELEASE_TRANSACTION_RESERVATION = "/wallet/reservation-items/release"
+export const GET_TASK_RESERVATION = "/wallet/reservation-items/task"
+export const REVERT_TASK_RESERVATION = "/wallet/reservation-item/revert"
+
+export const GET_TENANT_METADATA = '/admin/tenants/get-meta-data-config'
+
 export const GET_ALL_ROLES = '/role/get-all-roles'
 export const GET_ALL_ENABLED_ROLES = '/role/get-all-enabled-roles'
+export const GET_ALL_ENABLED_TENANTS = '/admin/tenants/get-all-minimal-data'
 export const CREATE_NEW_ROLE = '/role/create-role'
 export const UPDATE_ROLE_ENDPOINT = '/role/update-role'
 
@@ -43,10 +55,19 @@ export const SEND_ADDRESS_VERIFICATION = "/address-check/{candidateId}/send-addr
 
 export const SAVE_BGV_STEP = "/candidate-register/save-form"
 export const OCR_PAN_UPLOAD = "/ocr/extract-pan-number"
+export const PASSPORT_FRONT_OCR = "/passport/extract/front"
+export const PASSPORT_BACK_OCR = "/passport/extract/back"
 export const OCR_AADHAAR_UPLOAD = "/ocr/extract-aadhaar-number"
 export const REMOVE_DOCUMENT = "/files/candidate/document"
 export const UPLOAD_PROFILE_PICTURE = "/candidate/{candidateId}/profile-picture"
 export const REMOVE_PROFILE_PICTURE = "/candidate/{candidateId}/remove-profile-picture"
+export const DELETE_CANDIDATE_PII = "/candidate/delete-candidate"
+
+export const GET_IDENTITY_DETAILS = "/identity-check/get-identity"
+export const SAVE_IDENTITY_DETAILS = "/identity-check/update-identity"
+
+export const UPLOAD_CANDIDATE_DOCUMENT = '/tasks/candidate-doc/{taskId}/upload?type={type}'
+export const REMOVE_CANDIDATE_DOCUMENT = "/tasks/candidate-doc/{taskId}/delete/{fileId}?type={type}"
 
 export const EXTRACT_EDUCATION_DOCUMENT = "/ocr/extract-marksheet-data"
 export const UPLOAD_SUPPORTING_DOCUMENT = "/candidate/upload-supporting-document"
@@ -56,6 +77,7 @@ export const REMOVE_INTERNAL_PROOF = "/files/task/{fileId}/delete-file"
 
 export const SEND_DIGI_LOCKER_LINK_FOR_AADHAAR = "/aadhaar/send-digilocker-verification-url"
 export const PAN_VERIFY = "/pan/verify"
+export const PASSPORT_VERIFY = "/passport/verify"
 
 export const INVITED_CANDIDATE_LIST = "/candidate/invited-candidate";
 export const INVITED_ALL_CANDIDATE_LIST = "/candidate/all-invited-candidate";
@@ -75,6 +97,7 @@ export const UPDATE_EDUCATION_CHECK = "/education-check/update-check"
 
 export const GET_TASK_DETAILS = "/tasks/get-details"
 export const VERIFY_DIGILOCKER_STATUS = "/aadhaar/download";
+export const VERIFY_AND_DOWNLOAD_DIGILOCKER_STATUS = "/aadhaar/verify-and-download";
 
 export const UPDATE_EMPLOYMENT_CHECK = "/education-check/update-check"
 export const UPDATE_REFERENCE_CHECK = '';

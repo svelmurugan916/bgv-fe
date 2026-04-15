@@ -12,6 +12,7 @@ import SimpleLoader from "../../../common/SimpleLoader.jsx";
 import EditAddressModal from "./EditAddressModal.jsx";
 import AddressVerificationEvidence from "./AddressVerificationEvidence.jsx";
 import BaseCheckLayout from "../base-check-layout/BaseCheckLayout.jsx";
+import TaskReservationDrawer from "../../../transaction/TaskReservationDrawer.jsx";
 
 const CheckAddress = ({ addressId }) => {
     const [loading, setLoading] = useState(true);
@@ -19,6 +20,7 @@ const CheckAddress = ({ addressId }) => {
     const componentInitRef = useRef(false);
     const [addressData, setAddressData] = useState({});
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const fetchAddressDetails = async () => {
         setLoading(true);
@@ -58,6 +60,7 @@ const CheckAddress = ({ addressId }) => {
 
     const hasCoordinates = addressData?.addressCandidateSubmittedResponse?.lat && addressData?.addressCandidateSubmittedResponse?.lng;
     const isLinkSent = addressData.isLinkSent;
+    const isFundReleasedOrCancelled = addressData?.isFundReleasedOrCancelled;
     const isLinkExpired = addressData.isLinkExpired || (addressData.linkExpiresAt && new Date(addressData.linkExpiresAt) < new Date());
 
 
@@ -69,6 +72,7 @@ const CheckAddress = ({ addressId }) => {
 
     const getBadgeConfig = () => {
         if (hasCoordinates) return { label: 'Verification Received', colorClass: 'bg-emerald-50 text-emerald-600', icon: <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> };
+        if (isFundReleasedOrCancelled) return { label: 'Funds Released', colorClass: 'bg-rose-50 text-rose-600 border border-rose-100', icon: <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> };
         if (isLinkExpired) return { label: 'Link Expired', colorClass: 'bg-rose-50 text-rose-600', icon: <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> };
         if (isLinkSent) return { label: 'Awaiting Submission', colorClass: 'bg-amber-50 text-amber-600', icon: <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> };
         return { label: 'Invitation Pending', colorClass: 'bg-slate-50 text-slate-500', icon: <div className="w-1.5 h-1.5 rounded-full bg-slate-400" /> };
@@ -82,6 +86,7 @@ const CheckAddress = ({ addressId }) => {
             onStatusUpdate={fetchAddressDetails}
             setIsEditModalOpen={setIsEditModalOpen}
             badgeConfig={getBadgeConfig()}
+            isFundReleasedOrCancelled={isFundReleasedOrCancelled}
         >
             <div className="p-8 bg-slate-50/40 border-b border-slate-100">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-y-8 gap-x-6">
@@ -137,6 +142,7 @@ const CheckAddress = ({ addressId }) => {
                     setLoading={setLoading}
                     fetchAddressDetails={fetchAddressDetails}
                     addressId={addressId}
+                    isDrawerOpen={() => setIsDrawerOpen(true)}
                 />
             </div>
             <EditAddressModal
@@ -146,6 +152,12 @@ const CheckAddress = ({ addressId }) => {
                 addressId={addressId}
                 onUpdateSuccess={(payload) => updateAddress(payload)}
             />
+            <TaskReservationDrawer taskId={addressId}
+                                   isOpen={isDrawerOpen}
+                                   onClose={() => setIsDrawerOpen(false)}
+                                   onRevertSuccess={fetchAddressDetails}
+            />
+
         </BaseCheckLayout>
     );
 };

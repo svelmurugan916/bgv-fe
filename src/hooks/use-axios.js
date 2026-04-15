@@ -19,13 +19,15 @@ export class RequestConfig {
     setMethod(method) { this.method = method; return this; }
     setData(data) { this.data = data; return this; }
     setParams(params) { this.params = params; return this; }
-    setHeaders(headers) { this.headers = { ...this.headers, ...headers }; return this; }
+    setHeaders(headers) { console.log("headers sss- ", headers); this.headers = { ...this.headers, ...headers }; return this; }
     setResponseType(type) { this.responseType = type; return this; }
     setOnUploadProgress(callback) { this.onUploadProgress = callback; return this; }
 }
 
 export const useAxios = () => {
     const apiCallHit = (requestConfig) => {
+        console.log('headers -- ', requestConfig?.headers);
+        console.log("url -- ", requestConfig?.url);
         const metaData = {
             // Recommendation: Use an environment variable or constant for the Base URL
             url: '/api/v1' + requestConfig.url,

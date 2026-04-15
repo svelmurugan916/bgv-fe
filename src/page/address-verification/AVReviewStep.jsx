@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     MapPin, Camera, ShieldCheck,
-    Navigation, FileText, AlertCircle, Check
+    Navigation, FileText, AlertCircle, Check, Home
 } from 'lucide-react';
 import { useForm } from "../../provider/FormProvider.jsx";
 
@@ -63,6 +63,21 @@ const AVReviewStep = () => {
                     </div>
                 </AVSection>
 
+                {/* Inside the grid in AVReviewStep.jsx */}
+                <AVSection title="Residence Details" icon={<Home size={16}/>} status="Captured">
+                    <div className="space-y-2">
+                        <div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase">Respondent</p>
+                            <p className="text-xs font-bold text-slate-700">{av.respondentName}</p>
+                            <p className="text-[10px] text-[#5D4591] font-bold uppercase">{av.relationship}</p>
+                        </div>
+                        <div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase">Ownership</p>
+                            <p className="text-xs font-bold text-slate-700">{av.houseOwnership}</p>
+                        </div>
+                    </div>
+                </AVSection>
+
                 {/* 4. Identity Document */}
                 {/*<AVSection title="Identity Proof" icon={<FileText size={16}/>} status="Encrypted">*/}
                 {/*    <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">*/}
@@ -97,7 +112,10 @@ const AVReviewStep = () => {
                     </div>
                     <p className={`text-[13px] leading-relaxed font-medium transition-colors
                         ${errors.av_consent ? 'text-red-700' : 'text-slate-600 group-hover:text-slate-900'}`}>
-                        I confirm that I am physically present at the reported address. I understand that providing false location data or spoofed images will lead to immediate disqualification.
+                        I hereby certify that I am physically present at the residence address provided for this verification.
+                        I acknowledge that all location data and photographs captured are genuine, and I understand that
+                        providing false information or using location-spoofing tools will result in immediate
+                        disqualification from the background verification process.
                     </p>
                 </label>
 

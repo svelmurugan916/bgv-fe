@@ -23,7 +23,10 @@ const ForgotPasswordView = ({ onBack }) => {
         setError('');
 
         try {
-            await unAuthenticatedRequest(undefined, `${EMAIL_RESET_URL}/${email}`, METHOD.POST);
+            const payload = {
+                email: email,
+            }
+            await unAuthenticatedRequest(payload, `${EMAIL_RESET_URL}`, METHOD.POST);
         } catch (err) {
             console.error("Forgot password request handled.");
         } finally {

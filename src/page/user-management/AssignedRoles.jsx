@@ -143,7 +143,7 @@ const AssignedRoles = ({ userId, roleSet, onUpdateSuccess, availableRoles }) => 
 
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-bold text-slate-800">{role?.name?.replace("_", " ")}</h4>
+                                <h4 className="font-bold text-slate-800">{role?.name?.replaceAll("_", " ")}</h4>
                                 {!isEditing && <CheckCircle2 size={14} className="text-emerald-500" />}
                             </div>
                             <p className="text-xs text-slate-500 leading-relaxed">
@@ -181,7 +181,7 @@ const AssignedRoles = ({ userId, roleSet, onUpdateSuccess, availableRoles }) => 
                                     onClick={() => handleAddRole(role)}
                                     className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:border-[#5D4591] hover:text-[#5D4591] transition-all"
                                 >
-                                    <Plus size={14} /> {role.name?.replace("_", " ")}
+                                    <Plus size={14} /> {role.name?.replaceAll("_", " ")}
                                 </button>
                             ))}
                             {availableRoles?.filter(ar => !draftRoles.some(dr => dr.id === ar.id)).length === 0 && (

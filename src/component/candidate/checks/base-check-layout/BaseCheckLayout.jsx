@@ -6,13 +6,13 @@ import {
     Clock,
     ShieldAlertIcon,
     ClockIcon,
-    InfoIcon
+    InfoIcon, AlertCircleIcon
 } from 'lucide-react';
 import StatusActionDropdown from "../StatusActionDropdown.jsx";
 import CheckAuditTrail from "./CheckAuditTrail.jsx";
 import {useAuthApi} from "../../../../provider/AuthApiProvider.jsx";
 import {GET_TASK_AUDIT_DETAILS, UPDATE_TASK_STAUS} from "../../../../constant/Endpoint.tsx";
-import {METHOD} from "../../../../constant/ApplicationConstant.js";
+import {METHOD, READ_ONLY_TASK_STATUS} from "../../../../constant/ApplicationConstant.js";
 import AuditTrailSkeleton from "../loader/AuditTrailSkeleton.jsx";
 import FeedbackForm from "./FeedbackForm.jsx";
 import AuditIntelligence from "./AuditIntelligence.jsx";
@@ -29,14 +29,16 @@ const BaseCheckLayout = ({
              eyebrow,
              setIsEditModalOpen,
              badgeConfig, // { label: string, colorClass: string, icon: ReactNode }
-             children
+             children,
+             onStatusUpdateSuccess,
+             isFundReleasedOrCancelled = false
      }) => {
 
     const componentInitRef = useRef(false);
     const { authenticatedRequest } = useAuthApi();
     const [auditData, setAuditData] = useState({});
     const [isAuditLoading, setIsAuditLoading] = useState(true);
-    const [status, setStatus] = useState({});
+    const [status, setStatus] = useState(undefined);
 
     const fetchAuditDetails = async (taskId) => {
         try {
@@ -65,7 +67,8 @@ const BaseCheckLayout = ({
         'NEEDS_REVIEW': { bg: 'bg-violet-500', lightBg: 'bg-violet-50', text: 'text-violet-700', icon: <ShieldQuestion size={16} />, label: 'Manual Review Required' },
         'UNABLE_TO_VERIFY': { bg: 'bg-amber-500', lightBg: 'bg-amber-50', text: 'text-amber-700', icon: <ShieldQuestion size={16} />, label: 'Unable to Verify' },
         'FAILED': { bg: 'bg-red-500', lightBg: 'bg-red-50', text: 'text-red-700', icon: <ShieldAlertIcon size={16} />, label: 'Verification Failed' },
-        'IN_PROGRESS': { bg: 'bg-blue-500', lightBg: 'bg-blue-50', text: 'text-blue-700', icon: <ClockIcon size={16} />, label: 'Verification In Progress' }
+        'IN_PROGRESS': { bg: 'bg-blue-500', lightBg: 'bg-blue-50', text: 'text-blue-700', icon: <ClockIcon size={16} />, label: 'Verification In Progress' },
+        'FUND_RELEASED': { bg: 'text-slate-600', lightBg: 'bg-slate-100', text: 'text-blue-700', icon: <AlertCircleIcon size={16} />, label: 'VERIFICATION HALTED' }
     };
 
     const updateFeedback = (feedback) => {
@@ -109,8 +112,9 @@ const BaseCheckLayout = ({
     }
 
     console.log("statusstatus -- ", status);
-    const currentStatus = statusConfig[status] || { bg: 'bg-slate-400', lightBg: 'bg-slate-50', text: 'text-slate-600', icon: <Clock size={16} />, label: 'Verification Pending' };
+    const currentStatus = isFundReleasedOrCancelled ? statusConfig["FUND_RELEASED"] : (statusConfig[status] || { bg: 'bg-slate-400', lightBg: 'bg-slate-50', text: 'text-slate-600', icon: <Clock size={16} />, label: 'Verification Pending' });
 
+    const isReadOnly = READ_ONLY_TASK_STATUS.includes(status?.toUpperCase());
     return (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4">
             {/* COMMON: Top Status Banner */}
@@ -162,11 +166,12 @@ const BaseCheckLayout = ({
 
                     {/* Point 3: Consolidated System Verdict & Dropdown */}
                     <div className="flex items-center gap-6 self-end md:self-auto">
-                        {!isAuditLoading && status !== 'CLEARED' && (
+                        {!isAuditLoading && (
                             <StatusActionDropdown
                                 setIsEditModalOpen={setIsEditModalOpen}
                                 onStatusChange={(status, notes) => onStatusChange(status, notes)}
                                 currentStatus={status}
+                                onStatusChangeSuccess={onStatusUpdateSuccess}
                             />
                         )}
                     </div>
@@ -187,13 +192,17 @@ const BaseCheckLayout = ({
                             <CheckAuditTrail data={auditData} checkId={checkId} />
                             <AuditIntelligence data={auditData} hasInsufficiency={true} formatFullDateTime={formatFullDateTime} isInsufficiencyCleared={false} />
                             {auditData?.verificationProofDocuments?.length > 0 && (
-                                <EvidenceVault evidences={auditData.verificationProofDocuments} onRemoveSuccess={(fileId) => onRemoveSuccess(fileId)} />
+                                <EvidenceVault evidences={auditData.verificationProofDocuments} onRemoveSuccess={(fileId) => onRemoveSuccess(fileId)} isReadOnly={isReadOnly} />
                             )}
                         </>
                     }
-                    <FeedbackForm taskId={checkId}
-                                  onSuccessFileUpload={(data) => updateFileDataOnUploadSuccess(data)}
-                                  onSuccessSubmitFeedback={(feedback) => updateFeedback(feedback)}/>
+                    {
+                        (!isReadOnly) && (
+                            <FeedbackForm taskId={checkId}
+                                          onSuccessFileUpload={(data) => updateFileDataOnUploadSuccess(data)}
+                                          onSuccessSubmitFeedback={(feedback) => updateFeedback(feedback)}/>
+                        )
+                    }
                 </div>
             </div>
         </div>

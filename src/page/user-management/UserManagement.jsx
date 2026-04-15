@@ -5,7 +5,7 @@ import {
 import UserDetailsView from "./UserDetailsView.jsx";
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 import {METHOD} from "../../constant/ApplicationConstant.js";
-import {GET_ALL_ENABLED_ROLES, GET_ALL_USERS} from "../../constant/Endpoint.tsx";
+import {GET_ALL_ENABLED_ROLES, GET_ALL_ENABLED_TENANTS, GET_ALL_USERS} from "../../constant/Endpoint.tsx";
 import UserListSkeleton from "./UserListSkeleton.jsx";
 import UserListCard from "./UserListCard.jsx";
 import CreateUserView from "./CreateUserView.jsx";
@@ -13,8 +13,9 @@ import CreateUserView from "./CreateUserView.jsx";
 const UserManagement = () => {
 
     const [users, setUsers] = useState([]);
+    const [tenants, setTenants] = useState([]);
     const initLoadRef = useRef(false);
-    const {authenticatedRequest} = useAuthApi();
+    const {authenticatedRequest, loggedInRole, user:loggedInUser} = useAuthApi();
     const [loading, setLoading] = useState(false);
     const [availableRoles, setAvailableRoles] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
@@ -50,10 +51,26 @@ const UserManagement = () => {
             }
         }
 
+        const availableTenants = async () => {
+            try {
+                const response = await authenticatedRequest(undefined, GET_ALL_ENABLED_TENANTS , METHOD.GET);
+                if(response.status === 200) {
+                    setTenants(response.data?.data);
+                } else {
+                    console.error(response.data.message);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
         if(!initLoadRef.current) {
             initLoadRef.current = true;
             fetchUsers();
             availableRoles();
+            if(loggedInRole === 'ROLE_ADMIN' && loggedInUser?.userScope === "SYSTEM_USER") {
+                availableTenants();
+            }
         }
     }, [])
 
@@ -99,7 +116,6 @@ const UserManagement = () => {
             })
         );
     };
-    console.log('user in user management - ', users);
 
     return (
         <div className="flex h-screen bg-white overflow-hidden">
@@ -165,6 +181,7 @@ const UserManagement = () => {
                             setIsEditing={setIsEditing}
                             isEditing={isEditing}
                             handleBack={handleBack}
+                            tenants={tenants}
                         />
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400">

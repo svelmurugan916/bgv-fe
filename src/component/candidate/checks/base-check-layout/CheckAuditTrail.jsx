@@ -90,7 +90,7 @@ const CheckAuditTrail = ({ data = {}, checkId  }) => {
                         </div>
 
                         <div className="flex flex-col justify-center">
-                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-0.5">
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-0.5">
                                 Assigned Auditor
                             </p>
 

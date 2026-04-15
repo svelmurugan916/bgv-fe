@@ -1,5 +1,5 @@
 import { Skeleton } from "./SkeletonLoading.jsx";
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useRef} from "react";
 import { TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import {useAuthApi} from "../../../provider/AuthApiProvider.jsx";
 import {GET_OPERATIONS_BOTTLENECK_DATA} from "../../../constant/Endpoint.tsx";
@@ -11,6 +11,7 @@ const BottleneckData = () => {
     const [strategicInsight, setStrategicInsight] = useState("");
     const [criticalBreaches, setCriticalBreaches] = useState(0);
     const { authenticatedRequest } = useAuthApi();
+    const initCompRef = useRef(false);
 
     // ─── Helper: derive bar color from SLA deviation ───────────────────────────
     const getColor = (slaDeviationDays) => {
@@ -63,7 +64,10 @@ const BottleneckData = () => {
             }
         };
 
-        fetchBottleneckData();
+        if(!initCompRef.current) {
+            initCompRef.current = true;
+            fetchBottleneckData();
+        }
     }, []);
 
     // ─── Loading State ─────────────────────────────────────────────────────────

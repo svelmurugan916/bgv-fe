@@ -4,31 +4,50 @@ import {
     SearchX, ShieldAlert, Edit3, ArrowLeft, Send, Loader2,
     CheckCircle2, XCircle, RefreshCcw, Check
 } from 'lucide-react';
+import { READ_ONLY_TASK_STATUS } from "../../../constant/ApplicationConstant.js";
 
-const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatus="IN_PROGRESS" }) => {
+const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatus = "IN_PROGRESS", onStatusChangeSuccess }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState(null);
-    const [notes, setNotes] = useState(''); // Re-added for Insufficiency reason
-
+    const [notes, setNotes] = useState('');
     const [apiStatus, setApiStatus] = useState('idle');
     const [errorMessage, setErrorMessage] = useState('');
 
+    // --- NEW: COUNTDOWN STATE ---
+    const [countdown, setCountdown] = useState(3);
+
     const dropdownRef = useRef(null);
 
+    // --- NEW: AUTO-RELOAD LOGIC ---
+    useEffect(() => {
+        let timer;
+        if (apiStatus === 'success' && countdown > 0) {
+            timer = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+        } else if (apiStatus === 'success' && countdown === 0) {
+            // Callback: Reload the page to reflect new status across the dashboard
+            onStatusChangeSuccess();
+        }
+        return () => clearInterval(timer);
+    }, [apiStatus, countdown]);
+
     const closeAndReset = () => {
+        if (apiStatus === 'success') return; // Prevent closing during reload countdown
         setIsOpen(false);
         setTimeout(() => {
             setSelectedOption(null);
             setNotes('');
             setApiStatus('idle');
             setErrorMessage('');
+            setCountdown(3); // Reset countdown
         }, 300);
     };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                if (apiStatus !== 'loading') {
+                if (apiStatus !== 'loading' && apiStatus !== 'success') {
                     closeAndReset();
                 }
             }
@@ -48,10 +67,10 @@ const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatu
         { id: 'FAILED', label: 'Mark as Failed', sub: 'Verification Rejected', icon: <ShieldAlert size={16} />, color: 'text-rose-600', bg: 'bg-rose-50' },
     ];
 
+    const isReadOnly = READ_ONLY_TASK_STATUS.includes(currentStatus?.toUpperCase());
+
     const handleConfirmStatus = async () => {
         if (apiStatus === 'loading') return;
-
-        // Validation: If insufficiency, notes are required
         if (selectedOption.id === 'INSUFFICIENCY' && !notes.trim()) return;
 
         setApiStatus('loading');
@@ -68,27 +87,42 @@ const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatu
 
     return (
         <div className="flex items-center gap-3 relative" ref={dropdownRef}>
-            <button
-                onClick={() => setIsEditModalOpen(true)}
-                className="px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-[#5D4591] bg-[#F9F7FF] border border-[#5D4591]/20 rounded-xl hover:bg-[#F0EDFF] transition-all flex items-center gap-2 cursor-pointer"
-            >
-                <Edit3 size={14} /> Edit Details
-            </button>
+            {/* Edit Button Section */}
+            <div className="relative group/edit-disabled">
+                <button
+                    disabled={isReadOnly}
+                    onClick={() => !isReadOnly && setIsEditModalOpen(true)}
+                    className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all rounded-xl border
+                        ${isReadOnly
+                        ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-80'
+                        : 'text-[#5D4591] bg-[#F9F7FF] border-[#5D4591]/20 hover:bg-[#F0EDFF] cursor-pointer'
+                    }`}
+                >
+                    <Edit3 size={14} /> Edit Details
+                </button>
+                {isReadOnly && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover/edit-disabled:opacity-100 transition-all pointer-events-none whitespace-nowrap z-[110] shadow-2xl border border-white/10">
+                        Edit details is disabled for completed tasks
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                    </div>
+                )}
+            </div>
 
+            {/* Change Status Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`flex items-center gap-3 px-5 py-2.5 rounded-xl border transition-all duration-300 cursor-pointer
-                    ${isOpen ? 'bg-[#5D4591] border-[#5D4591] text-white shadow-lg' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                ${isOpen ? 'bg-[#5D4591] border-[#5D4591] text-white shadow-lg' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
             >
                 <span className="text-[10px] font-black uppercase tracking-widest">Change Status</span>
                 <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
+            {/* Dropdown Menu */}
             <div className={`
                 absolute right-0 top-full mt-3 w-80 bg-white border border-slate-200/60 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] z-[100] overflow-hidden transition-all duration-300 origin-top-right
                 ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-4 pointer-events-none'}
             `}>
-
                 {!selectedOption && (
                     <div className="py-2">
                         <div className="px-6 py-4 flex items-center justify-between">
@@ -103,7 +137,7 @@ const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatu
                                         key={option.id}
                                         disabled={isCurrent}
                                         className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl transition-all group text-left
-                                            ${isCurrent ? 'bg-slate-50 opacity-60 cursor-not-allowed' : 'hover:bg-slate-50 cursor-pointer'}`}
+                                ${isCurrent ? 'bg-slate-50 opacity-60 cursor-not-allowed' : 'hover:bg-slate-50 cursor-pointer'}`}
                                         onClick={() => setSelectedOption(option)}
                                     >
                                         <div className="flex items-center gap-3">
@@ -134,11 +168,9 @@ const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatu
                             <div className={`w-16 h-16 rounded-[2rem] ${selectedOption.bg} ${selectedOption.color} flex items-center justify-center shadow-sm mb-4`}>
                                 {React.cloneElement(selectedOption.icon, { size: 28 })}
                             </div>
-
                             <h5 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-2">
                                 {isInsufficiency ? 'Reason Required' : 'Confirm Update'}
                             </h5>
-
                             {isInsufficiency ? (
                                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-4">Please specify the reason for insufficiency</p>
                             ) : (
@@ -165,21 +197,50 @@ const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatu
                             disabled={apiStatus === 'loading' || (isInsufficiency && !notes.trim())}
                             onClick={handleConfirmStatus}
                             className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg
-                                ${apiStatus === 'loading' || (isInsufficiency && !notes.trim()) ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : 'bg-[#5D4591] text-white hover:bg-[#4a3675] active:scale-95'}`}
+                    ${apiStatus === 'loading' || (isInsufficiency && !notes.trim()) ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : 'bg-[#5D4591] text-white hover:bg-[#4a3675] active:scale-95'}`}
                         >
                             {apiStatus === 'loading' ? <><Loader2 size={14} className="animate-spin" /> Updating...</> : <>Confirm & Update <Send size={12} /></>}
                         </button>
                     </div>
                 )}
 
+                {/* --- UPDATED: SUCCESS VIEW WITH TIMER --- */}
                 {apiStatus === 'success' && (
                     <div className="p-10 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
-                        <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6 relative">
                             <CheckCircle2 size={32} strokeWidth={3} className="animate-in zoom-in-50 duration-500" />
+                            {/* Circular Progress Ring (Optional visual) */}
+                            <svg className="absolute inset-0 w-full h-full -rotate-90">
+                                <circle
+                                    cx="32" cy="32" r="30"
+                                    fill="transparent" stroke="currentColor" strokeWidth="2"
+                                    strokeDasharray="188.4"
+                                    strokeDashoffset={188.4 - (188.4 * countdown) / 3}
+                                    className="text-emerald-500/20 transition-all duration-1000 linear"
+                                />
+                            </svg>
                         </div>
+
                         <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-1">Status Updated</h4>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">The task status has been updated.</p>
-                        <p className="mt-6 text-[8px] font-bold text-slate-300 uppercase tracking-[0.2em]">Click anywhere outside to close</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-6">
+                            The task status has been updated successfully.
+                        </p>
+
+                        <div className="flex flex-col items-center gap-2 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 w-full">
+                            <div className="flex items-center gap-2">
+                                <RefreshCcw size={12} className="text-emerald-500 animate-spin-slow" />
+                                <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                                    Reloading in <span className="text-emerald-600 text-xs">{countdown}s</span>
+                                </p>
+                            </div>
+                            {/* Progress bar */}
+                            <div className="w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-emerald-500 transition-all duration-1000 linear"
+                                    style={{ width: `${(countdown / 3) * 100}%` }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
 

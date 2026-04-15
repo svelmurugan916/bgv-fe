@@ -150,30 +150,34 @@ const AddressDetails = () => {
             <div className="grid grid-cols-1 gap-8 mb-12">
                 {addresses.map((addr, index) => (
                     <div key={addr.id || index} id={`address_card_${addr.id}`} className="px-6 py-8 border border-slate-200 rounded-[2rem] bg-white shadow-sm relative animate-in zoom-in-95 duration-300">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-[#5D4591]/10 text-[#5D4591] flex items-center justify-center text-xs font-black">
+                        <div className="flex items-center justify-between mb-8 gap-2">
+                            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <div className="w-8 h-8 rounded-full bg-[#5D4591] text-white flex items-center justify-center text-[10px] font-bold">
                                     0{index + 1}
                                 </div>
-                                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Address Entry</h3>
+                                <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest truncate">
+                                    Address Entry
+                                </h3>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
                                 {addr.addressType === 'CURRENT' && addresses.some(a => a.addressType === 'PERMANENT') && (
                                     <button
                                         onClick={() => handleSameAsPermanent(index)}
-                                        className="text-[10px] font-bold text-[#5D4591] uppercase bg-[#F9F7FF] px-4 py-2 rounded-xl hover:bg-[#F0EDFF] transition-colors cursor-pointer"
+                                        className="text-[8px] sm:text-[10px] font-black text-[#5D4591] uppercase bg-[#F9F7FF] px-2.5 sm:px-4 py-2 rounded-lg sm:rounded-xl border border-[#5D4591]/10 hover:bg-[#F0EDFF] transition-all cursor-pointer whitespace-nowrap active:scale-95"
                                     >
-                                        Same as Permanent
+                                        {/* Shorten text on very small screens, full text on larger ones */}
+                                        <span className="xs:hidden">Same as Perm</span>
+                                        <span className="hidden xs:inline">Same as Permanent</span>
                                     </button>
                                 )}
 
                                 {addresses.length > 1 && (
                                     <button
                                         onClick={() => removeAddress(index)}
-                                        className="text-slate-300 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-xl cursor-pointer"
+                                        className="text-slate-300 hover:text-red-500 transition-colors p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl cursor-pointer active:scale-95"
                                     >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={18} className="sm:size-[20px]" />
                                     </button>
                                 )}
                             </div>

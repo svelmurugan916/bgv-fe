@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Stepper from './Stepper';
 import BasicInfo from './BasicInfo';
 import IDVerification from './IDVerification';
@@ -6,21 +6,24 @@ import Education from "./Education.jsx";
 import Employment from "./Employment.jsx";
 import References from "./References.jsx";
 import Review from "./Review.jsx";
-import { ChevronLeftIcon, ChevronRight, Loader2, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
+import {AlertTriangle, CheckCircle2, ChevronLeftIcon, ChevronRight, Loader2, RefreshCw} from "lucide-react";
 import GlobalHeader from "./GlobalHeader.jsx";
 import AddressDetails from "./AddressDetails.jsx";
 import {
     ADDRESS_INFO_PAGE_IDX,
-    BASIC_INFO_PAGE_IDX, EDUCATION_PAGE_IDX, EXPERIENCE_PAGE_IDX,
+    BASIC_INFO_PAGE_IDX,
+    EDUCATION_PAGE_IDX,
+    EXPERIENCE_PAGE_IDX,
     IDENTIFIER_PAGE_IDX,
     REFERENCE_PAGE_IDX,
     REVIEW_PAGE_IDX,
     validateStep
 } from "./form-validation.js";
-import { useForm } from "../../provider/FormProvider.jsx";
-import { scrollToFirstError } from "./form-utils.js";
-import { SAVE_BGV_STEP } from "../../constant/Endpoint.tsx";
+import {useForm} from "../../provider/FormProvider.jsx";
+import {scrollToFirstError} from "./form-utils.js";
+import {SAVE_BGV_STEP} from "../../constant/Endpoint.tsx";
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
+import CandidateFormFooter from "../../component/footer/CandidateFormFooter.jsx";
 
 const BGVForm = ({ candidateDataResponse = undefined }) => {
     const [activeStep, setActiveStep] = useState(null);
@@ -29,6 +32,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
     const [submitError, setSubmitError] = useState(null); // New Error State
     const { formData, setErrors, hydrateForm, setCandidateId } = useForm();
     const {authenticatedRequest} = useAuthApi();
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     // Configuration Logic for Steps
     const stepConfigMap = {
@@ -77,6 +81,41 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
                 };
 
                 const payload = stepKeyMap[activeStep];
+
+                if (payload.step === 'idVerification') {
+                    const idData = payload.data;
+                    const front = idData["passport_FRONT"] || {};
+                    const back = idData["passport_BACK"] || {};
+                    console.log('front -- ', front);
+                    console.log('back -- ', back);
+                    console.log('idData passport -- ', idData["passport"]);
+                    idData["passport"] = {
+                        ...idData["passport"], // Preserve any existing passport data
+                        frontFileId: front.fileId,
+                        backFileId: back.fileId,
+                        idNumber: front.idNumber,
+                        name: front.name,
+                        dob: front.dob,
+                        gender: front.gender,
+                        nationality: front.nationality,
+                        birthPlace: front.birthPlace,
+                        address: back.address,
+                        permanentAddress: back.permanentAddress,
+                        motherName: back.motherName,
+                        fatherName: back.fatherName,
+                        fileNumber: back.fileNumber,
+                        dateOfIssue: front.dateOfIssue,
+                        dateOfExpiry: front.dateOfExpiry,
+
+                        verificationMethod: 'OCR_UPLOAD',
+                        consentProvided: idData.consent, // You can use idData directly here
+                        consentTimestamp: new Date().toISOString()
+                    };
+
+                }
+
+                console.log("Final Payload:", payload);
+
                 const response = await authenticatedRequest(payload, `${SAVE_BGV_STEP}/${candidateDataResponse?.candidateId}`);
 
                 if (response.status === 200) {
@@ -174,7 +213,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
             case 4: return <Education />;
             case 5: return <Employment />;
             case 6: return <References />;
-            case 7: return <Review checks={candidateDataResponse?.checks} />;
+            case 7: return <Review checks={candidateDataResponse?.checks} profilePictureUrl={formData.basic?.profilePic || formData.basic?.profilePictureUrl || candidateDataResponse?.profilePictureUrl}/>;
             default: return null;
         }
     };
@@ -182,8 +221,9 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
     if (activeStep === null) return null;
 
     return (
-        <div className="flex flex-col min-h-screen bg-white transform-gpu isolation-isolate">
-            <GlobalHeader candidateName={`${formData.basic.firstName} ${formData.basic.lastName}`} appId="CF-99281-2024" />
+        <div className="flex flex-col min-h-screen bg-white">
+            <GlobalHeader candidateName={`${formData.basic.firstName} ${formData.basic.lastName}`} profilePictureUrl={formData.basic?.profilePic || formData.basic?.profilePictureUrl || candidateDataResponse?.profilePictureUrl}  appId="CF-99281-2024"
+                isHelpOpen={isHelpOpen} setIsHelpOpen={setIsHelpOpen} />
             <div className="flex flex-col lg:flex-row flex-1">
                 <Stepper activeStep={activeStep} steps={filteredSteps} />
 
@@ -247,6 +287,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
                     </div>
                 </main>
             </div>
+            <CandidateFormFooter setIsHelpOpen={setIsHelpOpen} />
         </div>
     );
 };

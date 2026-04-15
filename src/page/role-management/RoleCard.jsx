@@ -1,10 +1,12 @@
 import { formatDate } from "../../utils/date-util.js";
 import { ArrowRight } from "lucide-react";
 import React from "react";
+import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 
 const RoleCard = ({ role, handleOpenEdit }) => {
     const isActive = role.enabled;
     const priority = role.roleRank || 1; // Assuming 'priority' is the field name
+    const { user } = useAuthApi();
 
     return (
         <div className="bg-white border border-slate-100 rounded-[24px] p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
@@ -63,12 +65,16 @@ const RoleCard = ({ role, handleOpenEdit }) => {
                     )}
                 </div>
 
-                <button
-                    onClick={handleOpenEdit}
-                    className="flex items-center gap-1 text-[#5D4591] text-sm font-bold hover:gap-2 transition-all"
-                >
-                    Edit role <ArrowRight size={16} />
-                </button>
+                {
+                    user?.userScope === "SYSTEM_USER" && (
+                        <button
+                            onClick={handleOpenEdit}
+                            className="flex items-center gap-1 text-[#5D4591] text-sm font-bold hover:gap-2 transition-all"
+                        >
+                            Edit role <ArrowRight size={16} />
+                        </button>
+                    )
+                }
             </div>
         </div>
     );

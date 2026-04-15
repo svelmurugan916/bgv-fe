@@ -162,15 +162,43 @@ const BulkCreateCandidates = () => {
                 candidateDetails: activeRows
             };
             const response = await authenticatedRequest(payload, INITIATE_BULK_VERIFICATION, METHOD.POST);
-
+            console.log(response);
             if (response.status === 200) {
                 setSuccess("Success! Verification invites have been sent to all candidates.");
                 setRows(initialRows); // Reset form
                 setFieldErrors({ org: false, package: false, rows: {} });
             } else if (response.status === 400 && response.data?.errors) {
+                console.error('api error: ', response.data?.errors);
                 setError("Verification failed for some candidates. Highlighted fields may already exist.");
+            } else if (response.status === 409) {
+                setError(response.data?.errors[0] || "Verification failed for some candidates. Highlighted fields may already exist.");
+                const errorData = response.data; // This is your { totalInvited, errors: [], ... } object
+
+                if (errorData?.errors) {
+                    setError(errorData.errors);
+                    let backendFieldErrors = {};
+                    errorData.errors.forEach(errStr => {
+                        activeRows.forEach(row => {
+                            // If the error message mentions the row's email, highlight it
+                            if (errStr.includes(row.email)) {
+                                backendFieldErrors[row.id] = {
+                                    ...backendFieldErrors[row.id],
+                                    email: true
+                                };
+                            } else if(errStr.includes(row.phone)) {
+                                backendFieldErrors[row.id] = {
+                                    ...backendFieldErrors[row.id],
+                                    phone: true
+                                };
+                            }
+                        });
+                    });
+                    setFieldErrors(prev => ({ ...prev, rows: backendFieldErrors }));
+                }
+
             }
         } catch (err) {
+            console.error('api error: ', err);
             if (err.response && err.response.status === 409) {
                 const errorData = err.response.data; // This is your { totalInvited, errors: [], ... } object
 
