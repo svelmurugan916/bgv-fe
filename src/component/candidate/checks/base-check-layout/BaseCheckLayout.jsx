@@ -31,7 +31,8 @@ const BaseCheckLayout = ({
              badgeConfig, // { label: string, colorClass: string, icon: ReactNode }
              children,
              onStatusUpdateSuccess,
-             isFundReleasedOrCancelled = false
+             isFundReleasedOrCancelled = false,
+             caseStatus = undefined
      }) => {
 
     const componentInitRef = useRef(false);
@@ -111,7 +112,6 @@ const BaseCheckLayout = ({
         })
     }
 
-    console.log("statusstatus -- ", status);
     const currentStatus = isFundReleasedOrCancelled ? statusConfig["FUND_RELEASED"] : (statusConfig[status] || { bg: 'bg-slate-400', lightBg: 'bg-slate-50', text: 'text-slate-600', icon: <Clock size={16} />, label: 'Verification Pending' });
 
     const isReadOnly = READ_ONLY_TASK_STATUS.includes(status?.toUpperCase());
@@ -166,7 +166,7 @@ const BaseCheckLayout = ({
 
                     {/* Point 3: Consolidated System Verdict & Dropdown */}
                     <div className="flex items-center gap-6 self-end md:self-auto">
-                        {!isAuditLoading && (
+                        {(!isAuditLoading && caseStatus !== 'STOP_CASE') && (
                             <StatusActionDropdown
                                 setIsEditModalOpen={setIsEditModalOpen}
                                 onStatusChange={(status, notes) => onStatusChange(status, notes)}

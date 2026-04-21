@@ -121,13 +121,15 @@ const CandidateShow = () => {
 
     const handleToggleCaseStatus = async () => {
         try {
-
             const response = await authenticatedRequest({}, `${consolidatedData.status === 'STOP_CASE' ? RESUME_CANDIDATE_STATUS : MARK_CANDIDATE_AS_STOP_CASE}/${candidateData.candidateInfo?.candidateId}`, METHOD.PATCH);
             if(response.status === 200) {
                 await fetchCandidateDetails();
             }
+            return response;
         } catch (err) {
-            console.log(err);
+            console.error("Download failed:", err);
+            console.log('error response ; ',  err.response);
+            throw err;
         }
     }
 
@@ -344,22 +346,22 @@ const CandidateShow = () => {
                                     const activeCheck = candidateData?.caseDetails?.checks.find(c => c.taskId === activeTab);
                                     switch (activeCheck?.taskName) {
                                         case 'address':
-                                            return <CheckAddress addressId={activeCheck.taskId} />;
+                                            return <CheckAddress addressId={activeCheck.taskId} caseStatus={consolidatedData.status}/>;
                                         case 'education':
-                                            return <CheckEducation educationId={activeCheck.taskId}/>
+                                            return <CheckEducation educationId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'employment':
-                                            return <CheckExperience employmentId={activeCheck.taskId}/>
+                                            return <CheckExperience employmentId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'criminal':
-                                            return <CriminalDatabaseCheck taskId={activeCheck.taskId}  />
+                                            return <CriminalDatabaseCheck taskId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'database':
-                                            return <CheckDatabase taskId={activeCheck.taskId}/>
+                                            return <CheckDatabase taskId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'identity':
                                         case 'aadhaar':
                                         case 'pan':
                                         case 'passport':
-                                            return <CheckIdentity taskId={activeCheck.taskId}  />
+                                            return <CheckIdentity taskId={activeCheck.taskId}  caseStatus={consolidatedData.status} />
                                         case 'reference':
-                                            return <CheckReferences taskId={activeCheck.taskId}  />
+                                            return <CheckReferences taskId={activeCheck.taskId}  caseStatus={consolidatedData.status} />
                                         default:
                                             return <CaseTimelineTabContent candidateId={candidateData?.caseDetails?.candidateId} />;
                                     }

@@ -13,6 +13,7 @@ import VerificationCard from "../common-page/VerificationCard.jsx";
 import SingleSelectDropdown from "../../../dropdown/SingleSelectDropdown.jsx";
 import UploadedDocumentsDisplay from "../common-page/UploadedDocumentsDisplay.jsx";
 import FileUploadModal from "../FileUploadModal.jsx";
+import {MajorDiscrepancyDetectedInliner, CertificateProvideLaterInliner} from "../../HelperComponent.jsx";
 
 const CheckEducation = ({ educationId }) => {
     const [loading, setLoading] = useState(true);
@@ -223,17 +224,18 @@ const CheckEducation = ({ educationId }) => {
     }
 
     const verificationMethods = [
-        { value: 'UNIVERSITY_PORTAL', text: 'University Portal' },
-        { value: 'OFFICIAL_TRANSCRIPT', text: 'Official Transcript' },
-        { value: 'EMAIL_CONFIRMATION', text: 'Email Confirmation' },
-        { value: 'PHONE_CALL', text: 'Phone Call' },
-        { value: 'THIRD_PARTY_VENDOR', text: 'Third-Party Vendor' },
+        { value: 'ONLINE_VERIFICATION', text: 'Online verification' },
+        { value: 'EMAIL_VERIFICATION', text: 'Email Verification' },
+        { value: 'VERBAL_VERIFICATION', text: 'Verbal Verification' },
+        { value: 'SITE_VERIFICATION', text: 'Site Verification' },
         { value: 'OTHER', text: 'Other' },
     ];
 
     if (loading) return <SimpleLoader size="lg" className="py-20" />;
 
     const isReadOnly = READ_ONLY_TASK_STATUS?.includes(status?.toUpperCase());
+
+    console.log("educationalData status: ", educationalData.status)
 
     return (
         <BaseCheckLayout
@@ -244,14 +246,11 @@ const CheckEducation = ({ educationId }) => {
         >
             <div className="mx-auto p-10 pt-6 space-y-8">
 
-                {educationalData?.certificateProvideLater && (
-                    <div className="bg-orange-50 border border-orange-200 text-orange-700 px-6 py-4 rounded-[2rem] flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-                        <AlertCircle size={20} className="flex-shrink-0" />
-                        <p className="text-sm font-semibold">
-                            Candidate has indicated that the **Educational Certificate will be provided later**. Verification may be pending until documentation is received.
-                        </p>
-                    </div>
-                )}
+                {educationalData?.certificateProvideLater && (!READ_ONLY_TASK_STATUS.includes(educationalData.status)) &&
+                    <CertificateProvideLaterInliner message={"Educational Certificate will be provided later"} />
+                }
+
+                {isMajorDiscrepancy && <MajorDiscrepancyDetectedInliner />}
 
                 <div className="space-y-3">
                     {educationalData?.fieldDetails && Object.entries(educationalData.fieldDetails).map(([key, data]) => {

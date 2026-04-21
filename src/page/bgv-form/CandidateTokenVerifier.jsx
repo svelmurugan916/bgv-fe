@@ -146,7 +146,7 @@ const TokenVerifier = ({
 
                         {/* Text Content */}
                         <h2 className="text-2xl lg:text-3xl font-black text-slate-900 mb-4 tracking-tight">
-                            {errorType === 'submitted' ? 'Already Submitted' : 'Access Denied'}
+                            {errorType === 'submitted' ? 'Already Submitted' : 'Verification Link Expired'}
                         </h2>
                         <p className="text-sm lg:text-base text-slate-500 font-medium leading-relaxed px-2">
                             {errorMessage}

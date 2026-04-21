@@ -1,4 +1,3 @@
-// src/components/listener/SSEListener.jsx
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useNotification } from "../../context/NotificationContext.jsx";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
@@ -6,78 +5,84 @@ import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 const SSEListener = ({ onNotification }) => {
     const { addToast } = useNotification();
     const { getCurrentAccessToken } = useAuthApi();
-    const eventStreamReaderRef = useRef(null); // Ref to hold the active stream reader
+
+    // Connection & Lifecycle Refs
+    const eventStreamReaderRef = useRef(null);
     const reconnectTimeoutRef = useRef(null);
-    const isComponentMounted = useRef(true); // To track component mount state
-    const abortControllerRef = useRef(null); // To manage fetch cancellation
+    const abortControllerRef = useRef(null);
+    const isComponentMounted = useRef(true);
+
+    // Resilience Configuration
+    const reconnectAttemptsRef = useRef(0);
+    const authErrorShownRef = useRef(false);
+    const MAX_RECONNECT_ATTEMPTS = 5;
+    const INITIAL_DELAY_MS = 5000;
 
     const API_BASE = import.meta.env.VITE_API_URL || "";
     const sseUrl = `${API_BASE}/api/v1/sse/notifications`;
 
-    const RECONNECT_DELAY_MS = 5000;
-
-    // Helper to clear any pending reconnect attempts
-    const clearReconnectTimeout = useCallback(() => {
+    /**
+     * Helper: Closes existing connections and clears pending timeouts
+     */
+    const closeSSEConnection = useCallback(() => {
         if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current);
             reconnectTimeoutRef.current = null;
         }
-    }, []);
-
-    // Helper to close the current SSE connection (if any)
-    const closeSSEConnection = useCallback(() => {
-        console.log("SSEListener: Attempting to close existing SSE connection.");
-        clearReconnectTimeout(); // Clear any pending reconnects when closing
 
         if (eventStreamReaderRef.current) {
             try {
-                // Cancel the reader to stop the `while` loop in `connectSSE`
-                // Providing a reason can help differentiate between explicit close and other errors.
-                eventStreamReaderRef.current.cancel('SSEListener component unmounted or reconnected');
-                console.log("SSE reader cancelled.");
+                eventStreamReaderRef.current.cancel('Reconnecting or Unmounting');
             } catch (e) {
-                console.error("Error cancelling SSE reader:", e);
+                console.error("SSE Reader Cancel Error:", e);
             }
             eventStreamReaderRef.current = null;
         }
 
         if (abortControllerRef.current) {
-            // Abort the fetch request if it's still in progress
             abortControllerRef.current.abort();
             abortControllerRef.current = null;
         }
-    }, [clearReconnectTimeout]);
+    }, []);
 
+    /**
+     * Helper: Schedules a reconnection with exponential backoff
+     */
+    const scheduleReconnect = useCallback((reason) => {
+        if (!isComponentMounted.current) return;
 
-    // Function to establish the SSE connection
-    const connectSSE = useCallback(async () => {
-        console.log("connectSSE function called");
-
-        // --- CRITICAL CHANGE: Ensure any previous connection/reconnect is cleaned up before starting a new one ---
-        // This is crucial for idempotency and preventing duplicate connections.
-        // If this function is called, it means we intend to establish a *new* connection,
-        // so any old ones must be properly shut down first.
-        closeSSEConnection();
-
-        if (!getCurrentAccessToken) {
-            console.warn("SSEListener: No authentication token found. Cannot establish authenticated SSE connection.");
-            // Schedule a reconnect attempt if token is missing, assuming it might become available later
-            if (isComponentMounted.current) {
-                reconnectTimeoutRef.current = setTimeout(() => {
-                    console.log("Attempting to reconnect SSE due to missing token...");
-                    connectSSE(); // Try connecting again
-                }, RECONNECT_DELAY_MS);
-            }
+        if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
+            console.error(`SSEListener: Max attempts (${MAX_RECONNECT_ATTEMPTS}) reached. Stopping. Reason: ${reason}`);
             return;
         }
 
-        // Initialize a new AbortController for this fetch request
+        const delay = INITIAL_DELAY_MS * Math.pow(2, reconnectAttemptsRef.current);
+        reconnectAttemptsRef.current += 1;
+
+        console.log(`Retrying SSE (Attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS}) in ${delay}ms. Reason: ${reason}`);
+
+        reconnectTimeoutRef.current = setTimeout(() => {
+            connectSSE();
+        }, delay);
+    }, []);
+
+    /**
+     * Core: Establishes the SSE fetch stream
+     */
+    const connectSSE = useCallback(async () => {
+        console.log("SSE: connectSSE initiated.");
+        closeSSEConnection();
+
+        if (!getCurrentAccessToken) {
+            scheduleReconnect("No authentication token found.");
+            return;
+        }
+
         abortControllerRef.current = new AbortController();
-        const signal = abortControllerRef.current.signal;
+        const { signal } = abortControllerRef.current;
 
         try {
-            let accessToken = await getCurrentAccessToken();
-            console.log("SSE connection attempt initiated via fetch.");
+            const accessToken = await getCurrentAccessToken();
             const response = await fetch(sseUrl, {
                 method: 'GET',
                 headers: {
@@ -86,107 +91,69 @@ const SSEListener = ({ onNotification }) => {
                     'Connection': 'keep-alive',
                     'Authorization': `Bearer ${accessToken}`,
                 },
-                signal: signal, // Attach the abort signal to the fetch request
+                signal,
             });
 
             if (!response.ok) {
-                console.error(`SSE fetch error: ${response.status} ${response.statusText}`);
-                if (response.status === 401 || response.status === 403) {
-                    addToast("Session expired or unauthorized for notifications.", "error", RECONNECT_DELAY_MS);
-                    // Depending on your auth flow, you might want to trigger a logout/refresh here
-                    // or let the AuthApiProvider handle it.
+                // Throttle Auth Error Toasts
+                if ((response.status === 401 || response.status === 403) && !authErrorShownRef.current) {
+                    addToast("Session expired. Notifications paused.", "error", 5000);
+                    authErrorShownRef.current = true;
                 }
-                // Only schedule reconnect if the component is still mounted
-                if (isComponentMounted.current) {
-                    reconnectTimeoutRef.current = setTimeout(() => {
-                        console.log("Attempting to reconnect SSE after fetch error...");
-                        connectSSE(); // Try connecting again
-                    }, RECONNECT_DELAY_MS);
-                }
-                abortControllerRef.current = null; // Clear controller on error
-                return;
+                throw new Error(`HTTP ${response.status}`);
             }
 
-            console.log("SSE connection opened via fetch.");
+            // --- CONNECTION SUCCESS ---
+            console.log("SSE: Connection opened successfully.");
+            reconnectAttemptsRef.current = 0;
+            authErrorShownRef.current = false;
 
             const reader = response.body.getReader();
-            eventStreamReaderRef.current = reader; // Store the active reader
-
-            let buffer = '';
+            eventStreamReaderRef.current = reader;
             const decoder = new TextDecoder();
+            let buffer = '';
 
-            // Loop to read the stream, checking both component mount status and abort signal
             while (isComponentMounted.current && !signal.aborted) {
                 const { done, value } = await reader.read();
+                if (done) break;
 
-                if (done) {
-                    console.log("SSE stream closed by server (done).");
-                    break; // Exit loop, will trigger reconnect below
-                }
-
-                const chunk = decoder.decode(value, { stream: true });
-                buffer += chunk;
+                buffer += decoder.decode(value, { stream: true });
 
                 let eventEndIndex;
                 while ((eventEndIndex = buffer.indexOf('\n\n')) !== -1) {
-                    const rawEventBlock = buffer.substring(0, eventEndIndex + 2);
+                    const rawBlock = buffer.substring(0, eventEndIndex + 2);
                     buffer = buffer.substring(eventEndIndex + 2);
-
-                    const tempEvent = { data: '', event: 'message', id: null };
-                    const lines = rawEventBlock.split('\n');
-
-                    for (const line of lines) {
-                        if (line.startsWith('data:')) {
-                            tempEvent.data += line.substring(5);
-                        } else if (line.startsWith('event:')) {
-                            tempEvent.event = line.substring(6).trim();
-                        } else if (line.startsWith('id:')) {
-                            tempEvent.id = line.substring(3).trim();
-                        }
-                    }
-
-                    if (tempEvent.data) {
-                        processEvent(tempEvent);
-                    }
+                    parseAndProcess(rawBlock);
                 }
             }
-            // If the loop exits (stream done or signal aborted), clean up and potentially reconnect
-            eventStreamReaderRef.current = null; // Clear reader ref as stream is done or cancelled
-            abortControllerRef.current = null; // Clear controller
-            // Only schedule a reconnect if the component is still mounted AND the connection wasn't explicitly aborted
-            if (isComponentMounted.current && !signal.aborted) {
-                reconnectTimeoutRef.current = setTimeout(() => {
-                    console.log("Attempting to reconnect SSE after stream closure...");
-                    connectSSE(); // Try connecting again
-                }, RECONNECT_DELAY_MS);
-            }
+
+            if (!signal.aborted) scheduleReconnect("Stream closed by server.");
 
         } catch (error) {
-            // Check if the error was due to cancellation
-            if (signal.aborted) {
-                console.log("SSE fetch connection aborted by AbortController (expected on cleanup).");
-            } else {
-                console.error("SSE fetch connection error:", error);
-                if (isComponentMounted.current) {
-                    reconnectTimeoutRef.current = setTimeout(() => {
-                        console.log("Attempting to reconnect SSE after unexpected error...");
-                        connectSSE(); // Try connecting again
-                    }, RECONNECT_DELAY_MS);
-                }
+            if (!signal.aborted) {
+                console.error("SSE Connection Error:", error);
+                scheduleReconnect(error.message);
             }
-            eventStreamReaderRef.current = null; // Ensure reader ref is cleared on error
-            abortControllerRef.current = null; // Clear controller
         }
-    }, [sseUrl, getCurrentAccessToken, addToast, closeSSEConnection]); // Dependencies for useCallback
+    }, [sseUrl, getCurrentAccessToken, addToast, closeSSEConnection, scheduleReconnect]);
 
-    const processEvent = useCallback((eventObj) => {
+    /**
+     * Helper: Parses raw SSE blocks into event objects
+     */
+    const parseAndProcess = (block) => {
+        const eventObj = { data: '', event: 'message', id: null };
+        block.split('\n').forEach(line => {
+            if (line.startsWith('data:')) eventObj.data += line.substring(5);
+            else if (line.startsWith('event:')) eventObj.event = line.substring(6).trim();
+            else if (line.startsWith('id:')) eventObj.id = line.substring(3).trim();
+        });
+
         if (eventObj.event === 'newNotification' && eventObj.data) {
             try {
-                const notificationData = JSON.parse(eventObj.data);
-                if (onNotification) {
-                    onNotification(notificationData);
-                }
-                const clientActionButtons = notificationData.actionButtons?.map(btn => ({
+                const notification = JSON.parse(eventObj.data);
+                if (onNotification) onNotification(notification);
+
+                const actionButtons = notification.actionButtons?.map(btn => ({
                     label: btn.label,
                     isPrimary: btn.isPrimary,
                     actionType: btn.actionType,
@@ -194,44 +161,31 @@ const SSEListener = ({ onNotification }) => {
                 })) || [];
 
                 addToast(
-                    notificationData.message,
-                    notificationData.type,
-                    notificationData.duration,
-                    notificationData.subtitle,
-                    clientActionButtons
+                    notification.message,
+                    notification.type,
+                    notification.duration,
+                    notification.subtitle,
+                    actionButtons
                 );
-            } catch (error) {
-                console.error("Failed to parse SSE message data (JSON error):", error, eventObj.data);
-                addToast("Received malformed notification data.", "error", RECONNECT_DELAY_MS, "Please check server logs.");
+            } catch (e) {
+                console.error("SSE JSON Parse Error:", e);
             }
-        } else {
-            console.log(`Received SSE event '${eventObj.event}' (not 'newNotification' or no data to process):`, eventObj.data);
         }
-    }, [addToast]); // Dependencies for useCallback
+    };
 
+    /**
+     * Lifecycle: Mount and Unmount
+     */
     useEffect(() => {
-        console.log("SSEListener useEffect triggered");
-        isComponentMounted.current = true; // Mark component as mounted
-
-        if (!sseUrl) {
-            console.warn("SSEListener: sseUrl is not provided. SSE connection will not be established.");
-            closeSSEConnection(); // Ensure any existing connection is closed if URL becomes invalid
-            return;
-        }
-
-        // --- CRITICAL CHANGE: Call connectSSE to establish the connection ---
-        // This will automatically handle closing any previous connection and starting a new one
-        // if sseUrl or accessToken changes.
+        isComponentMounted.current = true;
         connectSSE();
 
-        // --- Cleanup function for useEffect ---
         return () => {
-            console.log("SSEListener cleanup function running");
-            isComponentMounted.current = false; // Mark component as unmounted
-            console.log("SSEListener unmounting, closing connection and clearing reconnects.");
-            closeSSEConnection(); // Clean up on unmount or before re-running the effect
+            console.log("SSE: Unmounting listener.");
+            isComponentMounted.current = false;
+            closeSSEConnection();
         };
-    }, [sseUrl, getCurrentAccessToken, connectSSE, closeSSEConnection]); // Dependencies for useEffect
+    }, [connectSSE, closeSSEConnection]);
 
     return null;
 };

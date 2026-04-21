@@ -13,7 +13,9 @@ import {
     PlayCircle,
     Plus,
     ShieldAlert, Trash2Icon,
-    Users
+    Users,
+    CircleAlert,
+    X
 } from 'lucide-react';
 
 const CaseActionDropdown = ({
@@ -33,6 +35,7 @@ const CaseActionDropdown = ({
     const [actionLoading, setActionLoading] = useState(false);
     const [identitySubMenuOpen, setIdentitySubMenuOpen] = useState(false);
     const [openSubMenuLeft, setOpenSubMenuLeft] = useState(false);
+    const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
 
     const isStopped = candidateStatus === 'STOP_CASE';
 
@@ -126,13 +129,19 @@ const CaseActionDropdown = ({
     const handleToggleCaseStatus = async () => {
         setActionLoading(true);
         try {
-            await handeStopCaseClick();
+            const response = await handeStopCaseClick();
+            if (response.status === 400) {
+                const errorMessage = response?.data?.error || "This action cannot be completed right now.";
+                setErrorModal({ isOpen: true, message: errorMessage });
+            }
+        } catch (err) {
+            setErrorModal({ isOpen: true, message: "A connection error occurred. Please try again." });
         } finally {
             setActionLoading(false);
             setIsOpen(false);
             setIdentitySubMenuOpen(false);
         }
-    }
+    };
 
     return (
         <div className="flex items-center gap-3 relative" ref={dropdownRef}>
@@ -324,6 +333,41 @@ const CaseActionDropdown = ({
                     </button>
                 </div>
             </div>
+            {/* --- ERROR MODAL --- */}
+            {errorModal.isOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+                    <div
+                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+                        onClick={() => setErrorModal({ isOpen: false, message: '' })}
+                    />
+                    <div className="relative bg-white w-full max-w-sm rounded-[24px] shadow-[0_20px_70px_-10px_rgba(0,0,0,0.3)] border border-slate-100 overflow-hidden transform transition-all animate-in zoom-in duration-300">
+                        <div className="p-6 text-center">
+                            <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <CircleAlert size={32} />
+                            </div>
+                            <h3 className="text-slate-900 text-lg font-black uppercase tracking-tight mb-2">
+                                Action Restricted
+                            </h3>
+                            <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6">
+                                {errorModal.message}
+                            </p>
+                            <button
+                                onClick={() => setErrorModal({ isOpen: false, message: '' })}
+                                className="w-full bg-slate-900 text-white h-12 rounded-xl font-bold text-xs uppercase tracking-[0.1em] hover:bg-slate-800 transition-colors active:scale-95 cursor-pointer"
+                            >
+                                Understood
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => setErrorModal({ isOpen: false, message: '' })}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

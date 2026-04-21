@@ -14,13 +14,12 @@ import AddressVerificationEvidence from "./AddressVerificationEvidence.jsx";
 import BaseCheckLayout from "../base-check-layout/BaseCheckLayout.jsx";
 import TaskReservationDrawer from "../../../transaction/TaskReservationDrawer.jsx";
 
-const CheckAddress = ({ addressId }) => {
+const CheckAddress = ({ addressId, caseStatus }) => {
     const [loading, setLoading] = useState(true);
     const { authenticatedRequest } = useAuthApi();
     const componentInitRef = useRef(false);
     const [addressData, setAddressData] = useState({});
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const fetchAddressDetails = async () => {
         setLoading(true);
@@ -87,6 +86,7 @@ const CheckAddress = ({ addressId }) => {
             setIsEditModalOpen={setIsEditModalOpen}
             badgeConfig={getBadgeConfig()}
             isFundReleasedOrCancelled={isFundReleasedOrCancelled}
+            caseStatus={caseStatus}
         >
             <div className="p-8 bg-slate-50/40 border-b border-slate-100">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-y-8 gap-x-6">
@@ -143,6 +143,7 @@ const CheckAddress = ({ addressId }) => {
                     fetchAddressDetails={fetchAddressDetails}
                     addressId={addressId}
                     isDrawerOpen={() => setIsDrawerOpen(true)}
+                    caseStatus={caseStatus}
                 />
             </div>
             <EditAddressModal
@@ -151,11 +152,6 @@ const CheckAddress = ({ addressId }) => {
                 addressData={addressData}
                 addressId={addressId}
                 onUpdateSuccess={(payload) => updateAddress(payload)}
-            />
-            <TaskReservationDrawer taskId={addressId}
-                                   isOpen={isDrawerOpen}
-                                   onClose={() => setIsDrawerOpen(false)}
-                                   onRevertSuccess={fetchAddressDetails}
             />
 
         </BaseCheckLayout>

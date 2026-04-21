@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import TaskReservationDrawer from "./TaskReservationDrawer.jsx";
 
-const ReservationSplitTable = ({ data, isLoading, error, onRelease }) => {
+const ReservationSplitTable = ({ data, isLoading, error, onRelease, loading, hasMore, loadingMore, onLoadMore, total, seperateTable = false }) => {
     // --- State for Release Confirmation Modal ---
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -25,6 +25,8 @@ const ReservationSplitTable = ({ data, isLoading, error, onRelease }) => {
     const [submitError, setSubmitError] = useState(null);
     const [isDrawerOpen, setDrawerOpen] = useState(false);
     const [taskId, setTaskId] = useState(null);
+
+    console.log("seperateTable -- ", seperateTable)
 
     const STATUS_MAP = {
         ACTIVE: {
@@ -105,6 +107,14 @@ const ReservationSplitTable = ({ data, isLoading, error, onRelease }) => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="bg-white rounded-[2rem] border border-slate-200 py-32 text-center">
+                <Loader2 className="mx-auto animate-spin text-[#5D4591]" />
+            </div>
+        );
+    }
+
     if (isLoading) return (
         <div className="py-12 flex flex-col items-center justify-center gap-3 bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200 mx-8 mb-6">
             <Loader2 size={28} className="text-[#5D4591] animate-spin" />
@@ -120,9 +130,11 @@ const ReservationSplitTable = ({ data, isLoading, error, onRelease }) => {
     );
 
     return (
+        <>
         <div className="relative mx-8 mb-8 flex gap-4">
-            <div className="w-1 bg-slate-100 rounded-full ml-4 my-2" />
-
+            {
+                (!seperateTable) && <div className="w-1 bg-slate-100 rounded-full ml-4 my-2" />
+            }
             <div className="flex-1 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
                 <table className="w-full text-left border-collapse">
                     <thead>
@@ -257,53 +269,10 @@ const ReservationSplitTable = ({ data, isLoading, error, onRelease }) => {
                                             </button>
                                         </div>
 
-                                    ) : item.status === 'COMMITTED' ? (
-                                        /* --- LOCKED STATE WITH CONTEXTUAL TOOLTIP --- */
-                                        <div className="relative inline-block group/locked">
-                                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase tracking-[0.1em] cursor-not-allowed opacity-70">
-                                                <ShieldCheckIcon size={12} className="text-indigo-400" />
-                                                Funds Locked
-                                            </div>
-
-                                            {/* --- THE TOOLTIP --- */}
-                                            <div className="absolute bottom-full right-0 mb-3 hidden group-hover/locked:block z-[100] animate-in fade-in slide-in-from-bottom-1 duration-200">
-                                                <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-white/10 w-64 text-left relative">
-                                                    <div className="flex items-center gap-2 mb-2 text-indigo-400">
-                                                        <ShieldCheckIcon size={14} />
-                                                        <span className="text-[10px] font-black uppercase tracking-widest">Transaction Locked</span>
-                                                    </div>
-
-                                                    <p className="text-[11px] text-slate-300 font-medium leading-relaxed">
-                                                        Funds are locked until the candidate submits the form or the session expires.
-                                                    </p>
-
-                                                    <div className="mt-3 pt-3 border-t border-white/5">
-                                                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-tighter mb-1">Auto-Unlock Date</p>
-                                                        <p className="text-[11px] font-black text-amber-400">
-                                                            {item.expiresAt ? (
-                                                                `${new Date(item.expiresAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} • ${new Date(item.expiresAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}`
-                                                            ) : (
-                                                                "End of Active Session"
-                                                            )}
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Tooltip Arrow */}
-                                                    <div className="absolute top-full right-8 -mt-1 border-[6px] border-transparent border-t-slate-900" />
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); setDrawerOpen(true); setTaskId(item?.verificationTaskId) }}
-                                                className="inline-flex  items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest text-[#5D4591] hover:text-[#4a3675] bg-[#5D4591]/5  rounded-xl border border-[#5D4591]/10 transition-all hover:bg-[#5D4591]/10 active:scale-95"
-                                            >
-                                                <ExternalLinkIcon size={10} />
-                                                View Details
-                                            </button>
-                                        </div>
                                     ) : <button
-                                        onClick={(e) => { e.stopPropagation(); setDrawerOpen(true); setTaskId(item?.verificationTaskId) }}
-                                        className="inline-flex  items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest text-[#5D4591] hover:text-[#4a3675] bg-[#5D4591]/5  rounded-xl border border-[#5D4591]/10 transition-all hover:bg-[#5D4591]/10 active:scale-95"
-                                    >
+                                            onClick={(e) => { e.stopPropagation(); setDrawerOpen(true); setTaskId(item?.verificationTaskId) }}
+                                            className="inline-flex  items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest text-[#5D4591] hover:text-[#4a3675] bg-[#5D4591]/5  rounded-xl border border-[#5D4591]/10 transition-all hover:bg-[#5D4591]/10 active:scale-95"
+                                        >
                                         <ExternalLinkIcon size={10} />
                                         View Details
                                     </button>
@@ -399,6 +368,17 @@ const ReservationSplitTable = ({ data, isLoading, error, onRelease }) => {
                                    onRelease={(itemId, reason) => onRelease(itemId, reason)}
             />
         </div>
+        {seperateTable && (
+            <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Entries: {total}</p>
+                {hasMore &&
+                    <button onClick={onLoadMore} className="px-6 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-[#5D4591] uppercase tracking-[0.2em] shadow-sm hover:bg-[#F9F7FF] transition-all cursor-pointer">
+                        {loadingMore ? <Loader2 className="animate-spin" size={14} /> : 'Load More'}
+                    </button>
+                }
+            </div>
+        )}
+        </>
     );
 };
 

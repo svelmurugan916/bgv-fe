@@ -214,10 +214,9 @@ const TaskReservationDrawer = ({ taskId, isOpen, onClose, onRelease, onRevertSuc
                 <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                     {loading ? <SkeletonLoader /> : error ? <ErrorState message={error} onRetry={fetchDetails} /> : (
                         <>
-                            <DrawerContent data={data} config={config} onCopy={(text) => navigator.clipboard.writeText(text)} />
 
                             {/* --- FINANCIAL CONFIRMATION OVERLAY --- */}
-                            {showConfirm && (
+                            {showConfirm ? (
                                 <div className="absolute inset-0 z-50 bg-white/95 backdrop-blur-md p-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
                                     <div className="h-full flex flex-col">
                                         <div className="flex-1 flex flex-col items-center justify-center text-center">
@@ -279,6 +278,8 @@ const TaskReservationDrawer = ({ taskId, isOpen, onClose, onRelease, onRevertSuc
                                         </div>
                                     </div>
                                 </div>
+                            ) : (
+                                <DrawerContent data={data} config={config} onCopy={(text) => navigator.clipboard.writeText(text)} />
                             )}
                         </>
                     )}

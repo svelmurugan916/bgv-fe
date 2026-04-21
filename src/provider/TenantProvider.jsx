@@ -67,7 +67,6 @@ export const TenantProvider = ({ children }) => {
                 console.log(response);
                 if(response?.success) {
                     setTenantConfig(response?.data);
-                    console.log("data -- ", response?.data);
                 }
 
             } catch (err) {

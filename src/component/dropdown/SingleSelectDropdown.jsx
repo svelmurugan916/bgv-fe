@@ -27,7 +27,7 @@ const SingleSelectDropdown = ({ label, options, selected, onSelect, isOccupyFull
                 className={`flex items-center justify-between px-4 py-2 w-44 border rounded-lg transition-all duration-200
                 
                 ${disabled
-                    ? 'bg-slate-50 border-slate-200 cursor-not-allowed opacity-70'
+                    ? 'bg-slate-50 border-slate-400 cursor-not-allowed opacity-70'
                     : isOpen
                         ? 'bg-white border-[#5D4591] ring-1 ring-[#5D4591]/20 shadow-sm'
                         : error
@@ -37,7 +37,7 @@ const SingleSelectDropdown = ({ label, options, selected, onSelect, isOccupyFull
                 ${isOccupyFullWidth ? 'w-full' : ''}`}
             >
                 <span className={`text-sm font-medium truncate 
-                    ${disabled ? 'text-slate-400' : error ? 'text-rose-500' : selected ? 'text-slate-900' : 'text-slate-500'}`}>
+                    ${disabled ? 'text-slate-700' : error ? 'text-rose-500' : selected ? 'text-slate-900' : 'text-slate-500'}`}>
                     {(selectedOption?.text || selected) || label}
                 </span>
 

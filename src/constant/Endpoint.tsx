@@ -18,6 +18,8 @@ export const ADMIN_DASHBOARD = '/admin/dashboard'
 export const TENANT_MANAGER_DASHBOARD = '/admin/tenants'
 export const GET_TENANT_BALANCE = "/wallet/get-balance"
 export const GET_TRANSACTION_ACTIVITIES = "/wallet/transactions"
+export const GET_RESERVED_TRANSACTION_ACTIVITIES = "/wallet/reserved-transactions"
+export const GET_COMMITTED_TRANSACTION_ACTIVITIES = "/wallet/committed-transactions"
 export const GET_TRANSACTION_RESERVATION_ITEMS = "/wallet/get-reservation-items"
 export const RELEASE_TRANSACTION_RESERVATION = "/wallet/reservation-items/release"
 export const GET_TASK_RESERVATION = "/wallet/reservation-items/task"
@@ -99,7 +101,9 @@ export const GET_TASK_DETAILS = "/tasks/get-details"
 export const VERIFY_DIGILOCKER_STATUS = "/aadhaar/download";
 export const VERIFY_AND_DOWNLOAD_DIGILOCKER_STATUS = "/aadhaar/verify-and-download";
 
-export const UPDATE_EMPLOYMENT_CHECK = "/education-check/update-check"
+export const UPDATE_EMPLOYMENT_CHECK = "/employment-check/update-check"
+export const SEND_VERIFICATION_MAIL_TO_HR = "/employment-check/send-hr-mail"
+export const HR_MAIL_HISTORY = "/employment-check/email-log"
 export const UPDATE_REFERENCE_CHECK = '';
 
 export const UPDATE_IDENTITY_CHECK_ENDPOINT = ""
