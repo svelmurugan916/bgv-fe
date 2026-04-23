@@ -6,6 +6,7 @@ import TopBarLoader from "./component/common/TopBarLoader.jsx";
 import {VERIFY_ADDRESS_TOKEN, VERIFY_CANDIDATE_TOKEN, VERIFY_DIGI_LOCKER_TOKEN} from "./constant/Endpoint.tsx";
 import NotificationSystem from "./component/notification/NotificationSystem.jsx";
 import { NotificationProvider } from './context/NotificationContext.jsx';
+import ReportPage from "./component/report/ReportPage.jsx";
 
 // --- LAZY IMPORTS ---
 const BGVForm = lazy(() => import("./page/bgv-form/BGVForm.jsx"));
@@ -30,7 +31,6 @@ const TokenVerifier = lazy(() => import("./page/bgv-form/CandidateTokenVerifier.
 const OrganizationDashboard = lazy(() => import("./component/dashboard/organization/OrganizationDashboard.jsx"));
 const BlocklistCollegePage = lazy(() => import("./page/blocklist-college/BlocklistCollegePage.jsx"));
 const CreateOrganization = lazy(() => import("./page/organization/CreateOrganization.jsx"));
-const ReportGenerator = lazy(() => import("./component/report/ReportGenerator.jsx"));
 const OrganizationDetail = lazy(() => import("./page/organization/OrganizationDetail.jsx"));
 const OrganizationCases = lazy(() => import("./component/candidate/OrganizationCases.jsx"));
 const PendingInvitations = lazy(() => import("./component/candidate/pending-invitation/PendingInvitations.jsx"));
@@ -98,6 +98,7 @@ function App() {
                                                     />
                                                 }
                                             />
+                                            <Route path={"/report"} element={<ReportPage />} />
 
                                             <Route element={<ProtectedRoute />}>
                                                 <Route path="/select-role" element={<RoleSelectionPage />} />
@@ -146,7 +147,6 @@ function App() {
                                                     <Route path="/check-creation" element={<BulkCreateCandidates />} />
                                                     <Route path="/candidate-details/:id?" element={<CandidateDetails />} />
                                                     <Route path="/dddd" element={<DashboardContent />} />
-                                                    <Route path="/report" element={<ReportGenerator />} />
                                                     <Route path="/reports" element={<div>Reports Page</div>} />
                                                     <Route path="/settings" element={<div>Settings Page</div>} />
                                                 </Route>
