@@ -76,6 +76,7 @@ export const UPLOAD_SUPPORTING_DOCUMENT = "/candidate/upload-supporting-document
 export const UPLOAD_EMPLOYMENT_DOCUMENT = "/files/candidate/{candidateId}/upload-multiple";
 export const UPLOAD_INTERNAL_PROOF = "/files/task/{taskId}/upload-proof"
 export const REMOVE_INTERNAL_PROOF = "/files/task/{fileId}/delete-file"
+export const REMOVE_EVIDENCE_PROOF_DOCUMENT = "/files/task/{fileId}/delete-evidence-file"
 
 export const SEND_DIGI_LOCKER_LINK_FOR_AADHAAR = "/aadhaar/send-digilocker-verification-url"
 export const PAN_VERIFY = "/pan/verify"
@@ -104,7 +105,7 @@ export const VERIFY_AND_DOWNLOAD_DIGILOCKER_STATUS = "/aadhaar/verify-and-downlo
 export const UPDATE_EMPLOYMENT_CHECK = "/employment-check/update-check"
 export const SEND_VERIFICATION_MAIL_TO_HR = "/employment-check/send-hr-mail"
 export const HR_MAIL_HISTORY = "/employment-check/email-log"
-export const UPDATE_REFERENCE_CHECK = '';
+export const UPDATE_REFERENCE_CHECK = '/reference-check/update-check';
 
 export const UPDATE_IDENTITY_CHECK_ENDPOINT = ""
 

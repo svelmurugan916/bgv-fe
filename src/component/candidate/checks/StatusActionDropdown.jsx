@@ -27,7 +27,11 @@ const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatu
             }, 1000);
         } else if (apiStatus === 'success' && countdown === 0) {
             // Callback: Reload the page to reflect new status across the dashboard
-            onStatusChangeSuccess();
+            if(onStatusChangeSuccess) {
+                onStatusChangeSuccess();
+            } else {
+                window.location.reload();
+            }
         }
         return () => clearInterval(timer);
     }, [apiStatus, countdown]);

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, forwardRef } from 'react';
 import {
     ChevronRightIcon, AlertTriangle, TimerIcon, GraduationCap, HistoryIcon, ShieldAlertIcon
 } from 'lucide-react';
-import CriminalDatabaseCheck from './checks/CriminalDatabaseCheck';
+import CriminalCheck from './checks/criminal-check/CriminalCheck.jsx';
 import { useParams } from "react-router-dom";
 import { useAuthApi } from "../../provider/AuthApiProvider.jsx";
 import {
@@ -352,7 +352,7 @@ const CandidateShow = () => {
                                         case 'employment':
                                             return <CheckExperience employmentId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'criminal':
-                                            return <CriminalDatabaseCheck taskId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
+                                            return <CriminalCheck taskId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'database':
                                             return <CheckDatabase taskId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'identity':
