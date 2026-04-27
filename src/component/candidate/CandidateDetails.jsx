@@ -48,6 +48,7 @@ const CandidateShow = () => {
     const [taskTypes, setTaskTypes] = useState([]);
     const [notFound, setNotFound] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [caseBillingStatus, setCaseBillingStatus] = useState(undefined);
 
     const handleOpenIDVerificationModal = (docType) => {
         setSelectedIDDocumentType(docType);
@@ -144,6 +145,7 @@ const CandidateShow = () => {
             if (response.status === 200) {
                 setCandidateData(response.data);
                 const caseDetails = response.data?.caseDetails;
+                setCaseBillingStatus(response.data?.candidateInfo?.caseBillingStatus)
                 const taskTypes = caseDetails?.checks?.map(c => c.taskName);
                 setTaskTypes(taskTypes);
                 console.log(taskTypes);
@@ -217,6 +219,28 @@ const CandidateShow = () => {
                     {loading ? <CandidateDetailsPageHeaderLoader /> : (
                         <>
                             {/* 1. BREADCRUMBS */}
+                            {/* Add this block in CandidateShow.jsx */}
+                            {caseBillingStatus === 'INSUFFICIENT_FUNDS' && (
+                                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-[1.5rem] flex items-center justify-between animate-in slide-in-from-top-2 duration-500">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                                            <ShieldAlertIcon size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-amber-900 uppercase tracking-widest leading-none mb-1.5">
+                                                Funding Exception
+                                            </p>
+                                            <p className="text-xs font-bold text-amber-700/90 leading-relaxed">
+                                                Insufficient funds in the wallet. The fund allocation for this case has been paused. Please top up your account to resume verification.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button className="px-5 py-2.5 bg-amber-600 text-white text-[10px] font-black uppercase rounded-xl hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 active:scale-95">
+                                        Add Funds
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest">
                                     <span className="text-slate-400 cursor-pointer hover:text-[#5D4591]" onClick={() => window.history.back()}>Candidates</span>
@@ -346,13 +370,13 @@ const CandidateShow = () => {
                                     const activeCheck = candidateData?.caseDetails?.checks.find(c => c.taskId === activeTab);
                                     switch (activeCheck?.taskName) {
                                         case 'address':
-                                            return <CheckAddress addressId={activeCheck.taskId} caseStatus={consolidatedData.status}/>;
+                                            return <CheckAddress addressId={activeCheck.taskId} caseStatus={consolidatedData.status} caseBillingStatus={caseBillingStatus}/>;
                                         case 'education':
                                             return <CheckEducation educationId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'employment':
                                             return <CheckExperience employmentId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'criminal':
-                                            return <CriminalCheck taskId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
+                                            return <CriminalCheck taskId={activeCheck.taskId} caseStatus={consolidatedData.status} caseBillingStatus={caseBillingStatus}/>
                                         case 'database':
                                             return <CheckDatabase taskId={activeCheck.taskId} caseStatus={consolidatedData.status}/>
                                         case 'identity':

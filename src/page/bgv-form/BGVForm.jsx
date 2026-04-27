@@ -54,7 +54,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
 
     const handleNext = async () => {
         setSubmitError(null); // Clear previous errors
-        const isNewError = validateStep(activeStep, formData, setErrors, candidateDataResponse?.checkConfigs, candidateDataResponse?.checks);
+        const isNewError = validateStep(activeStep, formData, setErrors, candidateDataResponse?.checkConfigs);
 
         if (Object.entries(isNewError).length === 0) {
             setIsSaving(true);
@@ -164,7 +164,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
             const validationSteps = filteredSteps.filter(s => s.id < REVIEW_PAGE_IDX);
             for (const stepObj of validationSteps) {
                 const i = stepObj.id;
-                const stepErrors = validateStep(i, initialFormData, () => {}, checkConfigs, checks);
+                const stepErrors = validateStep(i, initialFormData, () => {}, checkConfigs);
                 let hasData = true;
                 console.log('stepErrors -- ', stepErrors)
 
@@ -207,7 +207,7 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
 
     const renderStep = () => {
         switch (activeStep) {
-            case 1: return <BasicInfo checks={candidateDataResponse?.checks || []} />;
+            case 1: return <BasicInfo />;
             case 2: return <AddressDetails />;
             case 3: return <IDVerification />;
             case 4: return <Education />;

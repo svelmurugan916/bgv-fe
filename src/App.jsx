@@ -34,6 +34,7 @@ const CreateOrganization = lazy(() => import("./page/organization/CreateOrganiza
 const OrganizationDetail = lazy(() => import("./page/organization/OrganizationDetail.jsx"));
 const OrganizationCases = lazy(() => import("./component/candidate/OrganizationCases.jsx"));
 const PendingInvitations = lazy(() => import("./component/candidate/pending-invitation/PendingInvitations.jsx"));
+const InSufficientCaseDetails = lazy(() => import("./component/candidate/InSufficientCaseDetails.jsx"));
 const CaseAssignmentPage = lazy(() => import("./page/case-assignment/CaseAssignmentPage.jsx"));
 const UserManagement = lazy(() => import("./page/user-management/UserManagement.jsx"));
 const RoleManagement = lazy(() => import("./page/role-management/RoleManagement.jsx"));
@@ -138,6 +139,7 @@ function App() {
 
 
                                                     <Route path="/candidate/pending-invitation/:id?" element={<PendingInvitations />} />
+                                                    <Route path="/candidate/insufficient-cases/:id?" element={<InSufficientCaseDetails />} />
                                                     <Route path="/report-analytics" element={<ReportAnalyticsPage />} />
 
 

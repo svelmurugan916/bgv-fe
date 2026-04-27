@@ -87,6 +87,10 @@ export const INVITED_ALL_CANDIDATE_LIST = "/candidate/all-invited-candidate";
 export const FORM_NOT_SUBMITTED_COUNT = "/candidate/form-non-submitted-stop-case-count"
 export const RESEND_INVITE_NOTIFICATION = "/candidate/resend-invitation"
 
+export const BILLING_ERROR_CASES = "/tasks/get-billing-error-cases"
+export const BILLING_ERROR_CASES_FOR_ORGANIZATION = "/tasks/get-billing-error-cases-for-organization"
+export const RETRY_FAILED_BILLING_CASES = "/case/reserve-fund-for-case"
+export const PINCODE_API = "/pincode"
 export const GET_ALL_CANDIDATES_TASKS = "/tasks/get-all-candidate";
 export const GET_CANDIDATES_TASKS_FOR_ORGANIZATION = "/tasks/get-candidate-for-organization";
 export const MARK_CANDIDATE_AS_STOP_CASE = "/candidate/mark-as-stop-case"

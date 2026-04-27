@@ -9,11 +9,11 @@ const BlocklistCollegePage = () => {
     const [searchQuery, setSearchQuery] = useState('');
 
     const [colleges, setColleges] = useState([
-        { id: 1, name: "Global Institute of Tech", state: "Karnataka", reason: "Fake Degree", dateAdded: "Jan 15" },
-        { id: 2, name: "National Academy", state: "Delhi", reason: "Unrecognized", dateAdded: "Nov 20" },
-        { id: 3, name: "Pacific Management", state: "Maharashtra", reason: "Forgery", dateAdded: "Feb 05" },
-        { id: 4, name: "Apex Engineering", state: "Tamil nadu", reason: "Blacklisted", dateAdded: "Mar 12" },
-        { id: 5, name: "Zion Business School", state: "Uttar pradesh", reason: "Identity Theft", dateAdded: "Apr 01" },
+        { id: 1, name: "Global Institute of Tech", city: "Bangalore", state: "Karnataka", reason: "Fake Degree", dateAdded: "Jan 15" },
+        { id: 2, name: "National Academy", city: "Bangalore", state: "Delhi", reason: "Unrecognized", dateAdded: "Nov 20" },
+        { id: 3, name: "Pacific Management", city: "Bangalore", state: "Maharashtra", reason: "Forgery", dateAdded: "Feb 05" },
+        { id: 4, name: "Apex Engineering", city: "Bangalore", state: "Tamil nadu", reason: "Blacklisted", dateAdded: "Mar 12" },
+        { id: 5, name: "Zion Business School", city: "Bangalore", state: "Uttar pradesh", reason: "Identity Theft", dateAdded: "Apr 01" },
     ]);
 
     const handleDelete = (id) => {
@@ -88,7 +88,7 @@ const BlocklistCollegePage = () => {
                                 {/* Only State Remains here */}
                                 <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
-                            <MapPin size={10} /> {college.state}
+                            <MapPin size={10} /> {college?.city}, {college.state}
                         </span>
                                 </div>
 

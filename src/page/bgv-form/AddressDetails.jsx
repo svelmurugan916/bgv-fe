@@ -8,23 +8,28 @@ import {
     ShieldCheckIcon,
     MapPinIcon,
     CalendarIcon,
-    ClockIcon
+    ClockIcon,
+    Loader2 // Added for a subtle loading state
 } from 'lucide-react';
 import FormPageHeader from "./FormPageHeader.jsx";
 import InputComponent from "./InputComponent.jsx";
 import { useForm } from "../../provider/FormProvider.jsx";
 import FormSingleDropdownSelect from "./FormSingleDropdownSelect.jsx";
-import {PHONE_NUMBER_REGEX} from "../../constant/ApplicationConstant.js";
+import {PHONE_NUMBER_REGEX, METHOD} from "../../constant/ApplicationConstant.js";
 import { v4 as uuidv4 } from 'uuid';
 import CustomDatePicker from "../../component/common/CustomDatePicker.jsx";
+import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
+import {PINCODE_API} from "../../constant/Endpoint.tsx";
 
 const AddressDetails = () => {
     const { formData, updateFormData, errors, clearError } = useForm();
+    const { authenticatedRequest } = useAuthApi();
 
     const data = formData?.basic || {};
     const addresses = data.addresses || [];
 
     const [lastAddedId, setLastAddedId] = useState(null);
+    const [pincodeLoading, setPincodeLoading] = useState({});
 
     useEffect(() => {
         if (addresses.length === 0) {
@@ -41,6 +46,38 @@ const AddressDetails = () => {
             }
         }
     }, [addresses.length, lastAddedId]);
+
+    // --- Pincode API Logic ---
+    const fetchPincodeDetails = async (index, pincode) => {
+        setPincodeLoading(prev => ({ ...prev, [index]: true }));
+        try {
+            const response = await authenticatedRequest({}, `${PINCODE_API}/${pincode}`, METHOD.GET);
+            if (response.status === 200 && response.data) {
+                const res = response.data;
+                const newAddresses = [...addresses];
+
+                // Map City, State, Country
+                newAddresses[index].city = res.district || res.city;
+                newAddresses[index].state = res.state;
+                newAddresses[index].country = res.country;
+                newAddresses[index].pincode = pincode;
+
+                // Map Address Line 2 ONLY if it is currently empty
+                if (!newAddresses[index].addressLine2 && res.postOffices?.length > 0) {
+                    newAddresses[index].addressLine2 = res.postOffices[0];
+                }
+
+                updateFormData('basic', { ...data, addresses: newAddresses });
+
+                // Clear errors for auto-filled fields
+                ['city', 'state', 'country', 'pincode'].forEach(f => clearError(`addr_${index}_${f}`));
+            }
+        } catch (err) {
+            console.error("Pincode error:", err);
+        } finally {
+            setPincodeLoading(prev => ({ ...prev, [index]: false }));
+        }
+    };
 
     const handleSameAsPermanent = (index) => {
         const permanentAddr = addresses.find(a => a.addressType === 'PERMANENT');
@@ -84,7 +121,11 @@ const AddressDetails = () => {
         const newAddresses = [...addresses];
         newAddresses[index] = { ...newAddresses[index], [field]: value };
 
-        // AUTO-LOGIC: If Address Type is CURRENT, force "Currently Staying Here" to true
+        // Trigger Pincode API if 6 digits entered
+        if (field === 'pincode' && value.length === 6) {
+            fetchPincodeDetails(index, value);
+        }
+
         if (field === 'addressType' && value === 'CURRENT') {
             newAddresses[index].isCurrentAddress = true;
             newAddresses[index].stayingTo = '';
@@ -166,7 +207,6 @@ const AddressDetails = () => {
                                         onClick={() => handleSameAsPermanent(index)}
                                         className="text-[8px] sm:text-[10px] font-black text-[#5D4591] uppercase bg-[#F9F7FF] px-2.5 sm:px-4 py-2 rounded-lg sm:rounded-xl border border-[#5D4591]/10 hover:bg-[#F0EDFF] transition-all cursor-pointer whitespace-nowrap active:scale-95"
                                     >
-                                        {/* Shorten text on very small screens, full text on larger ones */}
                                         <span className="xs:hidden">Same as Perm</span>
                                         <span className="hidden xs:inline">Same as Permanent</span>
                                     </button>
@@ -175,7 +215,7 @@ const AddressDetails = () => {
                                 {addresses.length > 1 && (
                                     <button
                                         onClick={() => removeAddress(index)}
-                                        className="text-slate-300 hover:text-red-500 transition-colors p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl cursor-pointer active:scale-95"
+                                        className="text-slate-400 hover:text-red-500 transition-colors p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl cursor-pointer active:scale-95"
                                     >
                                         <Trash2 size={18} className="sm:size-[20px]" />
                                     </button>
@@ -215,6 +255,21 @@ const AddressDetails = () => {
                                     onChange={(v) => handleAddressChange(index, 'addressLine2', v)}
                                 />
                             </div>
+                            <div id={`addr_${index}_pincode`} className="relative">
+                                <InputComponent
+                                    label="Pincode"
+                                    placeholder={"e.g. 560034"}
+                                    isMandatory={true}
+                                    value={addr.pincode}
+                                    error={errors[`addr_${index}_pincode`]}
+                                    onChange={(v) => handleAddressChange(index, 'pincode', v)}
+                                />
+                                {pincodeLoading[index] && (
+                                    <div className="absolute right-4 top-[42px]">
+                                        <Loader2 size={16} className="animate-spin text-[#5D4591]" />
+                                    </div>
+                                )}
+                            </div>
                             <div id={`addr_${index}_city`}>
                                 <InputComponent
                                     label="City"
@@ -233,16 +288,6 @@ const AddressDetails = () => {
                                     value={addr.state}
                                     error={errors[`addr_${index}_state`]}
                                     onChange={(v) => handleAddressChange(index, 'state', v)}
-                                />
-                            </div>
-                            <div id={`addr_${index}_pincode`}>
-                                <InputComponent
-                                    label="Pincode"
-                                    placeholder={"e.g. 560034"}
-                                    isMandatory={true}
-                                    value={addr.pincode}
-                                    error={errors[`addr_${index}_pincode`]}
-                                    onChange={(v) => handleAddressChange(index, 'pincode', v)}
                                 />
                             </div>
                             <div id={`addr_${index}_country`}>
@@ -269,7 +314,7 @@ const AddressDetails = () => {
                                             <input
                                                 type="checkbox" className="sr-only peer"
                                                 checked={addr.isCurrentAddress}
-                                                disabled={addr.addressType === 'CURRENT'} // Disable if address type is CURRENT
+                                                disabled={addr.addressType === 'CURRENT'}
                                                 onChange={(e) => handleAddressChange(index, 'isCurrentAddress', e.target.checked)}
                                             />
                                             <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:bg-[#5D4591] transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
@@ -328,7 +373,7 @@ const AddressDetails = () => {
 
                                 <div className="space-y-3">
                                     {!addr.isSelfContact ? (
-                                        <div className="animate-in slide-in-from-top-2 duration-300" id={`addr_${index}_siteContactMobile`}>
+                                        <div id={`addr_${index}_siteContactMobile`}>
                                             <p className="text-[11px] text-[#4A3675]/80 mb-3 font-bold uppercase tracking-tight">Enter the mobile number of someone currently at this address.</p>
                                             <div className="relative">
                                                 <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B78B4]" />
@@ -336,7 +381,7 @@ const AddressDetails = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="flex gap-3 items-center p-4 bg-white/60 rounded-2xl border border-[#5D4591]/10 animate-in fade-in">
+                                        <div className="flex gap-3 items-center p-4 bg-white/60 rounded-2xl border border-[#5D4591]/10 ">
                                             <CheckCircle2 size={16} className="text-[#5D4591] shrink-0" />
                                             <p className="text-[11px] text-[#4A3675] font-bold uppercase tracking-tight">A verification link will be sent to your mobile. Open it while at this address.</p>
                                         </div>
@@ -356,10 +401,7 @@ const AddressDetails = () => {
             <div className="mt-8 flex justify-center">
                 <button
                     onClick={addAddress}
-                    className="flex items-center justify-center bg-[#5D4591] text-white hover:bg-[#4a3675] transition-all duration-300 shadow-xl shadow-[#5D4591]/20 cursor-pointer
-                        w-14 h-14 rounded-full
-                        sm:w-auto sm:px-10 sm:py-5 sm:rounded-[2rem] sm:gap-3
-                        active:scale-95"
+                    className="flex items-center justify-center bg-[#5D4591] text-white hover:bg-[#4a3675] transition-all duration-300 shadow-xl shadow-[#5D4591]/20 cursor-pointer w-14 h-14 rounded-full sm:w-auto sm:px-10 sm:py-5 sm:rounded-[2rem] sm:gap-3 active:scale-95"
                 >
                     <Plus size={24} strokeWidth={3} />
                     <span className="hidden sm:inline text-xs font-black uppercase tracking-[0.2em]">

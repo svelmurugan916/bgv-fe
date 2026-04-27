@@ -77,6 +77,49 @@ const CreateOrganizationModal = ({setIsModalOpen, selectedChecks,
                 return FileText;
         }
     }
+
+    // --- Validation Logic ---
+    const getCriminalValidation = () => {
+        if (!selectedChecks.includes('CRIMINAL')) return { isValid: true };
+
+        // 1. Check if Address is even selected
+        if (!selectedChecks.includes('ADDRESS')) {
+            return { isValid: false, message: "Criminal check requires an Address check to be selected." };
+        }
+
+        const rank = { 'current': 1, 'permanent': 2, 'past': 3 };
+        const crimConfig = checkConfigs.CRIMINAL;
+        const addrConfig = checkConfigs.ADDRESS;
+
+        const crimRank = rank[crimConfig.duration] || 0;
+        const addrRank = rank[addrConfig.history] || 0;
+
+        // 2. Compare Ranks (e.g., Criminal cannot be 'Past' if Address is 'Current')
+        if (crimRank !== addrRank) {
+            return {
+                isValid: false,
+                message: `Address check must be at least "${crimConfig.duration === 'past' ? 'Past(Other)' : crimConfig.duration}" to support this Criminal check.`
+            };
+        }
+
+        // 3. Compare Years if both are 'Past'
+        if (crimConfig.duration === 'past' && addrConfig.history === 'past') {
+            const crimYears = parseInt(crimConfig.customDuration || 0);
+            const addrYears = parseInt(addrConfig.customHistory || 0);
+
+            if (crimYears === 0 || addrYears === 0 || crimYears > addrYears) {
+                return {
+                    isValid: false,
+                    message: `Address history (${addrYears} yrs) must be greater than or equal to Criminal search duration (${crimYears} yrs).`
+                };
+            }
+        }
+
+        return { isValid: true };
+    };
+
+    const validation = getCriminalValidation();
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
@@ -193,26 +236,44 @@ const CreateOrganizationModal = ({setIsModalOpen, selectedChecks,
                                                 )}
 
                                                 {/* CRIMINAL - Updated to Current, Permanent, Past(Other) */}
+                                                {/* CRIMINAL SECTION */}
                                                 {checkId === 'CRIMINAL' && (
-                                                    <>
-                                                        {[
-                                                            { id: 'current', label: 'Current' },
-                                                            { id: 'permanent', label: 'Permanent' },
-                                                            { id: 'past', label: 'Past(Other)' }
-                                                        ].map(opt => (
-                                                            <button key={opt.id} onClick={() => updateConfig('CRIMINAL', 'duration', opt.id)} className={`cursor-pointer px-4 py-2 rounded-xl text-xs font-bold border transition-all ${checkConfigs.CRIMINAL.duration === opt.id ? 'bg-[#5D4591] text-white border-[#5D4591]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}>{opt.label}</button>
-                                                        ))}
-                                                        {checkConfigs.CRIMINAL.duration === 'past' && (
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Enter Years"
-                                                                className="w-24 px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-[#5D4591] bg-white"
-                                                                value={checkConfigs.CRIMINAL.customDuration || ''}
-                                                                onChange={(e) => handleNumericChange('CRIMINAL', 'customDuration', e.target.value)}
-                                                            />
+                                                    <div className="flex flex-col gap-3 w-full">
+                                                        <div className="flex flex-wrap items-center gap-3">
+                                                            {[
+                                                                { id: 'current', label: 'Current' },
+                                                                { id: 'permanent', label: 'Permanent' },
+                                                                { id: 'past', label: 'Past(Other)' }
+                                                            ].map(opt => (
+                                                                <button
+                                                                    key={opt.id}
+                                                                    onClick={() => updateConfig('CRIMINAL', 'duration', opt.id)}
+                                                                    className={`cursor-pointer px-4 py-2 rounded-xl text-xs font-bold border transition-all ${checkConfigs.CRIMINAL.duration === opt.id ? 'bg-[#5D4591] text-white border-[#5D4591]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}
+                                                                >
+                                                                    {opt.label}
+                                                                </button>
+                                                            ))}
+                                                            {checkConfigs.CRIMINAL.duration === 'past' && (
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Years"
+                                                                    className="w-20 px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-[#5D4591] bg-white"
+                                                                    value={checkConfigs.CRIMINAL.customDuration || ''}
+                                                                    onChange={(e) => handleNumericChange('CRIMINAL', 'customDuration', e.target.value)}
+                                                                />
+                                                            )}
+                                                        </div>
+
+                                                        {/* Validation Warning Message */}
+                                                        {!validation.isValid && (
+                                                            <div className="flex items-center gap-2 text-rose-500 bg-rose-50 px-4 py-2 rounded-xl border border-rose-100 animate-in fade-in slide-in-from-top-1">
+                                                                <AlertCircle size={14} />
+                                                                <span className="text-[10px] font-black uppercase tracking-tight">{validation.message}</span>
+                                                            </div>
                                                         )}
-                                                    </>
+                                                    </div>
                                                 )}
+
 
                                                 {/* EDUCATION */}
                                                 {checkId === 'EDUCATION' && [
@@ -261,21 +322,19 @@ const CreateOrganizationModal = ({setIsModalOpen, selectedChecks,
 
                         <button
                             onClick={savePackage}
-                            disabled={!packageName || selectedChecks.length === 0 || showButtonLoader}
+                            disabled={
+                                !packageName ||
+                                selectedChecks.length === 0 ||
+                                showButtonLoader ||
+                                !validation.isValid // Prevent save if validation fails
+                            }
                             className={`px-10 py-3.5 rounded-2xl font-bold text-white shadow-xl transition-all flex items-center justify-center min-w-[180px] ${
-                                (selectedChecks.length > 0 && packageName && !showButtonLoader)
+                                (selectedChecks.length > 0 && packageName && !showButtonLoader && validation.isValid)
                                     ? 'bg-[#5D4591] shadow-[#5D4591]/20 hover:-translate-y-0.5 cursor-pointer'
                                     : 'bg-slate-300 cursor-not-allowed'
                             }`}
                         >
-                            {showButtonLoader ? (
-                                <div className="flex items-center gap-2">
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    <span>Saving...</span>
-                                </div>
-                            ) : (
-                                "Save Package"
-                            )}
+                            {showButtonLoader ? "Saving..." : "Save Package"}
                         </button>
                     </div>
                 </div>

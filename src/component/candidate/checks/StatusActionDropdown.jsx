@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     ChevronDown, ShieldCheck, Timer, AlertTriangle,
     SearchX, ShieldAlert, Edit3, ArrowLeft, Send, Loader2,
-    CheckCircle2, XCircle, RefreshCcw, Check
+    CheckCircle2, XCircle, RefreshCcw, Check, EyeIcon
 } from 'lucide-react';
 import { READ_ONLY_TASK_STATUS } from "../../../constant/ApplicationConstant.js";
 
@@ -67,6 +67,7 @@ const StatusActionDropdown = ({ onStatusChange, setIsEditModalOpen, currentStatu
         { id: 'CLEARED', label: 'Clear Check', sub: 'Verification Successful', icon: <ShieldCheck size={16} />, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { id: 'IN_PROGRESS', label: 'In Progress', sub: 'Currently Verifying', icon: <Timer size={16} />, color: 'text-blue-600', bg: 'bg-blue-50' },
         { id: 'INSUFFICIENCY', label: 'Insufficiency', sub: 'Information Missing', icon: <AlertTriangle size={16} />, color: 'text-orange-600', bg: 'bg-orange-50' },
+        { id: 'NEEDS_REVIEW', label: 'Manual Review', sub: 'Requires Human Audit', icon: <EyeIcon size={16} />, color: 'text-indigo-600', bg: 'bg-indigo-50' },
         { id: 'UNABLE_TO_VERIFY', label: 'Unable to Verify', sub: 'Inconclusive Result', icon: <SearchX size={16} />, color: 'text-slate-500', bg: 'bg-slate-50' },
         { id: 'FAILED', label: 'Mark as Failed', sub: 'Verification Rejected', icon: <ShieldAlert size={16} />, color: 'text-rose-600', bg: 'bg-rose-50' },
     ];

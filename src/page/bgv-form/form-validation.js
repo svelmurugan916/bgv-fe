@@ -8,7 +8,7 @@ export const EXPERIENCE_PAGE_IDX = 5;
 export const REFERENCE_PAGE_IDX = 6;
 export const REVIEW_PAGE_IDX = 7;
 
-export const validateStep = (step, formData, setErrors, checkConfigs = {}, checks = []) => {
+export const validateStep = (step, formData, setErrors, checkConfigs = {}) => {
     let newErrors = {};
     if (step === BASIC_INFO_PAGE_IDX) {
         const { basic } = formData;
@@ -18,7 +18,7 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
         if (!basic.gender) newErrors.gender = "Gender is required";
         if (!EMAIL_REGEX.test(basic.email)) newErrors.email = "Invalid email format";
         if (!PHONE_NUMBER_REGEX.test(basic.phone)) newErrors.phone = "Invalid 10-digit phone number";
-        if(!checks.includes("IDENTITY") && !basic.dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required";
+        if(!basic.dateOfBirth) newErrors.dateOfBirth = "Date of Birth is required";
     }
 
     if(step === ADDRESS_INFO_PAGE_IDX) {
@@ -164,9 +164,13 @@ export const validateStep = (step, formData, setErrors, checkConfigs = {}, check
             education.forEach((edu) => {
                 if (!edu.level) newErrors[`edu_${edu.id}_level`] = "Required";
                 if (!edu.degree) newErrors[`edu_${edu.id}_degree`] = "Required";
+                if (!edu.branchSpecialization) newErrors[`edu_${edu.id}_branchSpecialization`] = "Required";
                 if (!edu.college) newErrors[`edu_${edu.id}_college`] = "Required";
                 if (!edu.university) newErrors[`edu_${edu.id}_university`] = "Required";
                 if (!edu.year) newErrors[`edu_${edu.id}_year`] = "Required";
+                if (!edu.passingMonth) newErrors[`edu_${edu.id}_passingMonth`] = "Required";
+                if (!edu.city) newErrors[`edu_${edu.id}_city`] = "Required";
+                if (!edu.state) newErrors[`edu_${edu.id}_state`] = "Required";
                 if (!edu.gpa) {
                     newErrors[`edu_${edu.id}_gpa`] = "Required";
                 } else if (!gpaRegex.test(edu.gpa)) {
@@ -308,6 +312,18 @@ export const validateEmployment = (employmentData, checkConfigs) => {
 
             if (!emp.hrContact || !phoneRegex.test(emp.hrContact)) {
                 errors[`emp_${emp.id}_hrContact`] = "Valid 10-digit HR contact is required";
+            }
+
+            if (!emp.rmName || emp.rmName.trim() === "") {
+                errors[`emp_${emp.id}_rmName`] = "RM name is required";
+            }
+
+            if (!emp.rmEmail || !EMAIL_REGEX.test(emp.rmEmail)) {
+                errors[`emp_${emp.id}_rmEmail`] = "Valid RM official email is required";
+            }
+
+            if (!emp.rmContact || !phoneRegex.test(emp.rmContact)) {
+                errors[`emp_${emp.id}_rmContact`] = "Valid 10-digit RM contact is required";
             }
 
             if ((!emp.documents || emp.documents.length === 0) && !emp.provideLater) {

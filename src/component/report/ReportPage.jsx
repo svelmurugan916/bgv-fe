@@ -313,10 +313,37 @@ import VantiraBGVReport from "./VantiraBGVReport.jsx";
     },
 };
 
+const downloadPDF = async () => {
+    const response = await fetch('http://localhost:3001/generate-pdf', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(mockBgvReport), // Ensure this data matches your component props
+    });
+
+    if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "report.pdf";
+        a.click();
+    }
+};
+
+
+
 
 const ReportPage = () => {
     return (
         <div className="bg-slate-300">
+            <button
+                onClick={() => downloadPDF(mockBgvReport)}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold"
+            >
+                Download PDF Report
+            </button>
             <div className="max-w-6xl mx-auto space-y-10">
                 <VantiraBGVReport reportData={mockBgvReport} />
             </div>

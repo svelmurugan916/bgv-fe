@@ -1,5 +1,5 @@
 // components/bgv/sections/ReportHeader.jsx
-import { useState } from "react";
+import React, { useState } from "react";
 import { Building2, CheckCircle2, Lock, Shield } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────
@@ -167,7 +167,14 @@ export const ReportHeader = ({ report }) => {
             : 0;
 
     return (
-        <header className="relative isolate overflow-hidden bg-[#0a1020] text-white">
+        /*
+           CHANGE 1: Added 'min-h-[297mm]' to ensure it fills exactly one A4 page.
+           CHANGE 2: Added 'break-after-page' (via style) to force the next section to Page 2.
+        */
+        <header
+            className="relative isolate overflow-hidden bg-[#0a1020] text-white min-h-[297mm] flex flex-col"
+            style={{ breakAfter: 'page', pageBreakAfter: 'always' }}
+        >
             {/* Base gradient */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.14),transparent_24%),radial-gradient(circle_at_85%_18%,rgba(56,189,248,0.08),transparent_20%),linear-gradient(135deg,#0a1020_0%,#10172f_48%,#0a1020_100%)]" />
 
@@ -195,13 +202,17 @@ export const ReportHeader = ({ report }) => {
             <div className="absolute inset-x-0 top-0 h-px bg-white/8" />
             <div className="absolute inset-x-0 bottom-0 h-px bg-white/8" />
 
-            <div className="relative px-8 py-10 md:px-14 md:py-14 print:px-10 print:py-8">
+            {/*
+               CHANGE 3: Added 'flex-1 flex flex-col justify-between' to the wrapper
+               to push the bottom strip to the very bottom of the page.
+            */}
+            <div className="relative flex-1 flex flex-col px-8 py-10 md:px-14 md:py-14 print:px-10 print:py-12">
                 {/* Top bar */}
                 <div className="flex flex-col gap-8 border-b border-white/8 pb-8 md:flex-row md:items-start md:justify-between">
                     <div className="space-y-5">
                         <div className="flex items-center gap-4">
-                            <div className="flex h-12 w-12  items-center justify-center rounded-2xl border border-indigo-300/15 bg-white text-indigo-100 shadow-[0_10px_30px_rgba(99,102,241,0.18)]">
-                                <img src="/favicon.png" alt={"V"}/>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-300/15 bg-white text-indigo-100 shadow-[0_10px_30px_rgba(99,102,241,0.18)]">
+                                <img src="/favicon.png" alt={"V"} className="w-6 h-6" />
                             </div>
 
                             <div>
@@ -216,124 +227,99 @@ export const ReportHeader = ({ report }) => {
 
                         <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium uppercase tracking-[0.26em] text-slate-400">
                             <span className="text-indigo-100/90">Confidential report</span>
-
                             {report?.reportId && (
                                 <>
                                     <span className="text-white/16">/</span>
                                     <span>{report.reportId}</span>
                                 </>
                             )}
-
-                            {report?.generatedAt && (
-                                <>
-                                    <span className="text-white/16">/</span>
-                                    <span>{report.generatedAt}</span>
-                                </>
-                            )}
                         </div>
                     </div>
-
                     <ClientOrgLogo org={report?.clientOrganisation} />
                 </div>
 
-                {/* Main hero */}
-                <div className="grid gap-12 py-12 md:grid-cols-[minmax(0,1fr)_320px] md:items-end">
-                    {/* Left side */}
-                    <div>
-                        <div className="flex items-center gap-4">
-                            <div className="h-10 w-px bg-gradient-to-b from-indigo-300/0 via-indigo-200/80 to-indigo-300/0" />
-                            <p className="text-[11px] font-medium uppercase tracking-[0.34em] text-indigo-100/75">
-                                Verification report
-                            </p>
-                        </div>
-
-                        <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[0.94] tracking-[-0.05em] text-white md:text-6xl lg:text-[76px]">
-                            {candidate.fullName || "Candidate Name"}
-                        </h1>
-
-                        {(candidate.role || candidate.company) && (
-                            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300/85 md:text-xl">
-                                {[candidate.role, candidate.company ? `at ${candidate.company}` : null]
-                                    .filter(Boolean)
-                                    .join(" ")}
-                            </p>
-                        )}
-
-                        <IdentityLine candidate={candidate} />
-
-                        <div className="mt-10 grid gap-8 border-t border-white/8 pt-7 sm:grid-cols-2 xl:grid-cols-4">
-                            <MetaItem label="Generated" value={report?.generatedAt} />
-                            <MetaItem label="Requested by" value={report?.requestedBy} />
-                            <MetaItem label="Report ID" value={report?.reportId} />
-                            <MetaItem label="Turnaround" value={report?.turnaroundTime} />
-                        </div>
-                    </div>
-
-                    {/* Right summary card */}
-                    <div className="rounded-[30px] border border-white/8 bg-white/[0.04] p-6 backdrop-blur-xl shadow-[0_18px_60px_rgba(0,0,0,0.22)]">
-                        <div className="flex items-start gap-4">
-                            <CandidateAvatar
-                                photo={candidate.photo}
-                                fullName={candidate.fullName}
-                                size="lg"
-                            />
-
-                            <div className="min-w-0 flex-1 pt-1">
-                                <p className="text-[10px] font-medium uppercase tracking-[0.30em] text-slate-400">
-                                    Verified subject
+                {/* Main hero - Added 'flex-1 flex flex-col justify-center' to vertically center the name */}
+                <div className="flex-1 flex flex-col justify-center py-12">
+                    <div className="grid gap-12 md:grid-cols-[minmax(0,1fr)_320px] md:items-end">
+                        {/* Left side */}
+                        <div>
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-px bg-gradient-to-b from-indigo-300/0 via-indigo-200/80 to-indigo-300/0" />
+                                <p className="text-[11px] font-medium uppercase tracking-[0.34em] text-indigo-100/75">
+                                    Verification report
                                 </p>
+                            </div>
 
-                                <p className="mt-2 truncate text-[18px] font-semibold tracking-tight text-white">
-                                    {candidate.fullName || "Candidate"}
+                            <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[0.94] tracking-[-0.05em] text-white md:text-6xl lg:text-[76px]">
+                                {candidate.fullName || "Candidate Name"}
+                            </h1>
+
+                            {(candidate.role || candidate.company) && (
+                                <p className="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300/85 md:text-xl">
+                                    {[candidate.role, candidate.company ? `at ${candidate.company}` : null]
+                                        .filter(Boolean)
+                                        .join(" ")}
                                 </p>
+                            )}
 
-                                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/16 bg-emerald-400/8 px-3 py-1.5 text-[11px] font-medium text-emerald-100/90">
-                                    <CheckCircle2 className="h-3.5 w-3.5" />
-                                    Enterprise package active
-                                </div>
+                            <IdentityLine candidate={candidate} />
+
+                            <div className="mt-10 grid gap-8 border-t border-white/8 pt-7 sm:grid-cols-2 xl:grid-cols-4">
+                                <MetaItem label="Generated" value={report?.generatedAt} />
+                                <MetaItem label="Requested by" value={report?.requestedBy} />
+                                <MetaItem label="Report ID" value={report?.reportId} />
+                                <MetaItem label="Turnaround" value={report?.turnaroundTime} />
                             </div>
                         </div>
 
-                        {trustScore && (
-                            <div className="mt-8 border-t border-white/8 pt-7">
-                                <p className="text-[10px] font-medium uppercase tracking-[0.30em] text-slate-400">
-                                    Trust score
-                                </p>
-
-                                <div className="mt-4 flex items-end justify-between gap-4">
-                                    <div className="flex items-end gap-2">
-                                        <span className="text-5xl font-semibold leading-none tracking-[-0.05em] text-white">
-                                            {trustScore.score}
-                                        </span>
-                                        <span className="pb-1 text-sm text-slate-400">
-                                            / {trustScore.maxScore}
-                                        </span>
+                        {/* Right summary card */}
+                        <div className="rounded-[30px] border border-white/8 bg-white/[0.04] p-6 backdrop-blur-xl shadow-[0_18px_60px_rgba(0,0,0,0.22)]">
+                            <div className="flex items-start gap-4">
+                                <CandidateAvatar
+                                    photo={candidate.photo}
+                                    fullName={candidate.fullName}
+                                    size="lg"
+                                />
+                                <div className="min-w-0 flex-1 pt-1">
+                                    <p className="text-[10px] font-medium uppercase tracking-[0.30em] text-slate-400">Verified subject</p>
+                                    <p className="mt-2 truncate text-[18px] font-semibold tracking-tight text-white">
+                                        {candidate.fullName || "Candidate"}
+                                    </p>
+                                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/16 bg-emerald-400/8 px-3 py-1.5 text-[11px] font-medium text-emerald-100/90">
+                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                        Enterprise package active
                                     </div>
-
-                                    {trustScore.riskLevel && (
-                                        <span className="rounded-full border border-emerald-400/16 bg-emerald-400/8 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-emerald-100/90">
-                                            {trustScore.riskLevel}
-                                        </span>
-                                    )}
                                 </div>
-
-                                <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/8">
-                                    <div
-                                        className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-sky-400 to-indigo-300"
-                                        style={{ width: `${scorePercent}%` }}
-                                    />
-                                </div>
-
-                                <p className="mt-4 text-sm leading-6 text-slate-400">
-                                    Structured risk view for fast executive review.
-                                </p>
                             </div>
-                        )}
+
+                            {trustScore && (
+                                <div className="mt-8 border-t border-white/8 pt-7">
+                                    <p className="text-[10px] font-medium uppercase tracking-[0.30em] text-slate-400">Trust score</p>
+                                    <div className="mt-4 flex items-end justify-between gap-4">
+                                        <div className="flex items-end gap-2">
+                                            <span className="text-5xl font-semibold leading-none tracking-[-0.05em] text-white">{trustScore.score}</span>
+                                            <span className="pb-1 text-sm text-slate-400">/ {trustScore.maxScore}</span>
+                                        </div>
+                                        {trustScore.riskLevel && (
+                                            <span className="rounded-full border border-emerald-400/16 bg-emerald-400/8 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-emerald-100/90">
+                                                {trustScore.riskLevel}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/8">
+                                        <div
+                                            className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-sky-400 to-indigo-300"
+                                            style={{ width: `${scorePercent}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Bottom trust strip */}
-                <div className="border-t border-white/8 pt-6">
+                {/* Bottom trust strip - Now uses 'mt-auto' to stay at the bottom of the page */}
+                <div className="mt-auto border-t border-white/8 pt-6">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.30em] text-slate-400">
                             <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/8 bg-white/[0.04]">
@@ -343,24 +329,11 @@ export const ReportHeader = ({ report }) => {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-y-2 text-sm text-slate-300/90">
-                            {complianceTags.length > 0 ? (
-                                complianceTags.map((tag, index) => (
-                                    <div key={tag} className="flex items-center">
-                                        {index > 0 && (
-                                            <span className="mx-4 text-white/16">•</span>
-                                        )}
-                                        <span>{tag}</span>
-                                    </div>
-                                ))
-                            ) : (
-                                <>
-                                    <span>256-bit AES encrypted</span>
-                                    <span className="mx-4 text-white/16">•</span>
-                                    <span>Tamper-evident</span>
-                                    <span className="mx-4 text-white/16">•</span>
-                                    <span>Verified enterprise servers</span>
-                                </>
-                            )}
+                            <span>256-bit AES encrypted</span>
+                            <span className="mx-4 text-white/16">•</span>
+                            <span>Tamper-evident</span>
+                            <span className="mx-4 text-white/16">•</span>
+                            <span>Verified enterprise servers</span>
                         </div>
                     </div>
                 </div>

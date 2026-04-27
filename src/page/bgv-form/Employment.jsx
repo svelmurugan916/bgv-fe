@@ -76,7 +76,11 @@ const Employment = () => {
         hrName: '',
         hrEmail: '',
         hrContact: '',
+        rmName: '',
+        rmEmail: '',
+        rmContact: '',
         doNotContact: false,
+        rmDoNotContact: false,
         reason: '',
         documents: [],
         provideLater: false
@@ -329,7 +333,7 @@ const Employment = () => {
                                     <div className="md:col-span-2 p-5 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-5">
                                         <div className="md:col-span-3 flex items-center gap-2 border-b border-slate-200 pb-3">
                                             <Briefcase size={14} className="text-slate-400" />
-                                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">HR / Reporting Manager Details</h4>
+                                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">HR Details</h4>
                                         </div>
                                         <div id={`emp_${emp.id}_hrName`}>
                                             <InputComponent label="HR Name" isMandatory={true} placeholder="e.g. John Doe" value={emp.hrName} error={errors[`emp_${emp.id}_hrName`]} onChange={(v) => handleChange(emp.id, 'hrName', v)} />
@@ -363,6 +367,49 @@ const Employment = () => {
                                                     className="w-3.5 h-3.5 rounded border-slate-300 accent-red-500 text-red-500 cursor-pointer"
                                                 />
                                                 <span className={`text-[10px] font-bold uppercase tracking-tight transition-colors ${emp.doNotContact ? 'text-red-500' : 'text-slate-500 group-hover:text-red-500'}`}>
+                                                    Do not contact this employer
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div className="md:col-span-2 p-5 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-5">
+                                        <div className="md:col-span-3 flex items-center gap-2 border-b border-slate-200 pb-3">
+                                            <Briefcase size={14} className="text-slate-400" />
+                                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Reporting Manager Details</h4>
+                                        </div>
+                                        <div id={`emp_${emp.id}_rmName`}>
+                                            <InputComponent label="RM Name" isMandatory={true} placeholder="e.g. John Doe" value={emp.rmName} error={errors[`emp_${emp.id}_rmName`]} onChange={(v) => handleChange(emp.id, 'rmName', v)} />
+                                        </div>
+                                        <div id={`emp_${emp.id}_rmEmail`}>
+                                            <InputComponent
+                                                label="RM Email ID"
+                                                isValid={EMAIL_REGEX.test(emp.rmEmail)}
+                                                isMandatory={true}
+                                                placeholder="john@company.com"
+                                                value={emp.rmEmail}
+                                                error={errors[`emp_${emp.id}_rmEmail`]}
+                                                onChange={(v) => handleChange(emp.id, 'rmEmail', v)}
+                                            />
+                                            {/* Soft warning — doesn't block submission */}
+                                            {EMAIL_REGEX.test(emp.rmEmail) && isPersonalEmail(emp.rmEmail) && (
+                                                <p className="mt-1.5 text-[10px] font-bold text-amber-500 uppercase tracking-wide flex items-center gap-1">
+                                                    <AlertCircleIcon size={11} />
+                                                    Prefer a corporate email (e.g. john@company.com) for faster verification.
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div id={`emp_${emp.id}_rmContact`}>
+                                            <InputComponent label="RM Contact No" isMandatory={true} placeholder="10 Digit Mobile" value={emp.rmContact} error={errors[`emp_${emp.id}_rmContact`]} tooltip="Verification contact." isValid={PHONE_NUMBER_REGEX.test(emp.rmContact)} onChange={(v) => handleChange(emp.id, 'rmContact', v)} />
+
+                                            <label className="flex items-center gap-2 mt-2 cursor-pointer group w-fit">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={emp.rmDoNotContact || false}
+                                                    onChange={(e) => handleChange(emp.id, 'rmDoNotContact', e.target.checked)}
+                                                    className="w-3.5 h-3.5 rounded border-slate-300 accent-red-500 text-red-500 cursor-pointer"
+                                                />
+                                                <span className={`text-[10px] font-bold uppercase tracking-tight transition-colors ${emp.rmDoNotContact ? 'text-red-500' : 'text-slate-500 group-hover:text-red-500'}`}>
                                                     Do not contact this employer
                                                 </span>
                                             </label>

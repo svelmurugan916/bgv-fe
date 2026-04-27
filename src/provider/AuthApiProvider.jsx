@@ -146,7 +146,7 @@ export const AuthApiProvider = ({ children }) => {
         const duration = Date.now() - startTime;
         const minimumWait = 800;
         if (duration < minimumWait) {
-            await new Promise(resolve => setTimeout(resolve, minimumWait - duration));
+            // await new Promise(resolve => setTimeout(resolve, minimumWait - duration));
         }
         return response;
     }, [accessToken, refreshAccessToken, apiCallHit, isCandidatePath]);

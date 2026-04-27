@@ -14,7 +14,7 @@ import AddressVerificationEvidence from "./AddressVerificationEvidence.jsx";
 import BaseCheckLayout from "../base-check-layout/BaseCheckLayout.jsx";
 import TaskReservationDrawer from "../../../transaction/TaskReservationDrawer.jsx";
 
-const CheckAddress = ({ addressId, caseStatus }) => {
+const CheckAddress = ({ addressId, caseStatus, caseBillingStatus }) => {
     const [loading, setLoading] = useState(true);
     const { authenticatedRequest } = useAuthApi();
     const componentInitRef = useRef(false);
@@ -71,6 +71,7 @@ const CheckAddress = ({ addressId, caseStatus }) => {
 
     const getBadgeConfig = () => {
         if (hasCoordinates) return { label: 'Verification Received', colorClass: 'bg-emerald-50 text-emerald-600', icon: <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> };
+        if(caseBillingStatus === 'INSUFFICIENT_FUNDS') return { label: 'Insufficient Fund', colorClass: 'bg-rose-50 text-rose-600 border border-rose-100', icon: <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> };
         if (isFundReleasedOrCancelled) return { label: 'Funds Released', colorClass: 'bg-rose-50 text-rose-600 border border-rose-100', icon: <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> };
         if (isLinkExpired) return { label: 'Link Expired', colorClass: 'bg-rose-50 text-rose-600', icon: <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> };
         if (isLinkSent) return { label: 'Awaiting Submission', colorClass: 'bg-amber-50 text-amber-600', icon: <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> };
@@ -144,6 +145,7 @@ const CheckAddress = ({ addressId, caseStatus }) => {
                     addressId={addressId}
                     isDrawerOpen={() => setIsDrawerOpen(true)}
                     caseStatus={caseStatus}
+                    caseBillingStatus={caseBillingStatus}
                 />
             </div>
             <EditAddressModal

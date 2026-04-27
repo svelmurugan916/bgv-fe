@@ -23,7 +23,7 @@ import CustomDatePicker from "../../component/common/CustomDatePicker.jsx";
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 import {REMOVE_PROFILE_PICTURE, UPLOAD_PROFILE_PICTURE} from "../../constant/Endpoint.tsx";
 
-const BasicInfo = ({ checks }) => {
+const BasicInfo = () => {
     const { formData, updateFormData, errors, clearError, candidateId } = useForm();
     const data = formData.basic;
     const { authenticatedRequest } = useAuthApi();
@@ -193,7 +193,6 @@ const BasicInfo = ({ checks }) => {
         }
     };
 
-    const doesCheckContainsId = checks.includes("IDENTITY");
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
             <FormPageHeader heading={"Basic Information"} helperText={"Provide your personal and contact details."} />
@@ -402,19 +401,15 @@ const BasicInfo = ({ checks }) => {
                         onChange={(v) => handleInputChange('fatherName', v)}
                     />
                 </div>
-                {
-                    !doesCheckContainsId && (
-                        <div id={"dateOfBirth"}>
-                            <CustomDatePicker
-                                label="Date Of Birth"
-                                isMandatory={true}
-                                value={data.dateOfBirth}
-                                error={errors.dateOfBirth}
-                                onChange={(v) => handleInputChange('dateOfBirth', v)}
-                            />
-                        </div>
-                    )
-                }
+                <div id={"dateOfBirth"}>
+                    <CustomDatePicker
+                        label="Date Of Birth"
+                        isMandatory={true}
+                        value={data.dateOfBirth}
+                        error={errors.dateOfBirth}
+                        onChange={(v) => handleInputChange('dateOfBirth', v)}
+                    />
+                </div>
 
 
             </div>

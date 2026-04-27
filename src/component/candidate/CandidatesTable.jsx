@@ -10,7 +10,7 @@ import {
     Check,
     ShieldAlert,
     Trash2,
-    History, PackageIcon
+    History, PackageIcon, CloudIcon, CloudDownloadIcon, DownloadCloud, DownloadIcon
 } from "lucide-react";
 import MultiSelectDropdown from "../dropdown/MultiSelectDropdown.jsx";
 import { useNavigate } from "react-router-dom";
@@ -116,7 +116,7 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
                                         key={item.id}
                                         className={`transition-colors group ${isWiped ? 'bg-slate-50/40 opacity-80' : 'hover:bg-[#F9F7FF]/30'}`}
                                     >
-                                        <td className="px-6 py-4 text-sm font-bold text-slate-300">
+                                        <td className="px-6 py-4 text-sm font-bold text-slate-400">
                                             {String(index + 1).padStart(2, '0')}
                                         </td>
 
@@ -231,7 +231,7 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
 
                                         {/* ACTIONS */}
                                         <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-1">
+                                            <div className="justify-center items-center">
                                                 {isWiped ? (
                                                     <div className="px-3 py-1 bg-slate-100 text-slate-400 text-[10px] font-bold rounded flex items-center gap-1.5 border border-slate-200">
                                                         <Trash2 size={12} />
@@ -239,18 +239,8 @@ const CandidatesTable = ({ candidates, searchTerm, setSearchTerm, selectedStatus
                                                     </div>
                                                 ) : (
                                                     <>
-                                                        <button className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-[#5D4591]/80 cursor-pointer">
-                                                            <FileText size={16} />
-                                                        </button>
-                                                        <button
-                                                            disabled={item.status !== 'COMPLETED'}
-                                                            className={`p-2 rounded-lg transition-all ${
-                                                                item.status === 'COMPLETED'
-                                                                    ? 'text-slate-400 hover:text-emerald-500 hover:bg-white cursor-pointer'
-                                                                    : 'text-slate-200 cursor-not-allowed'
-                                                            }`}
-                                                        >
-                                                            <FileCheck size={16} />
+                                                        <button className="px-3 py-1 text-slate-500 text-[10px] font-bold rounded flex items-center gap-1.5 hover:text-[#4a3675]">
+                                                            <DownloadIcon size={16} /> Report
                                                         </button>
                                                     </>
                                                 )}

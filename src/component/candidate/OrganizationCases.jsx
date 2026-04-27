@@ -38,6 +38,7 @@ const OrganizationCases = () => {
     const { authenticatedRequest } = useAuthApi();
     const [formNonSubmittedAndStopCaseCount, setFormNonSubmittedAndStopCaseCount] = useState({});
     const [notFound, setNotFound] = useState(false);
+    const [insufficientCaseCount, setInsufficientCaseCount] = useState(0);
 
     useEffect(() => {
         const fetchCases = async (organizationId) => {
@@ -47,6 +48,7 @@ const OrganizationCases = () => {
                 if (response.status === 200 && response.data) {
                     const apiData = response.data;
                     setCases(apiData);
+                    setInsufficientCaseCount(apiData.filter((candidate) => candidate?.candidateInfo?.caseBillingStatus === 'INSUFFICIENT_FUNDS').length)
                 }
             } catch (error) {
                 console.error("Failed to fetch cases:", error);
@@ -161,7 +163,9 @@ const OrganizationCases = () => {
             <OperationalMetricsBar
                 invitedCount={formNonSubmittedAndStopCaseCount?.formNonSubmittedCandidateCount || 0}
                 stopCaseCount={formNonSubmittedAndStopCaseCount?.stopCaseCount || 0}
+                insufficientFundsCount={insufficientCaseCount}
                 onInvitedClick={() => navigate(`/candidate/pending-invitation/${id}`)}
+                onFundsErrorClick={() => navigate(`/candidate/insufficient-cases/${id}`)}
             />
 
             {/* Content Section */}

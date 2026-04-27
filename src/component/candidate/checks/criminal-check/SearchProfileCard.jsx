@@ -19,7 +19,7 @@ const SearchProfileCard = ({ data }) => (
                 </div>
                 <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase">State / Year</p>
-                    <p className="text-sm font-bold text-slate-600">{data.stateChecked} ({data.yearChecked})</p>
+                    <p className="text-sm font-bold text-slate-600">{data.stateChecked || 'Overall'} / {data.yearChecked || "Overall"}</p>
                 </div>
                 <div className="col-span-2 md:col-span-3">
                     <p className="text-[9px] font-black text-slate-400 uppercase">Address Checked</p>

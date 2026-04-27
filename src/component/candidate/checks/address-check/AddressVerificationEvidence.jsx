@@ -9,8 +9,9 @@ import AddressVerificationLinkExpired from "./AddressVerificationLinkExpired.jsx
 import AddressLinkSent from "./AddressLinkSent.jsx";
 import AddressNoLinkSentYet from "./AddressNoLinkSentYet.jsx";
 import CaseInActive from "../CaseInActive.jsx";
+import InsufficientFundView from "../../../InsufficientFundView.jsx";
 
-const AddressVerificationEvidence = ({addressData, setLoading, fetchAddressDetails, addressId}) => {
+const AddressVerificationEvidence = ({addressData, setLoading, fetchAddressDetails, addressId, caseBillingStatus}) => {
     const {authenticatedRequest} = useAuthApi();
     const { id } = useParams();
     const hasCoordinates = addressData?.addressCandidateSubmittedResponse?.lat && addressData?.addressCandidateSubmittedResponse?.lng;
@@ -41,7 +42,9 @@ const AddressVerificationEvidence = ({addressData, setLoading, fetchAddressDetai
                     {isLinkResent && <AddressVerificationLinkResent addressData={addressData} />}
                     {hasCoordinates && <AddressSubmittedCoordinateDetails addressData={addressData} sendAddressVerificationLink={sendAddressVerificationLink} />}
                 </div>
-            ) : addressData?.isFundReleasedOrCancelled ? (
+            ) : caseBillingStatus === 'INSUFFICIENT_FUNDS' ? (
+                <InsufficientFundView label={"Address"} process={"this address case"} />
+            )  : addressData?.isFundReleasedOrCancelled ? (
                 <CaseInActive taskId={addressId} onRevertSuccess={fetchAddressDetails} label={"Address"} process={"Geo-location"} />
             ) : isLinkExpired ? (
                 <AddressVerificationLinkExpired addressData={addressData} sendAddressVerificationLink={sendAddressVerificationLink} />

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-const FormSingleDropdownSelect = ({ label, options, selected, onSelect, isOccupyFullWidth = false, error = undefined, title = "", isMandatory=false }) => {
+const FormSingleDropdownSelect = ({ label, options, selected, onSelect, isOccupyFullWidth = false, error = undefined, title = "", isMandatory=false, isValid }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -31,7 +31,7 @@ const FormSingleDropdownSelect = ({ label, options, selected, onSelect, isOccupy
                     className={`flex items-center justify-between px-4 py-3 border rounded-xl transition-all duration-200
                     ${isOpen ? 'border-[#5D4591] ring-4 ring-[#5D4591]/10 shadow-sm' : 'hover:border-slate-300'} 
                     ${isOccupyFullWidth ? 'w-full' : 'w-44'}
-                    ${error ? 'border-red-500 bg-red-50/10' : 'bg-white border-slate-200'}
+                    ${error ? 'border-red-500 bg-red-50/10' : isValid ? 'border-green-500 bg-green-50/10' : 'bg-white border-slate-200'}
                 `}
                 >
                 <span className={`text-sm font-medium truncate ${selected ? 'text-slate-900' : 'text-slate-400'}`}>
