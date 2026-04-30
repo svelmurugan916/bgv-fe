@@ -8,7 +8,7 @@ import {METHOD} from "../../../../constant/ApplicationConstant.js";
 import {GET_TASK_DETAILS, UPDATE_IDENTITY_CHECK_ENDPOINT} from "../../../../constant/Endpoint.tsx";
 import IDVerificationModal from "./IDVerificationModal.jsx";
 
-const CheckIdentity = ({ taskId, fetchCandidateDetails }) => {
+const CheckIdentity = ({ taskId, fetchCandidateDetails, caseBillingStatus }) => {
     const [loading, setLoading] = useState(true);
     const [identityData, setIdentityData] = useState({}); // State to hold all identity document data
     const [activeDocument, setActiveDocument] = useState('aadhaar'); // State to control which section is active
@@ -65,6 +65,14 @@ const CheckIdentity = ({ taskId, fetchCandidateDetails }) => {
 
     if (loading) return <SimpleLoader size="lg" className="py-20" />;
 
+    const isFundReleasedOrCancelled = identityData?.isFundReleasedOrCancelled;
+
+    const getBadgeConfig = () => {
+        if(caseBillingStatus === 'INSUFFICIENT_FUNDS') return { label: 'Insufficient Fund', colorClass: 'bg-rose-50 text-rose-600 border border-rose-100', icon: <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> };
+        if (isFundReleasedOrCancelled) return { label: 'Funds Released', colorClass: 'bg-rose-50 text-rose-600 border border-rose-100', icon: <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> };
+        return { label: 'Invitation Pending', colorClass: 'bg-slate-50 text-slate-500', icon: <div className="w-1.5 h-1.5 rounded-full bg-slate-400" /> };
+    };
+
     // Get the currently active document data
     const currentActiveDocumentData = identityData;
     return (
@@ -74,6 +82,7 @@ const CheckIdentity = ({ taskId, fetchCandidateDetails }) => {
             setIsEditModalOpen={setIsIDModalOpen}
             checkId={taskId}
             onStatusUpdateSuccess={fetchIdentityDetails}
+            badgeConfig={getBadgeConfig()}
         >
             <div className="mx-auto p-10 pt-6 space-y-8">
                 {currentActiveDocumentData && (
@@ -84,6 +93,7 @@ const CheckIdentity = ({ taskId, fetchCandidateDetails }) => {
                         data={currentActiveDocumentData}
                         updateIdentityData={updateIdentityDocument}
                         fetchIdentityDetails={fetchIdentityDetails}
+                        caseBillingStatus={caseBillingStatus}
                     />
                 )}
             </div>

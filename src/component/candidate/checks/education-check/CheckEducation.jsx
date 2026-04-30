@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Check, GraduationCap, School, Calendar, Hash, Info, SaveIcon, Loader2, CheckIcon, AlertCircle, PaperclipIcon,
-    CheckCircle2, X, FileText
+    CheckCircle2, X, FileText, Home, ClockIcon, PhoneIcon, Building2Icon, MapPin, TrophyIcon, CalendarDaysIcon
 } from 'lucide-react';
 import BaseCheckLayout from "../base-check-layout/BaseCheckLayout.jsx";
 import {GET_TASK_DETAILS, UPDATE_EDUCATION_CHECK} from "../../../../constant/Endpoint.tsx";
@@ -14,6 +14,8 @@ import SingleSelectDropdown from "../../../dropdown/SingleSelectDropdown.jsx";
 import UploadedDocumentsDisplay from "../common-page/UploadedDocumentsDisplay.jsx";
 import FileUploadModal from "../FileUploadModal.jsx";
 import {MajorDiscrepancyDetectedInliner, CertificateProvideLaterInliner} from "../../HelperComponent.jsx";
+import {formatDate} from "date-fns";
+import CandidateClaimedOverview from "./CandidateClaimedOverview.jsx";
 
 const CheckEducation = ({ educationId }) => {
     const [loading, setLoading] = useState(true);
@@ -33,6 +35,7 @@ const CheckEducation = ({ educationId }) => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
     const [isMajorDiscrepancy, setIsMajorDiscrepancy] = useState(false);
+    const [candidateClaimedDetails, setCandidateClaimedDetails] = useState({});
 
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
@@ -62,6 +65,7 @@ const CheckEducation = ({ educationId }) => {
             if (response.status === 200) {
                 const data = response.data;
                 setEducationalData(data);
+                setCandidateClaimedDetails(data?.candidateClaimedDetails);
                 setUploadedDocuments(data?.uploadedDocuments);
                 setStatus(data?.status);
 
@@ -245,6 +249,16 @@ const CheckEducation = ({ educationId }) => {
             onStatusUpdateSuccess={fetchEducationalDetails}
         >
             <div className="mx-auto p-10 pt-6 space-y-8">
+                <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                    <div className="p-1.5 bg-indigo-50 rounded-lg"><GraduationCap size={14} className="text-[#5D4591]"/></div>
+                    Educational Overview
+                </h3>
+                <CandidateClaimedOverview candidateClaimedDetails={candidateClaimedDetails} />
+
+                <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                    <div className="p-1.5 bg-indigo-50 rounded-lg"><CheckIcon size={14} className="text-[#5D4591]"/></div>
+                    Verification Panel
+                </h3>
 
                 {educationalData?.certificateProvideLater && (!READ_ONLY_TASK_STATUS.includes(educationalData.status)) &&
                     <CertificateProvideLaterInliner message={"Educational Certificate will be provided later"} />

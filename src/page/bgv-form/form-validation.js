@@ -296,8 +296,14 @@ export const validateEmployment = (employmentData, checkConfigs) => {
                     errors[`emp_${emp.id}_relievedDate`] = "Relieved date must be after joining date";
                 }
 
-                if (!emp.reason || emp.reason.trim() === "") {
-                    errors[`emp_${emp.id}_reason`] = "Reason for leaving is required";
+                if (!emp.reasonForLeaving || emp.reasonForLeaving.trim() === "") {
+                    errors[`emp_${emp.id}_reasonForLeaving`] = "Reason for leaving is required";
+                }
+
+                if(emp?.reasonForLeaving?.trim() === "TERMINATED" || emp?.reasonForLeaving?.trim() === "LAYOFF") {
+                    if (!emp.reason || emp.reason.trim() === "") {
+                        errors[`emp_${emp.id}_reason`] = "Relieving Context is required";
+                    }
                 }
             }
 

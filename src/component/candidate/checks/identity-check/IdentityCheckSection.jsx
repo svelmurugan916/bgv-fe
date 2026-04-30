@@ -15,7 +15,8 @@ const IdentityCheckSection = ({
                                   taskId,
                                   data,
                                   updateIdentityData,
-                                  fetchIdentityDetails
+                                  fetchIdentityDetails,
+                                  caseBillingStatus
                               }) => {
 
     const { authenticatedRequest } = useAuthApi();
@@ -84,14 +85,15 @@ const IdentityCheckSection = ({
 
     const renderDetailsComponent = () => {
         switch (documentType) {
-            case 'PAN': return <PanDetails data={data} onTriggerReVerify={() => handleOnTriggerReVerify("PAN")} fetchIdentityDetails={fetchIdentityDetails} />;
+            case 'PAN': return <PanDetails data={data} onTriggerReVerify={() => handleOnTriggerReVerify("PAN")} fetchIdentityDetails={fetchIdentityDetails} caseBillingStatus={caseBillingStatus}/>;
             case 'AADHAAR': return (
                 <AadhaarDetails
                     data={data}
                     onSendDigilockerLink={handleSendDigilockerLink}
+                    fetchIdentityDetails={fetchIdentityDetails}
                 />
             );
-            case 'PASSPORT': return <PassportDetails data={data} onTriggerReVerify={() => handleOnTriggerReVerify("PASSPORT")} fetchIdentityDetails={fetchIdentityDetails} />;
+            case 'PASSPORT': return <PassportDetails data={data} onTriggerReVerify={() => handleOnTriggerReVerify("PASSPORT")} fetchIdentityDetails={fetchIdentityDetails} caseBillingStatus={caseBillingStatus}/>;
             default: return null;
         }
     };

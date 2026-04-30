@@ -7,8 +7,10 @@ import {
 import { format } from 'date-fns';
 import { isDateMatch } from "../../../../utils/date-util.js";
 import DataComparisonField from "./DataComparisonField.jsx";
+import InsufficientFundView from "../../../InsufficientFundView.jsx";
+import CaseInActive from "../CaseInActive.jsx";
 
-const PanDetails = ({ data, onTriggerReVerify, fetchIdentityDetails }) => {
+const PanDetails = ({ data, onTriggerReVerify, fetchIdentityDetails, caseBillingStatus }) => {
     const {
         claimedDetails,
         overallStatus,
@@ -161,129 +163,141 @@ const PanDetails = ({ data, onTriggerReVerify, fetchIdentityDetails }) => {
 
             </div>
 
-            {/* --- SECTION 2: FORENSIC IDENTITY RECONCILIATION --- */}
-            <div className="space-y-12">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
-                        <div className="p-1.5 bg-indigo-50 rounded-lg"><Target size={14} className="text-[#5D4591]"/></div>
-                        Identity Reconciliation Logic
-                    </h3>
-                    <span className="text-[10px] font-bold text-slate-400 italic">Forensic Analysis Mode</span>
-                </div>
+            {
+                caseBillingStatus === 'INSUFFICIENT_FUNDS' ? (
+                    <InsufficientFundView label={"Address"} process={"this address case"} />
+                )  : data?.isFundReleasedOrCancelled ? (
+                    <CaseInActive taskId={data?.id} onRevertSuccess={fetchIdentityDetails} label={"PAN"} process={"NSDL Search"} />
+                ) : (
+                    <>
+                        {/* --- SECTION 2: FORENSIC IDENTITY RECONCILIATION --- */}
+                        <div className="space-y-12">
+                            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                                <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                                    <div className="p-1.5 bg-indigo-50 rounded-lg"><Target size={14} className="text-[#5D4591]"/></div>
+                                    Identity Reconciliation Logic
+                                </h3>
+                                <span className="text-[10px] font-bold text-slate-400 italic">Forensic Analysis Mode</span>
+                            </div>
 
-                <div className="grid grid-cols-1 gap-10">
-                    {/* Step 1: Name Ownership */}
-                    <div className={`relative pl-8 border-l-4 transition-colors duration-500 ${isProfileMatch ? 'border-emerald-500' : 'border-rose-500'}`}>
-                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isProfileMatch ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        <div className="bg-white/50 p-6 rounded-[2rem] border border-slate-100 hover:shadow-md transition-all duration-300">
-                            <div className="flex justify-between items-center mb-6">
-                                <div>
-                                    <h4 className="text-sm font-bold text-slate-800 uppercase">01. Name Ownership Check</h4>
-                                    <p className="text-[10px] text-slate-400 font-medium">Profile vs. ITD Database Reconciliation</p>
-                                </div>
-                                <span className={`px-3 py-1 rounded-xl text-[10px] font-black ${isProfileMatch ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                            <div className="grid grid-cols-1 gap-10">
+                                {/* Step 1: Name Ownership */}
+                                <div className={`relative pl-8 border-l-4 transition-colors duration-500 ${isProfileMatch ? 'border-emerald-500' : 'border-rose-500'}`}>
+                                    <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isProfileMatch ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                    <div className="bg-white/50 p-6 rounded-[2rem] border border-slate-100 hover:shadow-md transition-all duration-300">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-slate-800 uppercase">01. Name Ownership Check</h4>
+                                                <p className="text-[10px] text-slate-400 font-medium">Profile vs. ITD Database Reconciliation</p>
+                                            </div>
+                                            <span className={`px-3 py-1 rounded-xl text-[10px] font-black ${isProfileMatch ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                                     {profileScore}% {isProfileMatch ? 'MATCHED' : 'MISMATCHED'}
                                 </span>
-                            </div>
-                            <DataComparisonField label="Registered Profile Name" candidateClaim={candidateProfileName || "NOT_PROVIDED"} systemVerifiedData={claimedDetails?.fullName?.systemVerifiedData} isMatch={isProfileMatch} icon={<User size={10}/>} />
-                        </div>
-                    </div>
-
-                    {/* Step 2: Document Integrity */}
-                    <div className={`relative pl-8 border-l-4 transition-colors duration-500 ${isOcrMatch ? 'border-emerald-500' : 'border-rose-500'}`}>
-                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isOcrMatch ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        <div className="bg-white/50 p-6 rounded-[2rem] border border-slate-100 hover:shadow-md transition-all duration-300">
-                            <div className="flex justify-between items-center mb-6">
-                                <div>
-                                    <h4 className="text-sm font-bold text-slate-800 uppercase">02. Document Integrity Check</h4>
-                                    <p className="text-[10px] text-slate-400 font-medium">OCR Extraction vs. ITD Record Integrity</p>
+                                        </div>
+                                        <DataComparisonField label="Registered Profile Name" candidateClaim={candidateProfileName || "NOT_PROVIDED"} systemVerifiedData={claimedDetails?.fullName?.systemVerifiedData} isMatch={isProfileMatch} icon={<User size={10}/>} />
+                                    </div>
                                 </div>
-                                <span className={`px-3 py-1 rounded-xl text-[10px] font-black ${isOcrMatch ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+
+                                {/* Step 2: Document Integrity */}
+                                <div className={`relative pl-8 border-l-4 transition-colors duration-500 ${isOcrMatch ? 'border-emerald-500' : 'border-rose-500'}`}>
+                                    <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isOcrMatch ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                    <div className="bg-white/50 p-6 rounded-[2rem] border border-slate-100 hover:shadow-md transition-all duration-300">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-slate-800 uppercase">02. Document Integrity Check</h4>
+                                                <p className="text-[10px] text-slate-400 font-medium">OCR Extraction vs. ITD Record Integrity</p>
+                                            </div>
+                                            <span className={`px-3 py-1 rounded-xl text-[10px] font-black ${isOcrMatch ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                                     {ocrScore}% AUTHENTIC
                                 </span>
+                                        </div>
+                                        <DataComparisonField label="Document OCR Name" candidateClaim={claimedDetails?.fullName?.candidateClaimedData} systemVerifiedData={claimedDetails?.fullName?.systemVerifiedData} isMatch={isOcrMatch} icon={<Fingerprint size={10}/>} />
+                                    </div>
+                                </div>
                             </div>
-                            <DataComparisonField label="Document OCR Name" candidateClaim={claimedDetails?.fullName?.candidateClaimedData} systemVerifiedData={claimedDetails?.fullName?.systemVerifiedData} isMatch={isOcrMatch} icon={<Fingerprint size={10}/>} />
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            {/* --- SECTION 3: CHRONOLOGICAL RECONCILIATION --- */}
-            <div className="space-y-8 mt-12">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
-                        <div className="p-1.5 bg-indigo-50 rounded-lg"><Calendar size={14} className="text-[#5D4591]"/></div>
-                        Chronological Reconciliation
-                    </h3>
-                </div>
-                <div className="grid grid-cols-1 gap-8">
-                    {/* DOB Ownership */}
-                    <div className={`relative pl-8 border-l-4 ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'border-emerald-500' : 'border-rose-500'}`}>
-                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
-                            <div className="flex items-center justify-between mb-6">
-                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-tight">DOB Ownership Check</h4>
-                                <span className={`text-[10px] font-black px-3 py-1 rounded-xl ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                        {/* --- SECTION 3: CHRONOLOGICAL RECONCILIATION --- */}
+                        <div className="space-y-8 mt-12">
+                            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                                <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                                    <div className="p-1.5 bg-indigo-50 rounded-lg"><Calendar size={14} className="text-[#5D4591]"/></div>
+                                    Chronological Reconciliation
+                                </h3>
+                            </div>
+                            <div className="grid grid-cols-1 gap-8">
+                                {/* DOB Ownership */}
+                                <div className={`relative pl-8 border-l-4 ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'border-emerald-500' : 'border-rose-500'}`}>
+                                    <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                    <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-tight">DOB Ownership Check</h4>
+                                            <span className={`text-[10px] font-black px-3 py-1 rounded-xl ${isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                                     {isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'VERIFIED' : 'DOB MISMATCH'}
                                 </span>
-                            </div>
-                            <DataComparisonField
-                                label="Registered Profile DOB"
-                                candidateClaim={candidateProfileDob ? format(new Date(candidateProfileDob), 'dd-MM-yyyy') : '—'}
-                                systemVerifiedData={claimedDetails?.dateOfBirth?.systemVerifiedData ? format(new Date(claimedDetails.dateOfBirth.systemVerifiedData), 'dd-MM-yyyy') : '—'}
-                                isMatch={isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData)}
-                                icon={<Calendar size={10}/>}
-                            />
-                        </div>
-                    </div>
-                    <div className={`relative pl-8 border-l-4 ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'border-emerald-500' : 'border-rose-500'}`}>
-                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
-                            <div className="flex items-center justify-between mb-6">
-                                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-tight">DOB Document Integrity</h4>
-                                <span className={`text-[10px] font-black px-3 py-1 rounded-xl ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                        </div>
+                                        <DataComparisonField
+                                            label="Registered Profile DOB"
+                                            candidateClaim={candidateProfileDob ? format(new Date(candidateProfileDob), 'dd-MM-yyyy') : '—'}
+                                            systemVerifiedData={claimedDetails?.dateOfBirth?.systemVerifiedData ? format(new Date(claimedDetails.dateOfBirth.systemVerifiedData), 'dd-MM-yyyy') : '—'}
+                                            isMatch={isDateMatch(candidateProfileDob, claimedDetails?.dateOfBirth?.systemVerifiedData)}
+                                            icon={<Calendar size={10}/>}
+                                        />
+                                    </div>
+                                </div>
+                                <div className={`relative pl-8 border-l-4 ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'border-emerald-500' : 'border-rose-500'}`}>
+                                    <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                    <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-tight">DOB Document Integrity</h4>
+                                            <span className={`text-[10px] font-black px-3 py-1 rounded-xl ${isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                                     {isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'AUTHENTIC' : 'TAMPERED'}
                                 </span>
+                                        </div>
+                                        <DataComparisonField label="Extracted Document DOB" candidateClaim={claimedDetails?.dateOfBirth?.candidateClaimedData} systemVerifiedData={claimedDetails?.dateOfBirth?.systemVerifiedData} isMatch={isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData)} icon={<Fingerprint size={10}/>} />
+                                    </div>
+                                </div>
                             </div>
-                            <DataComparisonField label="Extracted Document DOB" candidateClaim={claimedDetails?.dateOfBirth?.candidateClaimedData} systemVerifiedData={claimedDetails?.dateOfBirth?.systemVerifiedData} isMatch={isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData)} icon={<Fingerprint size={10}/>} />
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            {/* --- SECTION 4: STATUS FEEDBACK --- */}
-            {status !== 'idle' && (
-                <div className={`flex items-center gap-3 p-5 rounded-[2rem] border shadow-lg animate-in slide-in-from-bottom-4 duration-500 ${
-                    status === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
-                        status === 'loading' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' :
-                            'bg-rose-50 border-rose-100 text-rose-700'
-                }`}>
-                    <div className="shrink-0">{status === 'success' ? <CheckCircle2 size={20} /> : status === 'loading' ? <Loader2 size={20} className="animate-spin" /> : <AlertCircle size={20} />}</div>
-                    <div className="flex-1">
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">{status === 'success' ? 'ITD Sync Successful' : status === 'loading' ? 'Syncing Database' : 'Verification Error'}</p>
-                        <p className="text-xs font-bold leading-tight">{status === 'loading' ? "Establishing connection to Income Tax Department records..." : status === 'success' ? `${feedbackMessage} UI will refresh in ${countdown}s.` : feedbackMessage}</p>
-                    </div>
-                    {status === 'success' && <div className="w-10 h-10 rounded-full border-2 border-emerald-200 flex items-center justify-center relative"><div className="absolute inset-0 border-2 border-emerald-500 rounded-full border-t-transparent animate-spin [animation-duration:5s]"></div><RefreshCw size={14} className="text-emerald-500" /></div>}
-                </div>
-            )}
+                        {/* --- SECTION 4: STATUS FEEDBACK --- */}
+                        {status !== 'idle' && (
+                            <div className={`flex items-center gap-3 p-5 rounded-[2rem] border shadow-lg animate-in slide-in-from-bottom-4 duration-500 ${
+                                status === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+                                    status === 'loading' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' :
+                                        'bg-rose-50 border-rose-100 text-rose-700'
+                            }`}>
+                                <div className="shrink-0">{status === 'success' ? <CheckCircle2 size={20} /> : status === 'loading' ? <Loader2 size={20} className="animate-spin" /> : <AlertCircle size={20} />}</div>
+                                <div className="flex-1">
+                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">{status === 'success' ? 'ITD Sync Successful' : status === 'loading' ? 'Syncing Database' : 'Verification Error'}</p>
+                                    <p className="text-xs font-bold leading-tight">{status === 'loading' ? "Establishing connection to Income Tax Department records..." : status === 'success' ? `${feedbackMessage} UI will refresh in ${countdown}s.` : feedbackMessage}</p>
+                                </div>
+                                {status === 'success' && <div className="w-10 h-10 rounded-full border-2 border-emerald-200 flex items-center justify-center relative"><div className="absolute inset-0 border-2 border-emerald-500 rounded-full border-t-transparent animate-spin [animation-duration:5s]"></div><RefreshCw size={14} className="text-emerald-500" /></div>}
+                            </div>
+                        )}
 
-            {/* --- ACTION FOOTER --- */}
-            <div className="p-6 rounded-[2.5rem] border bg-white border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
-                <div className="flex gap-3 items-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
-                    <ShieldCheck size={20} className="text-emerald-500" /> ITD Secure Gateway Active
-                </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={onReVerify}
-                        disabled={status === 'loading' || overallStatus === 'CLEARED'}
-                        className={`px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50 
+                        {/* --- ACTION FOOTER --- */}
+                        <div className="p-6 rounded-[2.5rem] border bg-white border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
+                            <div className="flex gap-3 items-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                                <ShieldCheck size={20} className="text-emerald-500" /> ITD Secure Gateway Active
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={onReVerify}
+                                    disabled={status === 'loading' || overallStatus === 'CLEARED'}
+                                    className={`px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50 
                         ${status === 'loading' ? 'bg-slate-200 text-slate-500' : 'bg-[#5D4591] text-white hover:bg-[#4a3675]'}`}
-                    >
-                        {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                        {status === 'loading' ? 'Processing Sync...' : 'Trigger ITD Sync'}
-                    </button>
-                </div>
-            </div>
+                                >
+                                    {status === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                                    {status === 'loading' ? 'Processing Sync...' : 'Trigger ITD Sync'}
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )
+            }
+
+
         </div>
     );
 };

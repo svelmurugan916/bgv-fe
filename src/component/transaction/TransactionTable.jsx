@@ -27,6 +27,45 @@ const TransactionTable = ({ data, loading, loadingMore, hasMore, total, onLoadMo
         }
     };
 
+    const onReleaseFund = async (releaseItemId, reason, txnId) => {
+        try {
+            const payload = {
+                reservationItemId: releaseItemId,
+                releaseReason: reason,
+            }
+            const response = await authenticatedRequest(payload, RELEASE_TRANSACTION_RESERVATION, METHOD.POST);
+            console.log('released response', response);
+            if(response?.status === 200 && response.data?.data?.itemStatus === 'RELEASED') {
+                setSubData(prev => ({
+                    ...prev,
+                    [txnId]: {
+                        ...prev[txnId],
+                        loading: false,
+                        data: Array.isArray(prev[txnId]?.data)
+                            ? prev[txnId].data.map(item =>
+                                item.id === releaseItemId
+                                    ? {
+                                        ...item,
+                                        status: 'RELEASED',
+                                        releasedAt: response.data?.data?.releasedAt,
+                                    }
+                                    : item
+                            )
+                            : prev[txnId]?.data,
+                    },
+                }));
+
+
+            } else {
+                throw new Error(response);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    console.log("sub data - ", subData);
+
     const fetchReservationSplit = async (transaction) => {
         if (expandedRowId === transaction?.id) {
             setExpandedRowId(null);
@@ -135,7 +174,7 @@ const TransactionTable = ({ data, loading, loadingMore, hasMore, total, onLoadMo
                                 {isExpanded && (
                                     <tr>
                                         <td colSpan="6" className="bg-slate-50/30">
-                                            <ReservationSplitTable data={subData[txn.id]?.data || []} isLoading={subData[txn.id]?.loading} />
+                                            <ReservationSplitTable data={subData[txn.id]?.data || []} isLoading={subData[txn.id]?.loading} onRelease={(itemId, reason) => onReleaseFund(itemId, reason, txn.id)}/>
                                         </td>
                                     </tr>
                                 )}

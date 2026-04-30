@@ -24,6 +24,7 @@ export const GET_TRANSACTION_RESERVATION_ITEMS = "/wallet/get-reservation-items"
 export const RELEASE_TRANSACTION_RESERVATION = "/wallet/reservation-items/release"
 export const GET_TASK_RESERVATION = "/wallet/reservation-items/task"
 export const REVERT_TASK_RESERVATION = "/wallet/reservation-item/revert"
+export const TRIGGER_CRIMINAL_API="/criminal-check/start-criminal-check"
 
 export const GET_TENANT_METADATA = '/admin/tenants/get-meta-data-config'
 

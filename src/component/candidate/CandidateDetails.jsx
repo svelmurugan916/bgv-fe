@@ -383,7 +383,7 @@ const CandidateShow = () => {
                                         case 'aadhaar':
                                         case 'pan':
                                         case 'passport':
-                                            return <CheckIdentity taskId={activeCheck.taskId}  caseStatus={consolidatedData.status} />
+                                            return <CheckIdentity taskId={activeCheck.taskId}  caseStatus={consolidatedData.status} caseBillingStatus={caseBillingStatus}/>
                                         case 'reference':
                                             return <CheckReferences taskId={activeCheck.taskId}  caseStatus={consolidatedData.status} />
                                         default:

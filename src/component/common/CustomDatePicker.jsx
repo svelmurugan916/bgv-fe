@@ -26,6 +26,11 @@ const CustomDatePicker = ({
     const containerRef = useRef(null);
     const yearRef = useRef(null);
 
+    // New Refs for Auto-focus
+    const ddRef = useRef(null);
+    const mmRef = useRef(null);
+    const yyyyRef = useRef(null);
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -33,7 +38,7 @@ const CustomDatePicker = ({
     const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
     const years = Array.from({ length: 100 }, (_, i) => (disableFuture ? today.getFullYear() : today.getFullYear() + 5) - i);
 
-    // Synchronize inputs when tempValue changes (from calendar click or initial value)
+    // Synchronize inputs when tempValue changes
     useEffect(() => {
         if (tempValue) {
             const [y, m, d] = tempValue.split('-');
@@ -59,13 +64,31 @@ const CustomDatePicker = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Validation Check for Red Box
+    const isManualInvalid = (dd !== "" && parseInt(dd) > 31) || (mm !== "" && parseInt(mm) > 12);
+
     const handleManualType = (type, val) => {
         const numericVal = val.replace(/\D/g, '');
         let newDd = dd, newMm = mm, newYyyy = yyyy;
 
-        if (type === 'd') { if (numericVal.length <= 2) setDd(numericVal); newDd = numericVal; }
-        if (type === 'm') { if (numericVal.length <= 2) setMm(numericVal); newMm = numericVal; }
-        if (type === 'y') { if (numericVal.length <= 4) setYyyy(numericVal); newYyyy = numericVal; }
+        if (type === 'd') {
+            if (numericVal.length <= 2) {
+                setDd(numericVal);
+                if (numericVal.length === 2) mmRef.current?.focus(); // Auto-focus MM
+            }
+            newDd = numericVal;
+        }
+        if (type === 'm') {
+            if (numericVal.length <= 2) {
+                setMm(numericVal);
+                if (numericVal.length === 2) yyyyRef.current?.focus(); // Auto-focus YYYY
+            }
+            newMm = numericVal;
+        }
+        if (type === 'y') {
+            if (numericVal.length <= 4) setYyyy(numericVal);
+            newYyyy = numericVal;
+        }
 
         // Attempt to form a valid date if all fields are filled
         if (newDd.length >= 1 && newMm.length >= 1 && newYyyy.length === 4) {
@@ -75,7 +98,6 @@ const CustomDatePicker = ({
 
             if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
                 const dateObj = new Date(y, m - 1, d);
-                // Check if date is valid (e.g. not Feb 31st) and respects disableFuture
                 if (!isNaN(dateObj) && dateObj.getDate() === d) {
                     if (!(disableFuture && dateObj > today)) {
                         setTempValue(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
@@ -118,9 +140,9 @@ const CustomDatePicker = ({
 
             <div
                 onClick={() => !readOnly && setIsOpen(!isOpen)}
-                className={`flex items-center justify-between px-4 py-3 border rounded-2xl transition-all 
-                ${readOnly ? 'bg-slate-50/50 border-slate-100 cursor-default' : 'bg-white cursor-pointer hover:border-slate-200'}
-                ${error ? 'border-rose-300 bg-rose-50/20' : 'border-slate-100'}`}
+                className={`flex items-center justify-between px-4 py-3 border rounded-xl transition-all 
+                ${readOnly ? 'bg-slate-50/50 border-slate-100 cursor-default' : 'bg-white cursor-pointer hover:border-slate-300'}
+                ${error ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'}`}
             >
                 <div className="flex items-center gap-3">
                     <CalendarIcon size={16} className={value ? "text-[#5D4591]" : "text-slate-300"} />
@@ -150,23 +172,27 @@ const CustomDatePicker = ({
 
                         {/* TYPEABLE INPUT AREA */}
                         <div className="flex gap-2 mb-4">
-                            <div className="flex-1 flex items-center gap-1 px-3 py-2 border border-slate-100 rounded-lg bg-slate-50/50">
+                            <div className={`flex-1 flex items-center gap-1 px-3 py-2 border rounded-lg transition-colors
+                                ${isManualInvalid ? 'border-rose-300 bg-rose-50' : 'border-slate-100 bg-slate-50/50'}`}>
                                 <input
                                     type="text" placeholder="DD" value={dd}
+                                    ref={ddRef}
                                     onChange={(e) => handleManualType('d', e.target.value)}
-                                    className="w-6 bg-transparent text-center text-[11px] font-black text-[#5D4591] outline-none placeholder:text-slate-300"
+                                    className={`w-6 bg-transparent text-center text-[11px] font-black outline-none placeholder:text-slate-300 ${isManualInvalid ? 'text-rose-600' : 'text-[#5D4591]'}`}
                                 />
-                                <span className="text-slate-300 text-[10px]">/</span>
+                                <span className={isManualInvalid ? 'text-rose-300 text-[10px]' : 'text-slate-300 text-[10px]'}>/</span>
                                 <input
                                     type="text" placeholder="MM" value={mm}
+                                    ref={mmRef}
                                     onChange={(e) => handleManualType('m', e.target.value)}
-                                    className="w-6 bg-transparent text-center text-[11px] font-black text-[#5D4591] outline-none placeholder:text-slate-300"
+                                    className={`w-6 bg-transparent text-center text-[11px] font-black outline-none placeholder:text-slate-300 ${isManualInvalid ? 'text-rose-600' : 'text-[#5D4591]'}`}
                                 />
-                                <span className="text-slate-300 text-[10px]">/</span>
+                                <span className={isManualInvalid ? 'text-rose-300 text-[10px]' : 'text-slate-300 text-[10px]'}>/</span>
                                 <input
                                     type="text" placeholder="YYYY" value={yyyy}
+                                    ref={yyyyRef}
                                     onChange={(e) => handleManualType('y', e.target.value)}
-                                    className="w-10 bg-transparent text-center text-[11px] font-black text-[#5D4591] outline-none placeholder:text-slate-300"
+                                    className={`w-10 bg-transparent text-center text-[11px] font-black outline-none placeholder:text-slate-300 ${isManualInvalid ? 'text-rose-600' : 'text-[#5D4591]'}`}
                                 />
                             </div>
                             <button onClick={() => setTempValue(`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`)} className="px-3 py-2 border border-slate-200 rounded-lg text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-colors">Today</button>

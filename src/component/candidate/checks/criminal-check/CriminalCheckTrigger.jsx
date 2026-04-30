@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
 import { METHOD } from "../../../../constant/ApplicationConstant.js";
+import {TRIGGER_CRIMINAL_API} from "../../../../constant/Endpoint.tsx";
 
-const TRIGGER_CRIMINAL_API = "/api/v1/tasks/criminal/trigger";
 
 const CriminalCheckTrigger = ({ data, taskId, onTriggerSuccess }) => {
     const { authenticatedRequest } = useAuthApi();
@@ -16,6 +16,7 @@ const CriminalCheckTrigger = ({ data, taskId, onTriggerSuccess }) => {
         address: data.addressChecked || '',
         year:    data.yearChecked    || '',
         state:   data.stateChecked   || '',
+        taskId: taskId,
     });
 
     const [loading,         setLoading]         = useState(false);
@@ -35,7 +36,7 @@ const CriminalCheckTrigger = ({ data, taskId, onTriggerSuccess }) => {
         try {
             const response = await authenticatedRequest(
                 formData,
-                `${TRIGGER_CRIMINAL_API}/${taskId}`,
+                `${TRIGGER_CRIMINAL_API}`,
                 METHOD.POST
             );
             if (response.status === 200 || response.status === 201) {

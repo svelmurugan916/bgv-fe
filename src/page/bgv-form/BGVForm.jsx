@@ -24,6 +24,8 @@ import {scrollToFirstError} from "./form-utils.js";
 import {SAVE_BGV_STEP} from "../../constant/Endpoint.tsx";
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 import CandidateFormFooter from "../../component/footer/CandidateFormFooter.jsx";
+import {FAQ_DATA} from "../../constant/ApplicationConstant.js";
+import SupportDrawer from "../../component/app-basic-page/SupportDrawer.jsx";
 
 const BGVForm = ({ candidateDataResponse = undefined }) => {
     const [activeStep, setActiveStep] = useState(null);
@@ -288,6 +290,11 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
                 </main>
             </div>
             <CandidateFormFooter setIsHelpOpen={setIsHelpOpen} />
+            <SupportDrawer
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
+                faqs={FAQ_DATA["GENERAL_BGV"]}
+            />
         </div>
     );
 };

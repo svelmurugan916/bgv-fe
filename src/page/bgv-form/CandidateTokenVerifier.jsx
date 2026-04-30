@@ -182,7 +182,7 @@ const TokenVerifier = ({
             </main>
 
             {/* 3. FOOTER */}
-            <CandidateFormFooter setIsHelpOpen={() => {}} />
+            <CandidateFormFooter setIsHelpOpen={setIsHelpOpen} />
             <SupportDrawer
                 isOpen={isHelpOpen}
                 onClose={() => setIsHelpOpen(false)}

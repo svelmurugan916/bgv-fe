@@ -84,6 +84,7 @@ export const FormProvider = ({ children }) => {
                 rmEmail: '',
                 rmContact: '',
                 reason: '',
+                reasonForLeaving: '',
                 documents: []
             }],
             isFresher: false,

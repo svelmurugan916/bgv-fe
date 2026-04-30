@@ -3,7 +3,7 @@ import {
     ShieldCheck, User, MapPin, Fingerprint,
     GraduationCap, Briefcase, Users, AlertCircle,
     Mail, Phone, Building2, FileText, CheckCircle2,
-    Calendar, School, IdCard, User2, User2Icon
+    Calendar, School, IdCard, User2, User2Icon, SparklesIcon
 } from 'lucide-react';
 import { useForm } from "../../provider/FormProvider.jsx";
 
@@ -125,24 +125,50 @@ const Review = ({ checks = [], profilePictureUrl }) => {
 
                 {/* 5. EMPLOYMENT */}
                 {isVisible('EMPLOYMENT') && (
-                    <SectionSummary title="Employment" icon={<Briefcase size={18}/>} status="Experience">
-                        <div className="space-y-4">
-                            {formData.employment?.details?.map((emp, i) => (
-                                <div key={i} className="flex items-start gap-4 p-3 rounded-2xl bg-slate-50/50 border border-slate-100">
-                                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400 shrink-0">
-                                        <Building2 size={18} />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[13px] font-black text-slate-800 truncate">{emp.company}</p>
-                                        <p className="text-[11px] text-slate-500 font-medium">{emp.designation}</p>
-                                        <p className="text-[9px] font-black text-[#5D4591] uppercase mt-1 tracking-tighter">
-                                            {emp.isCurrent ? 'Current Employment' : 'Previous Role'}
-                                        </p>
-                                    </div>
+                    <SectionSummary
+                        title="Employment"
+                        icon={<Briefcase size={18}/>}
+                        status={formData?.employment?.isFresher ? "No Experience" : "Experience"}
+                    >
+                        {formData?.employment?.isFresher ? (
+                            /* --- FRESHER STATUS CARD --- */
+                            <div className="flex flex-col items-center justify-center p-8 bg-[#F9F7FF]/50 border-2 border-dashed border-[#5D4591]/10 rounded-[2rem] text-center animate-in fade-in zoom-in-95 duration-500">
+                                <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-[#5D4591] mb-3">
+                                    <SparklesIcon size={24} className="animate-pulse" />
                                 </div>
-                            ))}
-                        </div>
+                                <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest">Fresher Candidate</h4>
+                                <p className="text-[11px] text-slate-500 font-medium mt-1.5 max-w-[220px] leading-relaxed">
+                                    The candidate has declared no previous professional employment history.
+                                </p>
+                            </div>
+                        ) : (
+                            /* --- EMPLOYMENT HISTORY LIST --- */
+                            <div className="space-y-4">
+                                {formData.employment?.details?.map((emp, i) => (
+                                    <div key={i} className="flex items-start gap-4 p-3 rounded-2xl bg-slate-50/50 border border-slate-100 group hover:bg-white hover:border-[#5D4591]/20 transition-all duration-300">
+                                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400 shrink-0 group-hover:text-[#5D4591] transition-colors">
+                                            <Building2 size={18} />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-[13px] font-black text-slate-800 truncate">{emp.company}</p>
+                                            <p className="text-[11px] text-slate-500 font-medium">{emp.designation}</p>
+
+                                            <div className="flex items-center justify-between mt-1">
+                                                <p className="text-[9px] font-black text-[#5D4591] uppercase tracking-tighter">
+                                                    {emp.isCurrent ? 'Current Employment' : 'Previous Role'}
+                                                </p>
+                                                {/* Optional: Add a small date range if available */}
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase">
+                                                    {emp.yearOfJoining} - {emp.isCurrent ? 'Present' : emp.yearOfRelieving}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </SectionSummary>
+
                 )}
 
                 {/* 6. REFERENCES */}

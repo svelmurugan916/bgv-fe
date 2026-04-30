@@ -19,6 +19,7 @@ import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
 import {UPLOAD_EMPLOYMENT_DOCUMENT} from "../../constant/Endpoint.tsx";
 import { v4 as uuidv4 } from 'uuid';
 import CustomDatePicker from "../../component/common/CustomDatePicker.jsx";
+import FormSingleDropdownSelect from "./FormSingleDropdownSelect.jsx";
 
 const Employment = () => {
     const { formData, updateFormData, errors, clearError, candidateId } = useForm();
@@ -82,6 +83,7 @@ const Employment = () => {
         doNotContact: false,
         rmDoNotContact: false,
         reason: '',
+        reasonForLeaving: '',
         documents: [],
         provideLater: false
     });
@@ -117,6 +119,7 @@ const Employment = () => {
                 if (field === 'isCurrent' && value === true) {
                     updatedItem.relievedDate = '';
                     updatedItem.reason = '';
+                    updatedItem.reasonForLeaving = '';
                     clearError(`emp_${id}_relievedDate`);
                     clearError(`emp_${id}_reason`);
                 }
@@ -417,10 +420,63 @@ const Employment = () => {
                                     </div>
 
                                     {!emp.isCurrent && (
-                                        <div className="md:col-span-2" id={`emp_${emp.id}_reason`}>
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Reason for Relieving *</label>
-                                            <textarea rows="2" placeholder="Briefly explain why you left..." value={emp.reason} onChange={(e) => handleChange(emp.id, 'reason', e.target.value)} className={`w-full p-3 border rounded-xl outline-none text-sm transition-all ${errors[`emp_${emp.id}_reason`] ? 'border-red-500 bg-red-50' : 'border-slate-200 focus:border-[#5D4591]'}`} />
-                                        </div>
+                                        <>
+                                            {/* 1. Categorized Reason (Dropdown) */}
+                                            <div className="flex flex-col gap-1.5">
+                                                <FormSingleDropdownSelect
+                                                    isOccupyFullWidth={true}
+                                                    title="Type of Separation"
+                                                    isMandatory={true}
+                                                    error={errors[`emp_${emp.id}_reasonForLeaving`]}
+                                                    label="Select Reason"
+                                                    options={[
+                                                        { text: "Resignation", value: "RESIGNED" },
+                                                        { text: "Better Opportunity", value: "BETTER_OPPORTUNITY" },
+                                                        { text: "End of Contract", value: "CONTRACT_ENDED" },
+                                                        { text: "Layoff / Redundancy", value: "LAYOFF" },
+                                                        { text: "Internship Period Over", value: "INTERNSHIP_ENDED" },
+                                                        { text: "Personal Reasons", value: "PERSONAL" },
+                                                        { text: "Termination", value: "TERMINATED" }
+                                                    ]}
+                                                    selected={emp.reasonForLeaving}
+                                                    onSelect={(val) => handleChange(emp.id, 'reasonForLeaving', val)}
+                                                />
+                                            </div>
+
+                                            {/* 2. Detailed Context (Textarea) */}
+                                            <div id={`emp_${emp.id}_reason`} className="flex flex-col md:col-span-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+                                                    Additional Context {emp.reasonForLeaving === 'TERMINATED' || emp.reasonForLeaving === 'LAYOFF' ? '*' : '(Optional)'}
+                                                </label>
+
+                                                <textarea
+                                                    rows="2"
+                                                    placeholder={
+                                                        emp.reasonForLeaving === 'TERMINATED'
+                                                            ? "Please provide details regarding the separation..."
+                                                            : emp.reasonForLeaving === 'LAYOFF'
+                                                                ? "e.g. Department-wide restructuring or project closure"
+                                                                : "Briefly explain why you left..."
+                                                    }
+                                                    value={emp.reason}
+                                                    onChange={(e) => handleChange(emp.id, 'reason', e.target.value)}
+                                                    className={`w-full p-3 border rounded-xl outline-none text-sm transition-all resize-none
+                                                        ${errors[`emp_${emp.id}_reason`]
+                                                        ? 'border-rose-300 bg-rose-50'
+                                                        : 'border-slate-200 bg-white focus:border-[#5D4591] focus:ring-4 focus:ring-[#5D4591]/5'
+                                                    }`}
+                                                />
+
+                                                {/* Helper text based on selection */}
+                                                {emp.reasonForLeaving === 'LAYOFF' && (
+                                                    <p className="text-[9px] font-bold text-amber-600 mt-2 uppercase tracking-tight flex items-center gap-1">
+                                                        💡 Mentioning restructuring helps recruiters understand the context.
+                                                    </p>
+                                                )}
+
+                                            </div>
+                                        </>
+
                                     )}
 
                                     <div className="md:col-span-2 mt-2" id={`emp_${emp.id}_doc`}>

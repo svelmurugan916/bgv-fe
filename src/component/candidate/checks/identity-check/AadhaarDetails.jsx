@@ -9,8 +9,10 @@ import { format } from 'date-fns';
 import { isDateMatch } from "../../../../utils/date-util.js";
 import { formatFullDateTime } from "../../../../utils/date-util.js";
 import DataComparisonField from './DataComparisonField.jsx';
+import CaseInActive from "../CaseInActive.jsx";
+import InsufficientFundView from "../../../InsufficientFundView.jsx";
 
-const AadhaarDetails = ({ data, onSendDigilockerLink, fetchIdentityDetails }) => {
+const AadhaarDetails = ({ data, onSendDigilockerLink, fetchIdentityDetails, caseBillingStatus }) => {
     const {
         claimedDetails,
         overallStatus,
@@ -77,24 +79,35 @@ const AadhaarDetails = ({ data, onSendDigilockerLink, fetchIdentityDetails }) =>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <AadhaarImageViewer url={data?.uploadedDocuments?.[0]?.url} />
-                    <div className="space-y-6">
-                        <div className="p-6 bg-amber-50/50 border border-amber-100 rounded-[2rem] flex gap-4">
-                            <div className="p-3 bg-white rounded-2xl shadow-sm h-fit"><ShieldCheck className="text-amber-600" size={24} /></div>
-                            <div className="space-y-1">
-                                <h4 className="text-sm font-bold text-amber-900 uppercase tracking-tight">DigiLocker Validation Required</h4>
-                                <p className="text-xs text-amber-800/70 leading-relaxed font-medium">This document requires real-time authentication via DigiLocker to prevent identity spoofing.</p>
+                    {
+                        (caseBillingStatus !== 'INSUFFICIENT_FUNDS' && !data?.isFundReleasedOrCancelled) && (
+                            <div className="space-y-6">
+                                <div className="p-6 bg-amber-50/50 border border-amber-100 rounded-[2rem] flex gap-4">
+                                    <div className="p-3 bg-white rounded-2xl shadow-sm h-fit"><ShieldCheck className="text-amber-600" size={24} /></div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-sm font-bold text-amber-900 uppercase tracking-tight">DigiLocker Validation Required</h4>
+                                        <p className="text-xs text-amber-800/70 leading-relaxed font-medium">This document requires real-time authentication via DigiLocker to prevent identity spoofing.</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <DataComparisonField label="Aadhaar Number" candidateClaim={claimedDetails?.idNumber?.candidateClaimedData || '—'} systemVerifiedData="Awaiting DigiLocker..." isMatch={null} icon={<Hash size={10}/>} />
+                                    <DataComparisonField label="Candidate Name" candidateClaim={claimedDetails?.fullName?.candidateClaimedData || '—'} systemVerifiedData="Awaiting DigiLocker..." isMatch={null} icon={<User size={10}/>} />
+                                </div>
+                                <button onClick={handleAction} disabled={status === 'loading'} className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 ${isLinkSent ? 'bg-white border-2 border-[#5D4591] text-[#5D4591] hover:bg-slate-50' : 'bg-[#5D4591] text-white hover:bg-[#4a3675]'}`}>
+                                    {status === 'loading' ? <Loader2 size={18} className="animate-spin" /> : isLinkSent ? <RotateCcw size={18} /> : <ExternalLink size={18} />}
+                                    {status === 'loading' ? 'Processing...' : isLinkSent ? 'Resend DigiLocker Link' : 'Send DigiLocker Verification Link'}
+                                </button>
                             </div>
-                        </div>
-                        <div className="space-y-4">
-                            <DataComparisonField label="Aadhaar Number" candidateClaim={claimedDetails?.idNumber?.candidateClaimedData || '—'} systemVerifiedData="Awaiting DigiLocker..." isMatch={null} icon={<Hash size={10}/>} />
-                            <DataComparisonField label="Candidate Name" candidateClaim={claimedDetails?.fullName?.candidateClaimedData || '—'} systemVerifiedData="Awaiting DigiLocker..." isMatch={null} icon={<User size={10}/>} />
-                        </div>
-                        <button onClick={handleAction} disabled={status === 'loading'} className={`w-full py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 ${isLinkSent ? 'bg-white border-2 border-[#5D4591] text-[#5D4591] hover:bg-slate-50' : 'bg-[#5D4591] text-white hover:bg-[#4a3675]'}`}>
-                            {status === 'loading' ? <Loader2 size={18} className="animate-spin" /> : isLinkSent ? <RotateCcw size={18} /> : <ExternalLink size={18} />}
-                            {status === 'loading' ? 'Processing...' : isLinkSent ? 'Resend DigiLocker Link' : 'Send DigiLocker Verification Link'}
-                        </button>
-                    </div>
+                        )
+                    }
                 </div>
+                {
+                    caseBillingStatus === 'INSUFFICIENT_FUNDS' ? (
+                        <InsufficientFundView label={"Address"} process={"this address case"} />
+                    )  : data?.isFundReleasedOrCancelled ? (
+                        <CaseInActive taskId={data?.id} onRevertSuccess={fetchIdentityDetails} label={"Passport"} process={"National ID check"} />
+                    ) : (<></>)
+                }
             </div>
         );
     }
