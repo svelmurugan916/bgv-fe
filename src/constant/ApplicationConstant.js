@@ -23,6 +23,28 @@ export const TASK_COMPLETED_STATUS = ['CLEARED', 'FAILED', 'UNABLE_TO_VERIFY'];
 
 export const READ_ONLY_TASK_STATUS = ['CLEARED', 'FAILED', 'UNABLE_TO_VERIFY', 'STOP_CASE'];
 
+export const TASK_STATUS_OPTIONS = [
+    { value: 'VERIFIED', text: 'Verified' },
+    { value: 'DISCREPANCY', text: 'Discrepancy' },
+    { value: 'PARTIAL', text: 'Partial' },
+    { value: 'UNABLE_TO_VERIFY', text: 'Unable to Verify' }
+];
+
+export const MONTH_OPTIONS = [
+    { value: 'JANUARY', text: 'January' },
+    { value: 'FEBRUARY', text: 'February' },
+    { value: 'MARCH', text: 'March' },
+    { value: 'APRIL', text: 'April' },
+    { value: 'MAY', text: 'May' },
+    { value: 'JUNE', text: 'June' },
+    { value: 'JULY', text: 'July' },
+    { value: 'AUGUST', text: 'August' },
+    { value: 'SEPTEMBER', text: 'September' },
+    { value: 'OCTOBER', text: 'October' },
+    { value: 'NOVEMBER', text: 'November' },
+    { value: 'DECEMBER', text: 'December' }
+]
+
 
 export const FAQ_DATA = {
     GENERAL_BGV: [

@@ -1,7 +1,19 @@
-// VerificationCard.jsx
 import React from "react";
-import { Check, Edit3, Link as LinkIcon, X, AlertCircle, Clock } from 'lucide-react';
+import {
+    Check, Edit3, X, AlertTriangle, Clock,
+    MessageSquare, ArrowRight, ShieldAlert,
+    CornerDownRight, ShieldCheck, AlertCircle
+} from 'lucide-react';
 import ActionButton from "./ActionButton.jsx";
+import SingleSelectDropdown from "../../../dropdown/SingleSelectDropdown.jsx";
+
+const severityOptions = [
+    { value: 'MINOR', text: 'Minor' },
+    { value: 'MODERATE', text: 'Moderate' },
+    { value: 'MAJOR', text: 'Major' },
+    { value: 'CRITICAL', text: 'Critical' },
+    { value: 'ADVERSE', text: 'Adverse' }
+];
 
 const VerificationCard = ({
                               label,
@@ -15,159 +27,151 @@ const VerificationCard = ({
                               fieldType = 'text',
                               readonly = false
                           }) => {
+
+    console.log("finding -- ", finding);
     const isMatch = finding.status === 'match';
     const isIncorrect = finding.status === 'incorrect';
     const isNegative = finding.status === 'negative';
-    const isPending = finding.status === 'pending';
+    const isPending = finding.status === "negative" || finding.status === "incorrect";
 
-    const getBorderColor = () => {
+    // Senior UX: Determine card border based on Severity + Status
+    const getThemeColor = () => {
         if (error) return 'border-rose-500 bg-rose-50/20';
-        if (isMatch) return 'border-emerald-500/30 bg-emerald-50/10';
-        if (isIncorrect) return 'border-amber-500/30 bg-amber-50/10';
-        if (isNegative) return 'border-rose-500/30 bg-rose-50/10';
+        if (isMatch) return 'border-emerald-500/20 bg-emerald-50/5';
+        if (finding.severity === 'CRITICAL' || finding.severity === 'ADVERSE' || isNegative) return 'border-rose-500/20 bg-rose-50/5';
+        if (isIncorrect) return 'border-amber-500/20 bg-amber-50/5';
         return 'border-slate-200 bg-white';
     };
 
-    // --- PREMIUM STATUS BADGE COMPONENT ---
-    const StatusBadge = () => {
-        const configs = {
-            match: {
-                label: 'Matched',
-                icon: <Check size={12} strokeWidth={4} />,
-                style: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-            },
-            incorrect: {
-                label: 'Incorrect',
-                icon: <Edit3 size={12} />,
-                style: 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-            },
-            negative: {
-                label: 'Negative',
-                icon: <X size={12} strokeWidth={3} />,
-                style: 'bg-rose-500/10 text-rose-600 border-rose-500/20'
-            },
-            pending: {
-                label: 'Pending',
-                icon: <Clock size={12} />,
-                style: 'bg-slate-100 text-slate-400 border-slate-200'
-            }
-        };
-
-        const config = configs[finding.status] || configs.pending;
-
-        return (
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] animate-in fade-in zoom-in duration-500 ${config.style}`}>
-                {config.icon}
-                {config.label}
-            </div>
-        );
-    };
-
-    const inputType = fieldType === 'date' ? 'date' :
-        fieldType === 'email' ? 'email' :
-            fieldType === 'tel' ? 'tel' :
-                fieldType === 'url' ? 'url' : 'text';
-
     return (
-        <div className={`group relative rounded-[24px] border transition-all duration-500
-            ${getBorderColor()} ${!isPending && !error ? 'shadow-sm' : 'hover:border-slate-200 hover:shadow-md hover:-translate-y-0.5'}`}>
+        <div className={`group relative rounded-[32px] border transition-all duration-500 ${getThemeColor()} 
+            ${!isPending ? 'shadow-sm' : 'hover:shadow-md'}`}>
 
-            <div className="grid grid-cols-16 items-start p-6 gap-4">
-                {/* Attribute */}
-                <div className="col-span-3 flex items-center gap-4">
-                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300
-                        ${isMatch ? 'bg-emerald-500 text-white' :
-                        isNegative ? 'bg-rose-500 text-white' :
-                            isIncorrect ? 'bg-amber-500 text-white' : error ? 'bg-rose-100 text-rose-500' : 'bg-slate-50 text-slate-400 group-hover:bg-white group-hover:shadow-sm'}`}>
-                        {icon}
+            <div className="p-6">
+                {/* --- SECTION 1: THE CORE AUDIT ROW --- */}
+                <div className="flex items-center justify-between gap-10">
+
+                    {/* Attribute Identity */}
+                    <div className="flex items-center gap-4 min-w-[240px]">
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-500 shadow-sm
+                            ${isMatch ? 'bg-emerald-500 text-white shadow-emerald-100' :
+                            isNegative ? 'bg-rose-500 text-white shadow-rose-100' :
+                                isIncorrect ? 'bg-amber-500 text-white shadow-amber-100' : 'bg-slate-100 text-slate-400'}`}>
+                            {React.cloneElement(icon, { size: 20 })}
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 mb-0.5">Attribute</span>
+                            <span className="text-sm font-bold text-slate-900 tracking-tight">{label}</span>
+                        </div>
                     </div>
-                    <div className="flex flex-col">
-                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] mb-0.5 ${error ? 'text-rose-500' : 'text-slate-400'}`}>
-                            {error ? error : 'Attribute'}
-                        </span>
-                        <span className="text-xs font-bold text-slate-900 tracking-tight">{label}</span>
+
+                    {/* The Comparison Bridge */}
+                    <div className="flex-1 flex items-center gap-0 bg-slate-100/40 rounded-[20px] p-1 border border-slate-200/50">
+                        <div className="flex flex-col flex-1 px-5 py-2">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Candidate Claim</span>
+                            <p className="text-xs font-bold text-slate-600 truncate">{candidateEnteredData || '—'}</p>
+                        </div>
+
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm border border-slate-100 -mx-2 z-10">
+                            <ArrowRight size={14} className={isPending ? 'text-slate-200' : 'text-indigo-500'} />
+                        </div>
+
+                        <div className="flex flex-col flex-1 px-5 py-2 pl-6">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Verified Result</span>
+                            {(isIncorrect || isNegative) && !readonly ? (
+                                <input
+                                    type={fieldType === 'date' ? 'date' : 'text'}
+                                    value={finding.value || ''}
+                                    onChange={(e) => onUpdate(field, { value: e.target.value })}
+                                    className="w-full bg-transparent border-b border-indigo-200 text-xs font-bold text-slate-900 focus:border-indigo-500 outline-none transition-all"
+                                    placeholder="Update value..."
+                                />
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <p className={`text-xs font-bold ${isMatch ? 'text-emerald-600' : 'text-slate-900'}`}>
+                                        {isMatch ? candidateEnteredData : (provided || 'Waiting...')}
+                                    </p>
+                                    {isMatch && <ShieldCheck size={12} className="text-emerald-500" />}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Actions Dock */}
+                    <div className="flex items-center gap-3 min-w-[160px] justify-end">
+                        {readonly ? (
+                            <div className={`px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-[0.1em]
+                                ${isMatch ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                isNegative ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                                    isIncorrect ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-50 text-slate-400'}`}>
+                                {finding.status || 'Pending'}
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1.5 bg-slate-950/5 p-1.5 rounded-2xl">
+                                <ActionButton active={isMatch} type="match" icon={<Check size={16}/>}
+                                              onClick={() => onUpdate(field, {status: 'match', value: candidateEnteredData, severity: 'NONE'})}/>
+                                <ActionButton active={isIncorrect} type="edit" icon={<Edit3 size={16}/>}
+                                              onClick={() => onUpdate(field, {status: 'incorrect', value: candidateEnteredData, remarks: '', severity: 'MINOR'})}/>
+                                <ActionButton active={isNegative} type="error" icon={<X size={16}/>}
+                                              onClick={() => onUpdate(field, {status: 'negative', value: candidateEnteredData, remarks: '', severity: 'MAJOR'})}/>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Candidate Claim */}
-                <div className="col-span-3 flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1">Candidate Claim</span>
-                    <p className={`text-sm font-semibold truncate ${isMatch ? 'text-emerald-700' : 'text-slate-700'}`}>
-                        {provided || '—'}
-                    </p>
-                </div>
+                {/* --- SECTION 2: THE RESOLUTION SHELF (Severity & Remarks) --- */}
+                {(isPending || finding.remarks || finding.severity) && (
+                    <div className="mt-6 pt-6 border-t border-slate-100 flex gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
 
-                {/* Verified Data */}
-                <div className="col-span-3 flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1">Verified Data</span>
-                    {(isIncorrect || isNegative) ? (
-                        <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                            <input
-                                type={inputType}
-                                value={finding.value}
-                                onChange={(e) => onUpdate(field, {value: e.target.value})}
-                                placeholder={`Enter correct ${label.toLowerCase()}...`}
-                                disabled={readonly}
-                                className={`w-full bg-white border rounded-xl px-4 py-2.5 text-xs font-bold transition-all outline-none
-                                    ${error ? 'border-rose-500 ring-2 ring-rose-500/10 text-rose-700' : 'border-slate-200 text-slate-700 focus:ring-2 focus:ring-slate-100 focus:border-slate-300'}
-                                    ${readonly ? 'bg-slate-50/50 cursor-not-allowed border-dashed' : ''}`}
+                        {/* Severity Selection */}
+                        <div className="w-[220px] flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                                <AlertTriangle size={12} className={isMatch ? 'text-slate-300' : 'text-amber-500'} />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Risk Severity</span>
+                            </div>
+                            <SingleSelectDropdown
+                                label="Select Severity"
+                                options={severityOptions}
+                                selected={finding.severity}
+                                onSelect={(val) => onUpdate(field, { severity: val })}
+                                isOccupyFullWidth={true}
+                                disabled={readonly || isMatch}
+                                error={!finding.severity && (isIncorrect || isNegative)}
                             />
                         </div>
-                    ) : isMatch ? (
-                        <div className="flex items-center gap-2 text-emerald-600 animate-in zoom-in duration-300">
-                            <Check size={14} strokeWidth={3}/>
-                            <span className="text-[10px] font-black uppercase tracking-widest">Verified Match</span>
-                        </div>
-                    ) : (
-                        <p className={`text-sm font-semibold truncate ${isPending ? 'text-slate-500 italic' : 'text-slate-700'}`}>
-                            {finding.value || 'Pending Verification'}
-                        </p>
-                    )}
-                </div>
 
-                {/* Source Link */}
-                <div className="col-span-4 flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1">Source Link</span>
-                    {finding.sourceLink && readonly ? (
-                        <a
-                            href={finding.sourceLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 transition-all flex items-center gap-2 group/link"
-                        >
-                            <LinkIcon size={12} className="group-hover/link:rotate-45 transition-transform" />
-                            <span className="truncate">View Evidence Source</span>
-                        </a>
-                    ) : (
-                        <input
-                            type="url"
-                            value={finding.sourceLink || ''}
-                            onChange={(e) => onUpdate(field, {sourceLink: e.target.value})}
-                            placeholder="e.g. https://..."
-                            className={`w-full bg-white border rounded-xl px-4 py-2.5 text-xs font-bold transition-all outline-none
-                                ${error ? 'border-rose-500 ring-2 ring-rose-500/10 text-rose-700' : 'border-slate-200 text-slate-700 focus:ring-2 focus:ring-slate-100 focus:border-slate-300'}
-                                ${readonly ? 'bg-slate-50/50 cursor-not-allowed border-dashed' : ''}`}
-                            disabled={readonly}
-                        />
-                    )}
-                </div>
-
-                {/* --- UPDATED ACTION/STATUS SECTION --- */}
-                <div className="col-span-3 flex justify-end items-center">
-                    {readonly ? (
-                        <StatusBadge />
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <ActionButton active={isMatch} type="match" icon={<Check size={16}/>}
-                                          onClick={() => onUpdate(field, {status: 'match', value: candidateEnteredData})}/>
-                            <ActionButton active={isIncorrect} type="edit" icon={<Edit3 size={16}/>}
-                                          onClick={() => onUpdate(field, {status: 'incorrect'})}/>
-                            <ActionButton active={isNegative} type="error" icon={<X size={16}/>}
-                                          onClick={() => onUpdate(field, {status: 'negative'})}/>
+                        {/* Auditor Remarks */}
+                        <div className="flex-1 flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                                <MessageSquare size={12} className="text-indigo-400" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                                    Auditor Remarks {(isIncorrect || isNegative) && <span className="text-rose-500">*</span>}
+                                </span>
+                            </div>
+                            <div className={`relative rounded-xl border transition-all p-3 ${
+                                !finding.remarks && (isIncorrect || isNegative) ? 'bg-rose-50/50 border-rose-200' : 'bg-slate-50/30 border-slate-100'
+                            }`}>
+                                <textarea
+                                    rows="1"
+                                    disabled={readonly}
+                                    value={finding.remarks || ''}
+                                    onChange={(e) => onUpdate(field, { remarks: e.target.value })}
+                                    placeholder={(isIncorrect || isNegative) ? "Classification reason is mandatory for audit trail..." : "Optional internal notes..."}
+                                    className="w-full bg-transparent text-xs font-medium text-slate-700 outline-none resize-none placeholder:text-slate-300"
+                                />
+                            </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
+
+            {/* Floating Context Labels */}
+            {error && (
+                <div className="absolute -top-3 right-8 flex items-center gap-2 bg-rose-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                    <AlertCircle size={10} />
+                    Classification Required
+                </div>
+            )}
         </div>
     );
 };

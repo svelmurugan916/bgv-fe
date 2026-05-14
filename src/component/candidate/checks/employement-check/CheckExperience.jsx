@@ -73,7 +73,7 @@ const CheckExperience = ({ employmentId }) => {
         companyName: <Building size={18} />,
         designation: <Briefcase size={18} />,
         joiningDate: <Calendar size={18} />,
-        relievedDate: <Calendar size={18} />,
+        relievingDate: <Calendar size={18} />,
         reasonForExiting: <MessageSquare size={18} />,
         employeeId: <Hash size={18} />,
         managerName: <User size={18} />,
@@ -83,7 +83,7 @@ const CheckExperience = ({ employmentId }) => {
 
     const fieldTypes = {
         joiningDate: 'date',
-        relievedDate: 'date',
+        relievingDate: 'date',
         reasonForExiting: 'textarea',
         managerEmail: 'email',
         managerContact: 'tel',
@@ -125,8 +125,10 @@ const CheckExperience = ({ employmentId }) => {
                         const status = fieldInfo?.status ? fieldInfo.status.toLowerCase() : 'pending';
                         initialFindings[key] = {
                             status: status,
-                            value: status !== 'pending' ? fieldInfo.verifiedValue || fieldInfo.candidateEnteredData || '' : '',
-                            sourceLink: fieldInfo.sourceLink || ''
+                            value: status !== 'pending' ? fieldInfo.verifiedEnteredData || fieldInfo.candidateEnteredData || '' : '',
+                            sourceLink: fieldInfo.sourceLink || '',
+                            remarks: fieldInfo?.remarks || '',
+                            severity: fieldInfo.severity,
                         };
                     });
                 }
@@ -152,7 +154,7 @@ const CheckExperience = ({ employmentId }) => {
         let isValid = true;
 
         const mandatoryFields = [
-            'companyName', 'designation', 'joiningDate', 'relievedDate', 'reasonForExiting',
+            'companyName', 'designation', 'joiningDate', 'relievingDate', 'reasonForExiting',
             'employeeId', 'managerName', 'managerEmail', 'managerContact'
         ];
 
@@ -160,7 +162,7 @@ const CheckExperience = ({ employmentId }) => {
             const finding = findings[key];
             if (mandatoryFields.includes(key) && finding.status === 'pending') {
                 // Relieved date and reason for exiting are not mandatory for current employer
-                if (isCurrentEmployer && (key === 'relievedDate' || key === 'reasonForExiting')) return;
+                if (isCurrentEmployer && (key === 'relievingDate' || key === 'reasonForExiting')) return;
 
                 newErrors[key] = "Selection required";
                 isValid = false;
@@ -204,7 +206,8 @@ const CheckExperience = ({ employmentId }) => {
                     status: findings[key].status.toUpperCase(),
                     verifiedValue: findings[key].value,
                     sourceLink: findings[key].sourceLink,
-                    remarks: `Verified on ${new Date().toLocaleDateString()}`
+                    remarks: findings[key]?.remarks || `Verified on ${new Date().toLocaleDateString()}`,
+                    severity: findings[key].severity,
                 };
                 return acc;
             }, {}),
@@ -278,6 +281,7 @@ const CheckExperience = ({ employmentId }) => {
         { value: 'SUPERVISOR_CONTACT', text: 'Supervisor Contact' },
         { value: 'CANDIDATE_DOCUMENT', text: 'Candidate Document' },
         { value: 'THIRD_PARTY_VENDOR', text: 'Third-Party Vendor' },
+        { value: 'OFFICIAL_LETTER', text: 'Official Letter' },
         { value: 'OTHER', text: 'Other' },
     ];
     const isReadOnly = READ_ONLY_TASK_STATUS?.includes(employmentData?.status?.toUpperCase());
@@ -305,7 +309,7 @@ const CheckExperience = ({ employmentId }) => {
                             key={key}
                             field={key}
                             label={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                            provided={data.candidateEnteredData}
+                            provided={data.verifiedEnteredData}
                             candidateEnteredData={data.candidateEnteredData}
                             finding={findings[key] || { status: 'pending', value: '', verificationMethod: '', sourceLink: '' }}
                             onUpdate={handleUpdateFinding}

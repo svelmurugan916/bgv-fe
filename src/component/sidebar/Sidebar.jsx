@@ -21,6 +21,7 @@ const Sidebar = () => {
 
     const IS_ADMIN = loggedInRole === "ROLE_ADMIN";
     const IS_TENANT_ADMIN = loggedInRole === "ROLE_TENANT_ADMIN";
+    const IS_TENANT_OPERATIONS_MANAGER = loggedInRole === "ROLE_TENANT_OPERATIONS_MANAGER";
     const IS_OPS = loggedInRole === "ROLE_TENANT_OPERATIONS";
 
     const getMenuSections = () => {
@@ -54,7 +55,7 @@ const Sidebar = () => {
             ];
         }
 
-        if(IS_TENANT_ADMIN) {
+        if(IS_TENANT_ADMIN || IS_TENANT_OPERATIONS_MANAGER) {
             return [
                 {
                     title: 'OPERATIONS',

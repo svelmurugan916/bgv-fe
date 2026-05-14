@@ -16,11 +16,11 @@ const GlobalHeader = ({ candidateName, showAutoSaving = true, profilePictureUrl=
         <>
             <header className="w-full bg-white border-b border-slate-100 relative lg:sticky lg:top-0 z-[60] shadow-sm">
                 <div className="px-4 lg:px-8 py-3 flex items-center justify-between">
-                    <div className="inline-flex flex-col items-end">
+                    <div className="inline-flex flex-col items-start">
                         <img src={tenantConfig?.logoUrl || "/logo.png"} alt="Vantira" className="h-8 w-auto"/>
                         <span className="text-[8px] font-bold text-slate-400 tracking-[0.2em] uppercase mt-1 ml-1">
-                           Secure Verification
-                        </span>
+                    Powered by Vantira
+                </span>
                     </div>
 
                     <div className="flex items-center gap-1 lg:gap-4">

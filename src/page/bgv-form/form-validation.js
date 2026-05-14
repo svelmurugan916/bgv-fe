@@ -337,52 +337,52 @@ export const validateEmployment = (employmentData, checkConfigs) => {
             }
         });
 
-        const validRanges = details
-            .filter(emp => emp.joinedDate && (emp.isCurrent || emp.relievedDate))
-            .map(emp => ({
-                id: emp.id,
-                company: emp.company || "Previous Company",
-                start: new Date(emp.joinedDate).getTime(),
-                end: emp.isCurrent
-                    ? new Date().getTime()
-                    : new Date(emp.relievedDate).getTime()
-            }))
-            .sort((a, b) => a.start - b.start);
+        // const validRanges = details
+        //     .filter(emp => emp.joinedDate && (emp.isCurrent || emp.relievedDate))
+        //     .map(emp => ({
+        //         id: emp.id,
+        //         company: emp.company || "Previous Company",
+        //         start: new Date(emp.joinedDate).getTime(),
+        //         end: emp.isCurrent
+        //             ? new Date().getTime()
+        //             : new Date(emp.relievedDate).getTime()
+        //     }))
+        //     .sort((a, b) => a.start - b.start);
+        //
+        // for (let i = 1; i < validRanges.length; i++) {
+        //     const prev = validRanges[i - 1];
+        //     const curr = validRanges[i];
+        //
+        //     if (curr.start <= prev.end) {
+        //         const prevEndDate = new Date(prev.end).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+        //         errors[`emp_${curr.id}_joinedDate`] = `Overlaps with your tenure at ${prev.company} (ended ${prevEndDate})`;
+        //     }
+        // }
 
-        for (let i = 1; i < validRanges.length; i++) {
-            const prev = validRanges[i - 1];
-            const curr = validRanges[i];
-
-            if (curr.start <= prev.end) {
-                const prevEndDate = new Date(prev.end).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
-                errors[`emp_${curr.id}_joinedDate`] = `Overlaps with your tenure at ${prev.company} (ended ${prevEndDate})`;
-            }
-        }
-
-        const employeeConfig = checkConfigs?.EMPLOYMENT
-        if(employeeConfig) {
-            const {history, customHistory} = employeeConfig;
-            let numberOfYearsRequired = parseInt(customHistory) || parseInt(history) || 0;
-            if(numberOfYearsRequired > 0) {
-                const intervals = details
-                    .filter(emp => emp.joinedDate)
-                    .map(emp => ({
-                        start: new Date(emp.joinedDate).getTime(),
-                        end: emp.isCurrent
-                            ? new Date().getTime()
-                            : (emp.relievedDate ? new Date(emp.relievedDate).getTime() : new Date().getTime())
-                    }))
-                    .sort((a, b) => a.start - b.start); // Sort by start date
-                const experiencedYear = calculateTotalYears(intervals);
-                if (experiencedYear < numberOfYearsRequired) {
-                    // Calculate years and months for the message
-                    const years = Math.floor(experiencedYear);
-                    const months = Math.round((experiencedYear - years) * 12);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    errors.experience_general = `Employment history of ${numberOfYearsRequired} years is mandatory. You have provided ${years} year(s)${months > 0 ? ` ${months} month(s)` : ""}. Please add more experience.`;
-                }
-            }
-        }
+        // const employeeConfig = checkConfigs?.EMPLOYMENT
+        // if(employeeConfig) {
+        //     const {history, customHistory} = employeeConfig;
+        //     let numberOfYearsRequired = parseInt(customHistory) || parseInt(history) || 0;
+        //     if(numberOfYearsRequired > 0) {
+        //         const intervals = details
+        //             .filter(emp => emp.joinedDate)
+        //             .map(emp => ({
+        //                 start: new Date(emp.joinedDate).getTime(),
+        //                 end: emp.isCurrent
+        //                     ? new Date().getTime()
+        //                     : (emp.relievedDate ? new Date(emp.relievedDate).getTime() : new Date().getTime())
+        //             }))
+        //             .sort((a, b) => a.start - b.start); // Sort by start date
+        //         const experiencedYear = calculateTotalYears(intervals);
+        //         if (experiencedYear < numberOfYearsRequired) {
+        //             // Calculate years and months for the message
+        //             const years = Math.floor(experiencedYear);
+        //             const months = Math.round((experiencedYear - years) * 12);
+        //             window.scrollTo({ top: 0, behavior: 'smooth' });
+        //             errors.experience_general = `Employment history of ${numberOfYearsRequired} years is mandatory. You have provided ${years} year(s)${months > 0 ? ` ${months} month(s)` : ""}. Please add more experience.`;
+        //         }
+        //     }
+        // }
     }
 
     return errors;

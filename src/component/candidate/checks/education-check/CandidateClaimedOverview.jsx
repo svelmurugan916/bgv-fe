@@ -26,7 +26,7 @@ const CandidateClaimedOverview = ({candidateClaimedDetails}) => {
 
                 {/* 2. Institution Details */}
                 <div className="flex flex-col">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Institution & University</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Institution & Location</p>
                     <div className="flex items-start gap-3">
                         <div className="mt-0.5 p-1.5 bg-[#5D4591]/10 rounded-lg shrink-0">
                             <Building2Icon size={14} className="text-[#5D4591]" />
@@ -35,14 +35,36 @@ const CandidateClaimedOverview = ({candidateClaimedDetails}) => {
                             <p className="text-sm font-bold text-slate-800 leading-tight">
                                 {candidateClaimedDetails?.instituteName}
                             </p>
-                            <p className="text-[11px] font-medium text-slate-500 mt-1 italic">
+                            {
+                                (candidateClaimedDetails?.cityOfInstitution || candidateClaimedDetails?.stateOfInstitution) && (
+                                    <div className="text-[11px] font-medium text-slate-500 mt-1">
+                                        <span>{candidateClaimedDetails?.cityOfInstitution}, {candidateClaimedDetails?.stateOfInstitution}</span>
+                                    </div>
+                                )
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Identity & Location */}
+                <div className="flex flex-col">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Roll Number & University</p>
+                    <div className="flex items-start gap-3">
+                        <div className="mt-0.5 p-1.5 bg-[#5D4591]/10 rounded-lg shrink-0">
+                            <Hash size={14} className="text-[#5D4591]" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-slate-800 leading-tight tracking-wide">
+                                {candidateClaimedDetails?.rollNumber || "N/A"}
+                            </p>
+                            <p className="text-[11px] font-medium text-slate-500 mt-1">
                                 {candidateClaimedDetails?.universityName}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                {/* 3. Scores & Timeline */}
+                {/* 4. Scores & Timeline */}
                 <div className="flex flex-col">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Performance & Timeline</p>
                     <div className="flex items-start gap-3">
@@ -53,33 +75,9 @@ const CandidateClaimedOverview = ({candidateClaimedDetails}) => {
                             <p className="text-sm font-bold text-slate-800 leading-tight">
                                 {candidateClaimedDetails?.gpaOrPercentage}
                             </p>
-                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 mt-1">
-                                <CalendarDaysIcon size={12} className="text-slate-300" />
+                            <div className="text-[11px] font-medium text-slate-500 mt-1">
                                 <span>{candidateClaimedDetails?.monthOfPassing} {candidateClaimedDetails?.yearOfPassing}</span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 4. Identity & Location */}
-                <div className="flex flex-col">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Roll Number & Location</p>
-                    <div className="flex items-start gap-3">
-                        <div className="mt-0.5 p-1.5 bg-[#5D4591]/10 rounded-lg shrink-0">
-                            <Hash size={14} className="text-[#5D4591]" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-800 leading-tight tracking-wide">
-                                {candidateClaimedDetails?.rollNumber || "N/A"}
-                            </p>
-                            {
-                                (candidateClaimedDetails?.cityOfInstitution || candidateClaimedDetails?.stateOfInstitution) && (
-                                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 mt-1">
-                                        <MapPin size={12} className="text-slate-300" />
-                                        <span>{candidateClaimedDetails?.cityOfInstitution}, {candidateClaimedDetails?.stateOfInstitution}</span>
-                                    </div>
-                                )
-                            }
                         </div>
                     </div>
                 </div>

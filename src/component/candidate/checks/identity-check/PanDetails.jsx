@@ -254,7 +254,9 @@ const PanDetails = ({ data, onTriggerReVerify, fetchIdentityDetails, caseBilling
                                     {isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData) ? 'AUTHENTIC' : 'TAMPERED'}
                                 </span>
                                         </div>
-                                        <DataComparisonField label="Extracted Document DOB" candidateClaim={claimedDetails?.dateOfBirth?.candidateClaimedData} systemVerifiedData={claimedDetails?.dateOfBirth?.systemVerifiedData} isMatch={isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData)} icon={<Fingerprint size={10}/>} />
+                                        <DataComparisonField label="Extracted Document DOB"
+                                                             candidateClaim={claimedDetails?.dateOfBirth?.candidateClaimedData ? format(new Date(claimedDetails?.dateOfBirth?.candidateClaimedData), 'dd-MM-yyyy') : '—'}
+                                                             systemVerifiedData={claimedDetails?.dateOfBirth?.systemVerifiedData ?  format(new Date(claimedDetails?.dateOfBirth?.systemVerifiedData), 'dd-MM-yyyy') : '—'} isMatch={isDateMatch(claimedDetails?.dateOfBirth?.candidateClaimedData, claimedDetails?.dateOfBirth?.systemVerifiedData)} icon={<Fingerprint size={10}/>} />
                                     </div>
                                 </div>
                             </div>

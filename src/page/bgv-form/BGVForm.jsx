@@ -208,12 +208,13 @@ const BGVForm = ({ candidateDataResponse = undefined }) => {
     }
 
     const renderStep = () => {
+        const checkConfigs = candidateDataResponse?.checkConfigs || {};
         switch (activeStep) {
             case 1: return <BasicInfo />;
             case 2: return <AddressDetails />;
             case 3: return <IDVerification />;
-            case 4: return <Education />;
-            case 5: return <Employment />;
+            case 4: return <Education eduCheckConfig={checkConfigs?.EDUCATION || {}}/>;
+            case 5: return <Employment empCheckConfig={checkConfigs?.EMPLOYMENT || {}} />;
             case 6: return <References />;
             case 7: return <Review checks={candidateDataResponse?.checks} profilePictureUrl={formData.basic?.profilePic || formData.basic?.profilePictureUrl || candidateDataResponse?.profilePictureUrl}/>;
             default: return null;

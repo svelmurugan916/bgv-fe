@@ -56,6 +56,11 @@ const TenantManager = () => {
         setIsModalOpen(true);
     };
 
+    const editConfiguration = (tenant) => {
+        setIsModalOpen(false);
+        setIsCreateDrawerOpen(true);
+    }
+
     return (
         <div className="animate-in fade-in duration-700 pb-10">
             {/* Header Section */}
@@ -106,11 +111,15 @@ const TenantManager = () => {
             />
             {isCreateDrawerOpen && (
                 <CreateTenantDrawer
-                    onClose={() => setIsCreateDrawerOpen(false)}
+                    onClose={() => {
+                        setIsCreateDrawerOpen(false);
+                        setSelectedTenant(null);
+                    }}
                     onSuccess={() => {
                         setIsCreateDrawerOpen(false);
                         fetchTenants(0);
                     }}
+                    selectedTenant={selectedTenant}
                 />
             )}
 
@@ -118,7 +127,11 @@ const TenantManager = () => {
             {isModalOpen && (
                 <TenantDetailModal
                     tenant={selectedTenant}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setSelectedTenant(null);
+                    }}
+                    editConfiguration={editConfiguration}
                 />
             )}
         </div>

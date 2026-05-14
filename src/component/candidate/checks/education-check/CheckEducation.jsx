@@ -2,11 +2,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Check, GraduationCap, School, Calendar, Hash, Info, SaveIcon, Loader2, CheckIcon, AlertCircle, PaperclipIcon,
-    CheckCircle2, X, FileText, Home, ClockIcon, PhoneIcon, Building2Icon, MapPin, TrophyIcon, CalendarDaysIcon
+    CheckCircle2, X, FileText, Home, ClockIcon, PhoneIcon, Building2Icon, MapPin, TrophyIcon, CalendarDaysIcon,
+    UserCheck
 } from 'lucide-react';
 import BaseCheckLayout from "../base-check-layout/BaseCheckLayout.jsx";
-import {GET_TASK_DETAILS, UPDATE_EDUCATION_CHECK} from "../../../../constant/Endpoint.tsx";
-import {METHOD, READ_ONLY_TASK_STATUS} from "../../../../constant/ApplicationConstant.js";
+import {GET_TASK_DETAILS, RESOLVE_BLOCK_MATCH_COLLEGE, UPDATE_EDUCATION_CHECK} from "../../../../constant/Endpoint.tsx";
+import {METHOD, READ_ONLY_TASK_STATUS, TASK_STATUS_OPTIONS} from "../../../../constant/ApplicationConstant.js";
 import { useAuthApi } from "../../../../provider/AuthApiProvider.jsx";
 import SimpleLoader from "../../../common/SimpleLoader.jsx";
 import VerificationCard from "../common-page/VerificationCard.jsx";
@@ -14,8 +15,8 @@ import SingleSelectDropdown from "../../../dropdown/SingleSelectDropdown.jsx";
 import UploadedDocumentsDisplay from "../common-page/UploadedDocumentsDisplay.jsx";
 import FileUploadModal from "../FileUploadModal.jsx";
 import {MajorDiscrepancyDetectedInliner, CertificateProvideLaterInliner} from "../../HelperComponent.jsx";
-import {formatDate} from "date-fns";
 import CandidateClaimedOverview from "./CandidateClaimedOverview.jsx";
+import BlockListMatchSuggestion from "./BlockListMatchSuggestion.jsx";
 
 const CheckEducation = ({ educationId }) => {
     const [loading, setLoading] = useState(true);
@@ -26,16 +27,24 @@ const CheckEducation = ({ educationId }) => {
     // --- NEW: VERIFICATION REMARK STATE ---
     const [verificationRemark, setVerificationRemark] = useState('');
 
+    const [isResolvingBlock, setIsResolvingBlock] = useState(false);
+
     const { authenticatedRequest } = useAuthApi();
     const [educationalData, setEducationalData] = useState({});
     const [findings, setFindings] = useState({});
     const [verificationMethod, setVerificationMethod] = useState(null);
+    const [taskStatus, setTaskStatus] = useState(null);
     const componentInitRef = useRef(false);
     const [status, setStatus] = useState(undefined);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploadedDocuments, setUploadedDocuments] = useState([]);
     const [isMajorDiscrepancy, setIsMajorDiscrepancy] = useState(false);
     const [candidateClaimedDetails, setCandidateClaimedDetails] = useState({});
+
+    const [verifierName, setVerifierName] = useState('');
+    const [verifierEmail, setVerifierEmail] = useState('');
+    const [verifierContactNumber, setVerifierContactNumber] = useState('');
+    const [verificationTimestamp, setVerificationTimestamp] = useState(new Date().toISOString().split('T')[0]);
 
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
@@ -56,6 +65,53 @@ const CheckEducation = ({ educationId }) => {
         educationLevel: <GraduationCap size={18} />,
         yearOfPassing: <Calendar size={18} />,
         gpaOrPercentage: <Hash size={18} />
+    };
+
+    const handleConfirmBlockCollege = async ({isFake, remarks}) => {
+        setIsResolvingBlock(true);
+        const payload = {
+            blockMatchId: educationalData.blockMatch.id,
+            isConfirmed: true,
+            isFake: isFake,
+            remarks: remarks,
+            resolutionReason: "Confirmed match with institutional blocklist."
+        };
+
+        try {
+            // Assuming endpoint for blocklist resolution
+            const response = await authenticatedRequest(payload, `${RESOLVE_BLOCK_MATCH_COLLEGE?.replace("{educationId}", educationId)}`, METHOD.PUT);
+            if (response.status === 200) {
+                setIsMajorDiscrepancy(true); // Mark as FAKE visually
+                showNotification("College confirmed as Blocklisted. Status updated to Fake.", "success");
+                fetchEducationalDetails();
+            }
+        } catch (err) {
+            showNotification("Failed to confirm blocklist match.", "error");
+        } finally {
+            setIsResolvingBlock(false);
+        }
+    };
+
+    const handleResolveBlockMatch = async (reason) => {
+        setIsResolvingBlock(true);
+        const payload = {
+            blockMatchId: educationalData.blockMatch.id,
+            isConfirmed: false,
+            isFake: false,
+            resolutionReason: reason
+        };
+
+        try {
+            const response = await authenticatedRequest(payload, `${RESOLVE_BLOCK_MATCH_COLLEGE?.replace("{educationId}", educationId)}`, METHOD.PUT);
+            if (response.status === 200) {
+                showNotification("Blocklist match resolved successfully.", "success");
+                fetchEducationalDetails();
+            }
+        } catch (err) {
+            showNotification("Failed to resolve blocklist match.", "error");
+        } finally {
+            setIsResolvingBlock(false);
+        }
     };
 
     const fetchEducationalDetails = async () => {
@@ -81,11 +137,14 @@ const CheckEducation = ({ educationId }) => {
                         initialFindings[key] = {
                             status: status,
                             value: status !== 'pending' ?  fieldInfo.verifiedEnteredData || fieldInfo.candidateEnteredData || '' : '',
-                            sourceLink: fieldInfo.sourceLink || ''
+                            sourceLink: fieldInfo.sourceLink || '',
+                            remarks: fieldInfo?.remarks || '',
+                            severity: fieldInfo.severity,
                         };
                     });
                 }
                 setVerificationMethod(data.verificationMethod);
+                setTaskStatus(data.taskStatus);
                 setFindings(initialFindings);
                 setDiscrepancyReason(data.discrepancyReason || "");
             }
@@ -122,6 +181,10 @@ const CheckEducation = ({ educationId }) => {
             newErrors['verificationMethod'] = true;
             isValid = false;
         }
+        if(!taskStatus?.trim()) {
+            newErrors['taskStatus'] = true;
+            isValid = false;
+        }
 
         if (hasNegativeFindings && !discrepancyReason.trim()) {
             newErrors['discrepancyReason'] = true;
@@ -149,11 +212,13 @@ const CheckEducation = ({ educationId }) => {
                     status: findings[key].status.toUpperCase(),
                     verifiedValue: findings[key].value,
                     sourceLink: findings[key].sourceLink,
-                    remarks: `Verified on ${new Date().toLocaleDateString()}`
+                    remarks: findings[key]?.remarks || `Verified on ${new Date().toLocaleDateString()}`,
+                    severity: findings[key].severity,
                 };
                 return acc;
             }, {}),
             verificationMethod: verificationMethod,
+            taskStatus: taskStatus,
             // --- UPDATE: SEND VERIFICATION REMARK IN API ---
             verificationRemark: verificationRemark,
             overallComments: "Manual audit of credentials completed.",
@@ -249,6 +314,16 @@ const CheckEducation = ({ educationId }) => {
             onStatusUpdateSuccess={fetchEducationalDetails}
         >
             <div className="mx-auto p-10 pt-6 space-y-8">
+                <BlockListMatchSuggestion
+                    blockMatch={educationalData?.blockMatch}
+                    onConfirm={handleConfirmBlockCollege}
+                    onResolve={handleResolveBlockMatch}
+                    isProcessing={isResolvingBlock}
+                />
+                {
+                    (educationalData?.blockMatch?.status !== 'CONFIRMED_BLOCK' &&  isMajorDiscrepancy) && <MajorDiscrepancyDetectedInliner />
+                }
+
                 <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
                     <div className="p-1.5 bg-indigo-50 rounded-lg"><GraduationCap size={14} className="text-[#5D4591]"/></div>
                     Educational Overview
@@ -264,7 +339,6 @@ const CheckEducation = ({ educationId }) => {
                     <CertificateProvideLaterInliner message={"Educational Certificate will be provided later"} />
                 }
 
-                {isMajorDiscrepancy && <MajorDiscrepancyDetectedInliner />}
 
                 <div className="space-y-3">
                     {educationalData?.fieldDetails && Object.entries(educationalData.fieldDetails).map(([key, data]) => {
@@ -273,7 +347,7 @@ const CheckEducation = ({ educationId }) => {
                                 key={key}
                                 field={key}
                                 label={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                                provided={data.candidateEnteredData}
+                                provided={data.verifiedEnteredData}
                                 candidateEnteredData={data.candidateEnteredData}
                                 finding={findings[key] || { status: 'pending', value: '', verificationMethod: '', sourceLink: '' }}
                                 onUpdate={handleUpdateFinding}
@@ -285,9 +359,36 @@ const CheckEducation = ({ educationId }) => {
                     })}
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="p-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm space-y-5">
+                        <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
+                            <UserCheck className="text-[#5D4591]" size={20} />
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-800">Verifier Identity</h4>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="col-span-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400 ml-1">Verifier Name</span>
+                                <input disabled={isReadOnly} value={verifierName} onChange={e => setVerifierName(e.target.value)} className={`w-full h-11 bg-slate-50 border rounded-xl px-4 text-sm font-bold mt-1 ${errors.verifierName ? 'border-rose-500' : 'border-slate-100'}`} placeholder="Name of Verifier" />
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black uppercase text-slate-400 ml-1">Verifier Email</span>
+                                <input disabled={isReadOnly} value={verifierEmail} onChange={e => setVerifierEmail(e.target.value)} className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold mt-1" placeholder="Email" />
+                            </div>
+                            <div>
+                                <span className="text-[9px] font-black uppercase text-slate-400 ml-1">Verifier Contact</span>
+                                <input disabled={isReadOnly} value={verifierContactNumber} onChange={e => setVerifierContactNumber(e.target.value)} className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold mt-1" placeholder="Contact" />
+                            </div>
+                            <div className="col-span-2">
+                                <span className="text-[9px] font-black uppercase text-slate-400 ml-1">Verification Date</span>
+                                <input disabled={isReadOnly} type="date" value={verificationTimestamp} onChange={e => setVerificationTimestamp(e.target.value)} className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold mt-1" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-16 items-center gap-4">
                     <div className="col-span-4 flex flex-col">
-                        <span className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-600 mb-1">Method</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-600 mb-1">Verification Method</span>
                         <SingleSelectDropdown label={"Verification Method"}
                                               options={verificationMethods}
                                               isOccupyFullWidth={true}
@@ -295,6 +396,17 @@ const CheckEducation = ({ educationId }) => {
                                               selected={verificationMethod || ''}
                                               onSelect={setVerificationMethod}
                                               error={errors.verificationMethod}
+                        />
+                    </div>
+                    <div className="col-span-4 flex flex-col">
+                        <span className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-600 mb-1">Verification Status</span>
+                        <SingleSelectDropdown label={"Verification Status"}
+                                              options={TASK_STATUS_OPTIONS}
+                                              isOccupyFullWidth={true}
+                                              disabled={isReadOnly}
+                                              selected={taskStatus || ''}
+                                              onSelect={setTaskStatus}
+                                              error={errors.taskStatus}
                         />
                     </div>
                 </div>

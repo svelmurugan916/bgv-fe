@@ -21,7 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 import CustomDatePicker from "../../component/common/CustomDatePicker.jsx";
 import FormSingleDropdownSelect from "./FormSingleDropdownSelect.jsx";
 
-const Employment = () => {
+const Employment = ({empCheckConfig}) => {
     const { formData, updateFormData, errors, clearError, candidateId } = useForm();
     const { authenticatedRequest } = useAuthApi();
 
@@ -41,6 +41,9 @@ const Employment = () => {
         const domain = email.split('@')[1]?.toLowerCase();
         return FREE_EMAIL_DOMAINS.includes(domain);
     };
+
+    const {history, customHistory} = empCheckConfig;
+    let numberOfYearsRequired = parseInt(customHistory) || parseInt(history) || 0;
 
     useEffect(() => {
         if (lastAddedId) {
@@ -226,14 +229,15 @@ const Employment = () => {
                 <FormPageHeader heading={"Employment Details"} helperText={"Add your professional experience."} />
             </div>
 
-            {errors.experience_general && (
-                <div className="mb-8 p-5 bg-rose-50 border border-rose-100 rounded-[1.5rem] flex items-start gap-4 animate-in slide-in-from-top-4 duration-300">
-                    <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+            {numberOfYearsRequired > 0 && (
+                <div className="mb-8 p-5 bg-amber-50 border border-amber-100 rounded-[1.5rem] flex items-start gap-4 animate-in slide-in-from-top-4 duration-300">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
                         <AlertCircle size={20} />
                     </div>
                     <div className="flex-1 pt-1">
-                        <p className="text-[10px] font-black text-rose-900 uppercase tracking-widest leading-none mb-1.5">Education Requirement</p>
-                        <p className="text-xs font-bold text-rose-600/90 leading-relaxed">{errors.experience_general}</p>
+                        <p className="text-[10px] font-black text-amber-900 uppercase tracking-widest leading-none mb-1.5">Employment Requirement</p>
+                        <p className="text-xs font-bold text-amber-600/90 leading-relaxed">
+                            A minimum of {numberOfYearsRequired} years of employment history is required. Please provide these details below.</p>
                     </div>
                 </div>
             )}

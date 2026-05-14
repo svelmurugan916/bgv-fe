@@ -88,7 +88,7 @@ const RoleSelectionPage = () => {
 
                                     <div className="flex-1">
                                         <h3 className={`font-bold text-base ${isSelected ? 'text-[#5D4591]' : 'text-slate-800'}`}>
-                                            {role.name?.replace('_', ' ')}
+                                            {role.name?.replaceAll('_', ' ')}
                                         </h3>
                                         <p className="text-xs text-slate-400 font-medium mt-0.5">
                                             {role.description}

@@ -32,6 +32,7 @@ import CandidateNotFound from "./CandidateNotFound.jsx";
 import DpdpWipedPlaceholder from "./DpdpWipedPlaceholder.jsx";
 import DeleteCandidateModal from "./DeleteCandidateModal.jsx";
 import TaskReservationDrawer from "../transaction/TaskReservationDrawer.jsx";
+import AiSummaryManager from "./checks/ai-summary/AISummarySystem.jsx";
 
 const CandidateShow = () => {
     const [activeTab, setActiveTab] = useState(null);
@@ -335,6 +336,7 @@ const CandidateShow = () => {
                             </div>
 
                             {/* 3. ATTRIBUTES - Responsive Gaps */}
+                            <div className="flex flex-wrap items-start lg:items-center justify-between gap-6 mb-8">
                             <div className="flex flex-wrap items-center gap-x-6 lg:gap-x-12 gap-y-6 mb-8">
                                 <CandidateStatusLabel label={"Overall Status"} status={consolidatedData?.status} />
                                 <Attribute label="Organization" value={consolidatedData?.client} />
@@ -342,6 +344,11 @@ const CandidateShow = () => {
                                 <Attribute label="init Date" value={consolidatedData?.initiatedDate} />
                                 <Attribute label={`${(consolidatedData?.status === "GREEN") ? "Completed Date" : consolidatedData.status === 'STOP_CASE' ? 'Case Stopped at' : "Due Date"}`} value={consolidatedData?.dueDate || 'TBD'}/>
                             </div>
+                                <div>
+                                    <AiSummaryManager />
+                                </div>
+                            </div>
+
 
                             {/* 4. NAVIGATION TABS */}
                             <CandidateChecksTab caseDetails={candidateData?.caseDetails} indicatorStyle={indicatorStyle}

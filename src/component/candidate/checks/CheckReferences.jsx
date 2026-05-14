@@ -297,7 +297,12 @@ const CheckReference = ({ taskId }) => {
                         <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Identity & Contact Verification</span>
                     </div>
                     {Object.entries(referenceData.fieldDetails).map(([key, data]) => (
-                        <VerificationCard key={key} field={key} label={key.replace(/([A-Z])/g, ' $1').toUpperCase()} provided={data.candidateEnteredData} finding={findings[key]} error={errors[key]} icon={fieldIcons[key] || <MessageSquare size={18} />} onUpdate={(field, updates) => setFindings(prev => ({ ...prev, [field]: { ...prev[field], ...updates } }))} readonly={isReadOnly} />
+                        <VerificationCard key={key} field={key}
+                                          label={key.replace(/([A-Z])/g, ' $1').toUpperCase()}
+                                          candidateEnteredData={data.candidateEnteredData}
+                                          provided={data.verifiedEnteredData}
+                                          finding={findings[key]} error={errors[key]} icon={fieldIcons[key] || <MessageSquare size={18} />}
+                                          onUpdate={(field, updates) => setFindings(prev => ({ ...prev, [field]: { ...prev[field], ...updates } }))} readonly={isReadOnly} />
                     ))}
                 </div>
 

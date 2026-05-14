@@ -26,6 +26,8 @@ export const GET_TASK_RESERVATION = "/wallet/reservation-items/task"
 export const REVERT_TASK_RESERVATION = "/wallet/reservation-item/revert"
 export const TRIGGER_CRIMINAL_API="/criminal-check/start-criminal-check"
 
+export const BLOCK_LIST_COLLEGES_API = '/college-blocklist';
+
 export const GET_TENANT_METADATA = '/admin/tenants/get-meta-data-config'
 
 export const GET_ALL_ROLES = '/role/get-all-roles'
@@ -102,6 +104,7 @@ export const ORGANIZATION_STATISTICS = "/organizations/statistics"
 
 export const SUBMIT_ADDRESS_VERIFICATION = "/address-check/submit-verification"
 export const UPDATE_EDUCATION_CHECK = "/education-check/update-check"
+export const RESOLVE_BLOCK_MATCH_COLLEGE = "/education-check/{educationId}/resolve"
 
 export const GET_TASK_DETAILS = "/tasks/get-details"
 export const VERIFY_DIGILOCKER_STATUS = "/aadhaar/download";

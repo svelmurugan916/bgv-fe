@@ -5,20 +5,21 @@ import { useForm } from "../../provider/FormProvider.jsx";
 import FormSingleDropdownSelect from "./FormSingleDropdownSelect.jsx";
 import InputComponent from "./InputComponent.jsx";
 import {useAuthApi} from "../../provider/AuthApiProvider.jsx";
-import {METHOD} from "../../constant/ApplicationConstant.js";
+import {METHOD, MONTH_OPTIONS} from "../../constant/ApplicationConstant.js";
 import {EXTRACT_EDUCATION_DOCUMENT, UPLOAD_SUPPORTING_DOCUMENT} from "../../constant/Endpoint.tsx";
 import { v4 as uuidv4 } from 'uuid';
+import SingleSelectDropdown from "../../component/dropdown/SingleSelectDropdown.jsx";
 
-const Education = () => {
+const Education = ({eduCheckConfig}) => {
     const { formData, updateFormData, errors, clearError, candidateId } = useForm();
     const { authenticatedRequest } = useAuthApi();
     const data = formData.education;
-    const [isExtractedFromOCR, setIsExtractedFromOCR] = useState(false);
 
     const [uploadProgress, setUploadProgress] = useState({});
     const [lastAddedId, setLastAddedId] = useState(null);
     const primaryFileInputRef = useRef(null);
     const supportingFileInputRefs = useRef({});
+    const levels  = eduCheckConfig?.levels || [];
 
 
     useEffect(() => {
@@ -147,7 +148,6 @@ const Education = () => {
                                 }
 
                                 isExtracted = true;
-                                setIsExtractedFromOCR(true)
                             }
 
                             return {
@@ -388,11 +388,36 @@ const Education = () => {
 
     const schoolGrade = ["SSLC", 'HSC'];
 
+    let educationOptions = [
+        { text: "10th Standard", value: "SSLC" },
+        { text: "12th Standard", value: "HSC" },
+        { text: "Undergraduate (UG)", value: "UNDER_GRADUATE" },
+        { text: "Postgraduate (PG)", value: "POST_GRADUATE" },
+        { text: "Diploma", value: "DIPLOMA" }
+    ];
+
+    if(levels?.length > 0) {
+        educationOptions = educationOptions?.filter((edu) => levels.includes(edu?.value));
+    }
+
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 pb-10">
             <div className="flex items-start justify-between gap-4">
                 <FormPageHeader heading={"Academic Details"} helperText={"Add your Graduation details."} />
             </div>
+
+            {(levels?.length > 0 && !errors.education_general) && (
+                <div className="mb-8 p-5 bg-amber-50 border border-amber-100 rounded-[1.5rem] flex items-start gap-4 animate-in slide-in-from-top-4 duration-300">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                        <AlertCircle size={20} />
+                    </div>
+                    <div className="flex-1 pt-1">
+                        <p className="text-[10px] font-black text-amber-900 uppercase tracking-widest leading-none mb-1.5">Education Requirement</p>
+                        <p className="text-xs font-bold text-amber-600/90 leading-relaxed">
+                            Please provide your {educationOptions?.map(edu => edu?.text)?.join(", ")} education history. These details are required for your application.</p>
+                    </div>
+                </div>
+            )}
 
             {errors.education_general && (
                 <div className="mb-8 p-5 bg-rose-50 border border-rose-100 rounded-[1.5rem] flex items-start gap-4 animate-in slide-in-from-top-4 duration-300">
@@ -531,18 +556,12 @@ const Education = () => {
                                     isOccupyFullWidth={true}
                                     label="Select Level"
                                     error={errors[`edu_${edu.id}_level`]}
-                                    options={[
-                                        { text: "10th Standard", value: "SSLC" },
-                                        { text: "12th Standard", value: "HSC" },
-                                        { text: "Undergraduate (UG)", value: "UNDER_GRADUATE" },
-                                        { text: "Postgraduate (PG)", value: "POST_GRADUATE" },
-                                        { text: "Diploma", value: "DIPLOMA" }
-                                    ]}
+                                    options={educationOptions}
                                     selected={edu.level || ""}
-                                    isValid={isExtractedFromOCR}
+                                    isValid={edu.isExtracted}
                                     onSelect={(option) => handleChange(edu.id, 'level', option)}
                                 />
-                                {isExtractedFromOCR && (
+                                {edu.isExtracted && (
                                     <p className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1 animate-in fade-in">
                                         <Check size={12} /> Automatically extracted from document.
                                     </p>
@@ -557,10 +576,10 @@ const Education = () => {
                                     placeholder={"e.g. B.E"}
                                     value={edu.degree}
                                     error={errors[`edu_${edu.id}_degree`]}
-                                    isValid={isExtractedFromOCR}
+                                    isValid={edu.isExtracted}
                                     onChange={(value) => handleChange(edu.id, 'degree', value)}
                                 />
-                                {isExtractedFromOCR && (
+                                {edu.isExtracted && (
                                     <p className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1 animate-in fade-in">
                                         <Check size={12} /> Automatically extracted from document.
                                     </p>
@@ -574,10 +593,10 @@ const Education = () => {
                                     placeholder={"e.g. Computer Science"}
                                     value={edu.branchSpecialization}
                                     error={errors[`edu_${edu.id}_branchSpecialization`]}
-                                    isValid={isExtractedFromOCR}
+                                    isValid={edu.isExtracted}
                                     onChange={(value) => handleChange(edu.id, 'branchSpecialization', value)}
                                 />
-                                {isExtractedFromOCR && (
+                                {edu.isExtracted && (
                                     <p className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1 animate-in fade-in">
                                         <Check size={12} /> Automatically extracted from document.
                                     </p>
@@ -592,10 +611,10 @@ const Education = () => {
                                     isMandatory={true}
                                     value={edu.university}
                                     error={errors[`edu_${edu.id}_university`]}
-                                    isValid={isExtractedFromOCR}
+                                    isValid={edu.isExtracted}
                                     onChange={(value) => handleChange(edu.id, 'university', value)}
                                 />
-                                {isExtractedFromOCR && (
+                                {edu.isExtracted && (
                                     <p className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1 animate-in fade-in">
                                         <Check size={12} /> Automatically extracted from document.
                                     </p>
@@ -614,16 +633,18 @@ const Education = () => {
                             </div>
 
                             <div id={`edu_${edu.id}_passingMonth`}>
-                                <InputComponent
-                                    label={`Month of Passing`}
-                                    placeholder={"e.g: Apr"}
+                                <FormSingleDropdownSelect
+                                    title="Month of Passing"
+                                    options={MONTH_OPTIONS}
+                                    label="Select Month"
                                     isMandatory={true}
-                                    value={edu.passingMonth}
+                                    selected={edu.passingMonth || ""}
+                                    onSelect={(option) => handleChange(edu.id, 'passingMonth', option)}
+                                    isOccupyFullWidth={true}
+                                    isValid={edu.isExtracted}
                                     error={errors[`edu_${edu.id}_passingMonth`]}
-                                    isValid={isExtractedFromOCR}
-                                    onChange={(value) => handleChange(edu.id, 'passingMonth', value)}
                                 />
-                                {isExtractedFromOCR && (
+                                {edu.isExtracted && (
                                     <p className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1 animate-in fade-in">
                                         <Check size={12} /> Automatically extracted from document.
                                     </p>
@@ -639,10 +660,10 @@ const Education = () => {
                                     error={errors[`edu_${edu.id}_year`]}
                                     options={Array.from({ length: 40 }, (_, i) => ({ text: (new Date().getFullYear() - i).toString(), value: (new Date().getFullYear() - i).toString() }))}
                                     selected={edu.year || ""}
-                                    isValid={isExtractedFromOCR}
+                                    isValid={edu.isExtracted}
                                     onSelect={(option) => handleChange(edu.id, 'year', option)}
                                 />
-                                {isExtractedFromOCR && (
+                                {edu.isExtracted && (
                                     <p className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1 animate-in fade-in">
                                         <Check size={12} /> Automatically extracted from document.
                                     </p>
@@ -669,10 +690,10 @@ const Education = () => {
                                     placeholder={"Enter number"}
                                     onChange={(v) => handleChange(edu.id, 'rollNumber', v)}
                                     error={errors[`edu_${edu.id}_roll`]}
-                                    isValid={edu.rollNumber?.length > 4 || isExtractedFromOCR}
+                                    isValid={edu.rollNumber?.length > 4 || edu.isExtracted}
                                     readOnly={edu.isExtracted}
                                 />
-                                {isExtractedFromOCR && (
+                                {edu.isExtracted && (
                                     <p className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1 animate-in fade-in">
                                         <Check size={12} /> Automatically extracted from document.
                                     </p>

@@ -46,7 +46,7 @@ const SendHRMailModal = ({ isOpen, onClose, hrData, employmentData, documents, e
         const empId = employmentData?.fieldDetails?.employeeId?.candidateEnteredData || "N/A";
         const designation = employmentData?.fieldDetails?.designation?.candidateEnteredData || "N/A";
         const doj = employmentData?.fieldDetails?.joiningDate?.candidateEnteredData || "N/A";
-        const dor = employmentData?.currentEmployer ? "Currently working" : (employmentData?.fieldDetails?.relivingDate?.candidateEnteredData || "N/A");
+        const dor = employmentData?.currentEmployer ? "Currently working" : (employmentData?.fieldDetails?.relievingDate?.candidateEnteredData || "N/A");
 
         return `
 <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #334155; line-height: 1.6; max-width: 750px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff;">

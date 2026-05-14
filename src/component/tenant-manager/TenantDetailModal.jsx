@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, CreditCard, Users, ShieldCheck, History, Activity } from 'lucide-react';
 
-const TenantDetailModal = ({ tenant, onClose }) => {
+const TenantDetailModal = ({ tenant, onClose, editConfiguration }) => {
     if (!tenant) return null;
 
     return (
@@ -96,8 +96,8 @@ const TenantDetailModal = ({ tenant, onClose }) => {
                     <button className="flex-1 py-4 border border-rose-100 text-rose-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-50 transition-all">
                         Suspend Tenant
                     </button>
-                    <button className="flex-1 py-4 bg-[#5D4591] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-[#5D4591]/20 hover:scale-[1.02] transition-all">
-                        Save Configuration
+                    <button onClick={() => editConfiguration(tenant)} className="flex-1 py-4 bg-[#5D4591] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-[#5D4591]/20 hover:scale-[1.02] transition-all">
+                        Edit Configuration
                     </button>
                 </div>
             </div>
