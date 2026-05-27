@@ -23,7 +23,7 @@ export const TenantProvider = ({ children }) => {
         const initBranding = async () => {
             try {
                 // const hostname = window.location.hostname;
-                const hostname = 'www.app.vantira.in';
+                const hostname = 'www.app.traceu.in';
                 let effectiveSubdomain = '';
                 let baseDomain = ''; // You might use this later for other purposes
 
