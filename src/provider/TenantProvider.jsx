@@ -1,7 +1,8 @@
 import React, {createContext, useState, useEffect, useContext, useRef} from 'react';
 import { getTenantBranding } from '../api/tenantService';
 import SimpleLoader from "../component/common/SimpleLoader.jsx";
-import MyBrandedSpinner from "../component/common/MyBrandedSpinner.jsx"; // This function will be updated
+import MyBrandedSpinner from "../component/common/MyBrandedSpinner.jsx";
+import SoftBlockScreen from "../component/common/SoftBlockScreen.jsx"; // This function will be updated
 
 const TenantContext = createContext(null);
 
@@ -22,16 +23,16 @@ export const TenantProvider = ({ children }) => {
     useEffect(() => {
         const initBranding = async () => {
             try {
-                // const hostname = window.location.hostname;
-                const hostname = 'www.app.traceu.in';
+                const hostname = window.location.hostname;
+                // const hostname = 'www.app.vantira.in';
                 let effectiveSubdomain = '';
                 let baseDomain = ''; // You might use this later for other purposes
 
                 // --- Robust Subdomain and Domain Extraction Logic ---
-                if (hostname === 'localhost' || hostname.startsWith('127.0.0.1')) {
+                if (hostname.includes("localhost") || hostname.startsWith('127.0.0.1')) {
                     // Special handling for local development
                     effectiveSubdomain = 'dev'; // Use a specific identifier for local dev
-                    baseDomain = hostname;
+                    baseDomain = 'vantira.io';
                 } else {
                     const parts = hostname.split('.');
                     const numParts = parts.length;
@@ -99,6 +100,8 @@ export const TenantProvider = ({ children }) => {
                     subtext="Applying enterprise security policies and workspace configurations."
                     brandLabel="Environment Loader"
                 />
+            ) : tenantConfig?.isAccessBlocked ? (
+                <SoftBlockScreen tenantConfig={tenantConfig}/>
             ) : (
                 children
             )}

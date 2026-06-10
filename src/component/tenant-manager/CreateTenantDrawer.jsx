@@ -20,7 +20,8 @@ const CreateTenantDrawer = ({ onClose, onSuccess, selectedTenant }) => {
         initialCreditAmount: 0, initialCreditReason: 'Welcome Credit',
         planDurationMonths: 1, maxOrganizationsAllowed: 1,
         smtpHost: '', smtpPort: '', smtpUser: '', smtpPass: '',
-        dltEntityId: '', dltTemplateId: ''
+        dltEntityId: '', dltTemplateId: '',
+        accessBlocked: false
     });
 
     const [files, setFiles] = useState({ logo: null, favicon: null });
@@ -60,7 +61,8 @@ const CreateTenantDrawer = ({ onClose, onSuccess, selectedTenant }) => {
                     smtpUser: data.smtpUser || '',
                     smtpPass: data.smtpPass || '',
                     dltEntityId: data.dltEntityId || '',
-                    dltTemplateId: data.dltTemplateId || ''
+                    dltTemplateId: data.dltTemplateId || '',
+                    accessBlocked: data.accessBlocked || false,
                 });
 
                 // Set existing URLs as previews
@@ -212,6 +214,65 @@ const CreateTenantDrawer = ({ onClose, onSuccess, selectedTenant }) => {
                                 <FileUpload label="Company Logo" preview={previews.logo} onChange={(e) => handleFileChange(e, 'logo')} />
                                 <FileUpload label="Favicon" preview={previews.favicon} onChange={(e) => handleFileChange(e, 'favicon')} isSmall />
                             </div>
+                            {/* Tenant Access Control Switch */}
+                            <div className={`p-5 border rounded-2xl flex items-center justify-between gap-4 transition-all duration-300 ${
+                                formData.accessBlocked ? 'bg-rose-50/30 border-rose-200' : 'bg-slate-50/50 border-slate-100'
+                            }`}>
+                                <div className="flex items-start gap-3">
+                                    {/* Dynamic Icon Wrapper */}
+                                    <div className={`p-2.5 rounded-xl shrink-0 transition-all duration-300 ${
+                                        formData.accessBlocked ? 'bg-rose-100 text-rose-600' : 'bg-[#5D4591]/10 text-[#5D4591]'
+                                    }`}>
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            className={`w-4 h-4 ${formData.accessBlocked ? 'animate-pulse' : ''}`}
+                                        >
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                            {formData.accessBlocked ? (
+                                                <line x1="9" y1="9" x2="15" y2="15"/>
+                                            ) : (
+                                                <path d="M9 11l2 2 4-4"/>
+                                            )}
+                                            {formData.accessBlocked && <line x1="15" y1="9" x2="9" y2="15"/>}
+                                        </svg>
+                                    </div>
+
+                                    {/* Text Details */}
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">Security & Access Control</span>
+                                        <span className="text-xs font-bold text-slate-800 mt-0.5">
+                                            {formData.accessBlocked ? 'Tenant Access Suspended' : 'Tenant Access Active'}
+                                        </span>
+                                        <p className="text-[10px] font-medium text-slate-400 leading-relaxed mt-0.5 max-w-[260px]">
+                                            {formData.accessBlocked
+                                                ? 'All users under this tenant will be locked out and redirected to the Soft Block screen.'
+                                                : 'Normal operations active. Users can authenticate and use APIs normally.'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Custom iOS-style Switch */}
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, accessBlocked: !prev.accessBlocked }))}
+                                    className={`w-12 h-6 rounded-full transition-all relative outline-none shrink-0 cursor-pointer ${
+                                        formData.accessBlocked ? 'bg-rose-500 shadow-md shadow-rose-200' : 'bg-slate-200'
+                                    }`}
+                                >
+                                    <div
+                                        className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-sm ${
+                                            formData.accessBlocked ? 'left-7' : 'left-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+
                         </div>
 
                         <div className="space-y-8">
